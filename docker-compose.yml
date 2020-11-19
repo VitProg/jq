@@ -1,0 +1,51 @@
+version: "3.3"
+
+services:
+
+  #Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: back_nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "7777:7777"
+      - "443:443"
+    volumes:
+      - ./dist/:/var/www
+      - ./config/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./config/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+    networks:
+      - app-network
+
+  #MariaDB Service
+  db:
+    image: mariadb
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - ${MYSQL_PORT_IN_OUT}
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./config/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - app-network
+
+volumes:
+  logvolume01: { }
+
+  dbdata:
+    driver: local
+
+#Docker Networks
+networks:
+  app-network:
+    driver: bridge
