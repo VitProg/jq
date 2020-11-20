@@ -1,4 +1,6 @@
 
 export function timestampToDate(timestamp: number) {
-  return new Date((timestamp + (3 * 3600)) * 1000);
+  return timestamp ?
+    new Date((timestamp + (3 * 3600)) * 1000) :
+    undefined
 }

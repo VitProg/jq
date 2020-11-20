@@ -1,37 +1,49 @@
-import { BoardEntity, MemberEntity, MessageEntity, TopicEntity } from '../../entities'
-import { Message, User } from '../types'
+import { BoardEntity, CategoryEntity, MemberEntity, MessageEntity, TopicEntity } from '../../entities'
+import { Board, Category, Message, Topic, User } from '../types'
 import { timestampToDate } from './date'
 
 
 function entityListToMap<E, O extends {id: number}>(
   entityList: E[],
-  toObjectFunction: (entity: E) => O
+  toObjectFunction: (entity: E, ...args: any[]) => O,
+  ...args: any[]
 ): Record<number, O> {
   const map = {}
   entityList.forEach(entity => {
-    const obj = toObjectFunction(entity)
+    const obj = toObjectFunction(entity, ...args)
     map[obj.id >>> 0] = obj
   })
   return map
 }
 
 
-export function toUser(member: MemberEntity): User {
-  return {
+export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'> = []): User {
+  const user: User = {
     id: member.idMember,
-    email: member.emailAddress,
     login: member.memberName,
     displayName: member.realName,
     url: member.urlName,
+    avatar: member.avatar,
     statistics: {
       posts: member.posts,
       karma: member.karma,
     }
   }
+
+  if (withFields.includes('auth')) {
+    user.token = member.passwd
+    // user.salt = member.passwordSalt
+  }
+
+  if (withFields.includes('email')) {
+    user.email = member.emailAddress
+  }
+
+  return user
 }
 
 
-export const toUserMap = (memberEntityList: MemberEntity[]) => entityListToMap(memberEntityList, toUser)
+export const toUserMap = (memberEntityList: MemberEntity[], withFields: Array<'email' | 'auth'> = []) => entityListToMap(memberEntityList, toUser, withFields)
 
 
 export function toMessage(message: MessageEntity): Message {
@@ -52,12 +64,12 @@ export const toMessageMap = (messageEntityList: MessageEntity[]) => entityListTo
 
 
 
-export function toTopic(topic: TopicEntity) {
+export function toTopic(topic: TopicEntity): Topic {
   return {
     id: topic.idTopic,
     // subject: topic.subject,
     url: topic.url,
-    isSticky: topic.isSticky,
+    isSticky: topic.isSticky === 1,
     linksId: {
       board: topic.idBoard,
     },
@@ -67,7 +79,7 @@ export function toTopic(topic: TopicEntity) {
 export const toTopicMap = (topicEntityList: TopicEntity[]) => entityListToMap(topicEntityList, toTopic)
 
 
-export function toBoard(board: BoardEntity) {
+export function toBoard(board: BoardEntity): Board {
   return {
     id: board.idBoard,
     name: board.name,
@@ -80,4 +92,15 @@ export function toBoard(board: BoardEntity) {
 }
 
 export const toBoardMap = (boardEntityList: BoardEntity[]) => entityListToMap(boardEntityList, toBoard)
+
+
+export function toCategory(category: CategoryEntity): Category {
+  return {
+    id: category.idCat,
+    name: category.name,
+    order: category.catOrder,
+  }
+}
+
+export const toCategoryMap = (categoryEntityList: CategoryEntity[]) => entityListToMap(categoryEntityList, toCategory)
 

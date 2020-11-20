@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { MemberEntity } from '../entities/member.entity'
-import { FindManyOptions, FindOperator, In, Repository } from 'typeorm'
-import { toBoardMap, toMessage, toTopicMap, toUser, toUserMap } from './utils/mapper'
-import { BoardEntity, MessageEntity, TopicEntity } from '../entities'
-import { User } from './types'
+import { FindManyOptions, FindOperator, Repository } from 'typeorm'
+import { toMessage, toTopicMap, toUser, toUserMap } from './utils/mapper'
+import { MemberEntity, MessageEntity, TopicEntity } from '../entities'
+import { Message, User } from './types'
 import { listResponse } from '../common/response/ListResponse'
+import { CacheService } from './cache/cache.service'
+import { omit, pick } from '../common/utils/object'
+import { IPaginationOptions, paginate, } from 'nestjs-typeorm-paginate'
+import { MessageAllRelations, MessageRelations, MessageRelationsArray, MessageRelationsTypes } from './relations'
+import { Pagination } from 'nestjs-typeorm-paginate/dist/pagination'
+
 
 @Injectable()
 export class ForumService {
@@ -13,73 +18,67 @@ export class ForumService {
     @InjectRepository(MemberEntity) private readonly memberRepository: Repository<MemberEntity>,
     @InjectRepository(MessageEntity) private readonly messageRepository: Repository<MessageEntity>,
     @InjectRepository(TopicEntity) private readonly topicRepository: Repository<TopicEntity>,
-    @InjectRepository(BoardEntity) private readonly boardRepository: Repository<BoardEntity>, // to permanent cache
+    private readonly cacheService: CacheService,
   ) {
   }
 
-  async getActiveUsers(limit = 10, offset = 0) {
+  async getActiveUsers(options: IPaginationOptions): Promise<Pagination<User>> {
     const findOptions: FindManyOptions<MemberEntity> = {
       where: {
         isSpammer: 0,
         posts: new FindOperator('moreThan', 0)
       },
       order: {
+        posts: 'DESC',
         lastLogin: 'DESC'
       },
-      take: limit,
-      skip: offset,
     }
 
-    const [users, count] = await this.memberRepository.findAndCount(findOptions)
+    const data = await paginate(this.memberRepository, options, findOptions)
 
-    return listResponse({
-      entity: 'User',
-      limit,
-      offset,
-      list: users.map(toUser),
-    })
+    return {
+      ...data,
+      items: data.items.map(m => toUser(m)),
+    }
   }
 
-  async getLastMessages(limit = 10, offset = 0) {
-    const options: FindManyOptions<MessageEntity> = {
+  async getLastMessages(
+    options: IPaginationOptions,
+    withRelations: MessageRelationsArray = MessageAllRelations
+  ): Promise<Pagination<Message> & {relations?: MessageRelationsTypes}> {
+    const findOptions: FindManyOptions<MessageEntity> = {
       order: {
         idMsg: 'DESC',
         updateTimestamp: 'DESC',
       },
-      take: limit,
-      skip: offset,
+    }
+    console.log('withRelations', withRelations)
+
+    const data = await paginate(this.messageRepository, options, findOptions)
+
+    const messages = (data.items).map(toMessage)
+
+    const relations = {} as MessageRelationsTypes
+
+    if (withRelations.includes(MessageRelations.user)) {
+      const userIdList = new Set(messages.map(message => message.linksId.user))
+      relations[MessageRelations.user] = toUserMap(await this.memberRepository.findByIds([...userIdList]))
     }
 
-    const messageEntityList = await this.messageRepository.find(options)
-    const messages = (messageEntityList).map(toMessage)
+    if (withRelations.includes(MessageRelations.topic)) {
+      const topicIdList = new Set(messages.map(messages => messages.linksId.topic))
+      relations[MessageRelations.topic] = toTopicMap(await this.topicRepository.findByIds([...topicIdList]))
+    }
 
-    const userIdList = new Set(messages.map(message => message.linksId.user))
-    const userMap = toUserMap(await this.memberRepository.findByIds([...userIdList]))
+    if (withRelations.includes(MessageRelations.board)) {
+      const boardIdList = new Set(messages.map(messages => messages.linksId.board.toString()))
+      relations[MessageRelations.board] = pick(this.cacheService.boardMap, ...boardIdList)
+    }
 
-    const topicIdList = new Set(messages.map(messages => messages.linksId.topic))
-    const topicMap = toTopicMap(await this.topicRepository.findByIds([...topicIdList]))
-
-    const boardIdList = new Set(messages.map(messages => messages.linksId.board))
-    const boardMap = toBoardMap(await this.boardRepository.findByIds([...boardIdList]))
-
-    const list = messages.map(message => {
-      const user = userMap[message.linksId.user]
-      const topic = topicMap[message.linksId.topic]
-      const board = boardMap[message.linksId.board]
-
-      return ({
-        ...message,
-        user,
-        topic,
-        board,
-      })
-    })
-    // console.log(list)
-    return listResponse({
-      entity: 'Message',
-      limit,
-      offset,
-      list,
-    })
+    return {
+      ...data,
+      items: messages,
+      relations,
+    }
   }
 }

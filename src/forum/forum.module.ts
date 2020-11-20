@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common'
 import { ForumService } from './forum.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { CacheService } from './cache/cache.service';
 import * as Entities from '../entities'
 
 @Module({
@@ -22,9 +23,19 @@ import * as Entities from '../entities'
   ],
   providers: [
     ForumService,
+    CacheService,
   ],
   exports: [
     ForumService,
   ]
 })
-export class ForumModule {}
+export class ForumModule implements OnModuleInit {
+  constructor (
+    private readonly cacheService: CacheService,
+  ) {
+  }
+
+  async onModuleInit () {
+    await this.cacheService.init()
+  }
+}

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, OnModuleInit } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -17,4 +17,7 @@ import { ForumModule } from './forum/forum.module';
   ],
 })
 export class AppModule {
+
+
+
 }

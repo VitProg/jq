@@ -1,13 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ForumService } from './forum/forum.service'
+import { MessageAllRelations, MessageRelationsArray, stringToRelationsArray } from './forum/relations'
 
 
 const ITEMS_ON_PAGE = 50
-
-const getLimitsOptions = (page: number) => ({
-  limit: ITEMS_ON_PAGE,
-  offset: (Math.max(1, page) - 1) * ITEMS_ON_PAGE
-})
 
 @Controller()
 export class AppController {
@@ -18,14 +14,23 @@ export class AppController {
 
 
   @Get('last-messages')
-  async lastMessages (@Query('page') page = 1) {
-    const { limit, offset } = getLimitsOptions(page)
-    return this.forumService.getLastMessages(limit, offset)
+  async lastMessages (
+    @Query('page') page = 1,
+    @Query('relations') relations?: string
+  ) {
+    return this.forumService.getLastMessages({
+      limit: ITEMS_ON_PAGE,
+      page,
+    }, stringToRelationsArray(relations, MessageAllRelations))
   }
 
   @Get('active-users')
-  async activeUsers (@Query('page') page = 1) {
-    const { limit, offset } = getLimitsOptions(page)
-    return this.forumService.getActiveUsers(limit, offset)
+  async activeUsers (
+    @Query('page') page = 1
+  ) {
+    return this.forumService.getActiveUsers({
+      limit: ITEMS_ON_PAGE,
+      page,
+    })
   }
 }
