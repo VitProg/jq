@@ -6,7 +6,6 @@ dotenv.config({
   path: '.env'
 });
 
-
 module.exports = [
   {
     type: 'mariadb',
@@ -18,7 +17,7 @@ module.exports = [
     entities:
       isTsNode
         ? ['src/server/entities/**/*.entity{.ts,.js}']
-        : ['dists/server/entities/**/*.entity{.ts,.js}'],
+        : ['dist/server/entities/**/*.entity{.ts,.js}'],
     entityPrefix: process.env.TABLE_PREFIX && '',
     synchronize: false,
     migrationsRun: false,
