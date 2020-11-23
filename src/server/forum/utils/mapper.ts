@@ -1,7 +1,7 @@
 import { BoardEntity, CategoryEntity, MemberEntity, MessageEntity, TopicEntity } from '../../entities'
 import { Board, Category, Message, Topic, User } from '../../../common/forum.entities'
 import { timestampToDate } from './date'
-import { AnyObject } from '../../common/utils/object'
+import { AnyObject } from '../../../common/utils/object'
 
 
 function entityListToMap<E, O extends {id: number}>(

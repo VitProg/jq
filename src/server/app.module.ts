@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common'
+import { CacheModule, Module, OnModuleInit } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -15,6 +15,10 @@ import { ConfigModule } from '@nestjs/config'
       })]
     }),
     TypeOrmModule.forRoot(),
+    CacheModule.register({
+      ttl: 10,
+      max: 100,
+    }),
     ForumModule,
   ],
   controllers: [
