@@ -1,11 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es2017",
     "module": "commonjs",
-    "moduleResolution": "node",
+    "declaration": false,
+    "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "target": "es2017",
     "sourceMap": true,
-    "outDir": "./dist"
-  }
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "incremental": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true
+  },
+  "exclude": [
+    "node_modules",
+    "src/client",
+    "dist",
+    "src/server/test"
+  ]
 }

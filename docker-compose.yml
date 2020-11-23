@@ -2,21 +2,38 @@ version: "3.3"
 
 services:
 
-  #Nginx Service
-  nginx:
-    image: nginx:alpine
-    container_name: back_nginx
+  back:
+    build: ./docker/images/back
+    container_name: back
     restart: unless-stopped
     tty: true
     ports:
-      - "7777:7777"
+      - "80:80"
       - "443:443"
+      - "3000"
     volumes:
-      - ./dist/:/var/www
-      - ./config/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-      - ./config/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
-    networks:
-      - app-network
+      - ./public:/var/www
+      - ./docker/config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/config/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+    network_mode: host
+#    networks:
+#      - app-network
+
+  #Nginx Service
+  #  nginx:
+  #    image: nginx:alpine
+  #    container_name: nginx
+  #    restart: unless-stopped
+  #    tty: true
+  #    ports:
+  #      - "80:80"
+  #      - "443:443"
+  #    volumes:
+  #      - ./public:/var/www
+  #      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+  #      - ./config/nginx/vhost.conf:/etc/nginx/conf.d/vhost.conf
+  #    networks:
+  #      - app-network
 
   #MariaDB Service
   db:
@@ -35,7 +52,7 @@ services:
       SERVICE_NAME: mysql
     volumes:
       - dbdata:/var/lib/mysql
-      - ./config/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./docker/config/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
       - app-network
 
