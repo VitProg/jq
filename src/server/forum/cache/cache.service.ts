@@ -8,8 +8,8 @@ import { toBoard, toBoardMap, toCategory, toCategoryMap } from '../utils/mapper'
 @Injectable()
 export class CacheService {
 
-  private _boardMap: Record<number, Board> = {}
-  private _categoryMap: Record<number, Category> = {}
+  private _boardMap = new Map<number, Board>()
+  private _categoryMap = new Map<number, Category>()
 
   constructor (
     @InjectRepository(BoardEntity) private readonly boardRepository: Repository<BoardEntity>,
@@ -30,14 +30,14 @@ export class CacheService {
     const boardEntityList = await  this.boardRepository.find()
     this._boardMap = toBoardMap(boardEntityList)
 
-    Object.values(this._boardMap).forEach(board => board.category = this._categoryMap[board.linksId.category])
+    Object.values(this._boardMap).forEach(board => board.category = this._categoryMap.get(board.linksId.category))
   }
 
-  get categoryMap(): Readonly<Record<number, Readonly<Category>>> {
+  get categoryMap(): ReadonlyMap<number, Readonly<Category>> {
     return this._categoryMap
   }
 
-  get boardMap(): Readonly<Record<number, Readonly<Board>>> {
+  get boardMap(): ReadonlyMap<number, Readonly<Board>> {
     return this._boardMap
   }
 

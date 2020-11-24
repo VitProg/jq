@@ -9,11 +9,11 @@ function entityListToMap<E, O extends {id: number}>(
   entityList: E[],
   toObjectFunction: (entity: E, ...args: any[]) => O,
   ...args: any[]
-): Record<number, O> {
-  const map: AnyObject = {}
+): Map<number, O> {
+  const map = new Map<number, O>()
   entityList.forEach(entity => {
     const obj = toObjectFunction(entity, ...args)
-    map[obj.id >>> 0] = obj
+    map.set(obj.id >>> 0, obj)
   })
   return map
 }

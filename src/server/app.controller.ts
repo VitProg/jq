@@ -1,8 +1,13 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, Param, Query, Render, UseInterceptors } from '@nestjs/common'
-import { ForumService } from './forum/forum.service'
-import { stringToRelationsArray } from './forum/relations'
+import { CacheInterceptor, CacheTTL, Controller, Get, Param, Post, Query, Request, UseGuards, UseInterceptors } from '@nestjs/common'
+import { stringToRelationsArray } from './forum/utils/relations'
 import { MessageAllRelations, MessageRelationsArray } from '../common/forum/forum.entity-relations'
 import { between } from '../common/utils/number'
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
+import { LocalAuthGuard } from './auth/guards/local-auth.guard'
+import { User } from '../common/forum/forum.entities'
+import { AuthService } from './auth/auth.service'
+import { UserService } from './user/user.service'
+import { MessageService } from './forum/message/message.service'
 
 
 const ITEMS_ON_PAGE = 50
@@ -12,8 +17,22 @@ const MIN_ITEMS_ON_PAGE = 5
 @Controller('api')
 export class AppController {
   constructor (
-    private readonly forumService: ForumService
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly messageService: MessageService,
   ) {
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('auth/login')
+  async login(@Request() req: {user: User}) {
+    return this.authService.login(req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req: {user: User}) {
+    return req.user;
   }
 
   @UseInterceptors(CacheInterceptor)
@@ -24,7 +43,7 @@ export class AppController {
     @Query('pageSize') pageSize = ITEMS_ON_PAGE,
     @Query('relations') relations?: string
   ) {
-    return this.forumService.getLastMessages({
+    return this.messageService.getLastMessages({
       limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
       page,
     }, stringToRelationsArray(relations ?? '', MessageAllRelations))
@@ -35,7 +54,7 @@ export class AppController {
     @Query('page') page = 1,
     @Query('pageSize') pageSize = ITEMS_ON_PAGE,
   ) {
-    return this.forumService.getActiveUsers({
+    return this.userService.getActiveUsers({
       limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
       page,
     })

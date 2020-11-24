@@ -1,4 +1,5 @@
 import { Board, Topic, User } from './forum.entities'
+import webpack from 'webpack'
 
 
 export enum MessageRelations {
