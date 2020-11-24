@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import {render} from 'react-dom'
-import { Board, Message, Topic, User } from '../common/forum.entities'
-import { LastMessageResponse } from '../common/forums.responses'
-import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
-import * as Styled from './styled'
 import { BrowserRouter, Link, Switch, Route } from 'react-router-dom'
 import { MessagesPage } from './MessagesPage'
 
@@ -16,9 +12,11 @@ const App = (props: {page?: number}) => {
       <h1>JQ Forum React</h1>
       <nav>
         <li><Link to="/messages">Last messages</Link></li>
+        <li><Link to="/messages/2">Last messages Page2</Link></li>
       </nav>
       <Switch>
-        <Route path={["/messages", "/messages/:page"]} children={<MessagesPage/>}/>
+        <Route path={["/messages/:page"]} children={<MessagesPage/>}/>
+        <Route path={["/messages"]} children={<MessagesPage/>}/>
       </Switch>
     </BrowserRouter>
   )

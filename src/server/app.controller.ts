@@ -1,7 +1,7 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common'
+import { CacheInterceptor, CacheTTL, Controller, Get, Param, Query, Render, UseInterceptors } from '@nestjs/common'
 import { ForumService } from './forum/forum.service'
 import { stringToRelationsArray } from './forum/relations'
-import { MessageAllRelations, MessageRelationsArray } from '../common/forum.entity-repations'
+import { MessageAllRelations, MessageRelationsArray } from '../common/forum/forum.entity-relations'
 import { between } from '../common/utils/number'
 
 
@@ -9,13 +9,12 @@ const ITEMS_ON_PAGE = 50
 const MAX_ITEMS_ON_PAGE = 200
 const MIN_ITEMS_ON_PAGE = 5
 
-@Controller()
+@Controller('api')
 export class AppController {
   constructor (
     private readonly forumService: ForumService
   ) {
   }
-
 
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(10)
@@ -41,4 +40,11 @@ export class AppController {
       page,
     })
   }
+
+  ////
+  //
+  // @Get('messages')
+  // @Render('layout')
+  // pages() {
+  // }
 }

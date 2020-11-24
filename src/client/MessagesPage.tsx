@@ -1,9 +1,10 @@
 import React, { FC, useEffect, useState } from 'react'
 import * as Styled from './styled'
 import { Link, useParams } from 'react-router-dom'
-import { LastMessageResponse } from '../common/forums.responses'
-import { Board, Message, Topic, User } from '../common/forum.entities'
+import { LastMessageResponse } from '../common/forum/forum.responses'
+import { Board, Message, Topic, User } from '../common/forum/forum.entities'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
+import { MessageItem } from './MessageItem'
 
 
 export const MessagesPage: FC<{}> = (props) => {
@@ -12,6 +13,8 @@ export const MessagesPage: FC<{}> = (props) => {
   const [topics, setRelatedTopics] = useState<Record<number, Topic>>({})
   const [boards, setRelatedBoards] = useState<Record<number, Board>>({})
 
+  const [loading, setLoading] = useState(false)
+
   const [meta, setMeta] = useState<IPaginationMeta | undefined>()
   const { page: routePage } = useParams<{ page?: string }>()
 
@@ -19,10 +22,18 @@ export const MessagesPage: FC<{}> = (props) => {
   useEffect(() => {
     setPage(parseInt(routePage ?? '1', 10))
   }, [routePage])
-debugger
 
   useEffect(() => {
-    fetch(`/api/last-messages?relations=board,user&pageSize=10&page=${page}`)
+    let abortController = new AbortController();
+
+    setLoading(true)
+
+    fetch(
+      `/api/last-messages?relations=board,user&pageSize=5&page=${page}`,
+      {
+        signal: abortController.signal,
+      }
+    )
       .then<LastMessageResponse>(data => data.json())
       .then(data => {
         setMessages(data.items)
@@ -49,17 +60,36 @@ debugger
           })
         }
       })
-  }, [page, routePage])
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          console.log('ABORT')
+        } else {
+          throw err
+        }
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+
+    return () => {
+      if (abortController) {
+        abortController.abort()
+      }
+    }
+  }, [page])
 
   return (
     <>
       {messages.map(message => (
-        <Styled.Message key={message.id}>
-          <h4>Date: {message.createdAt}</h4>
-          <h6>Author: {users[message.linksId.user]?.displayName ?? users[message.linksId.user]?.login}</h6>
-          <div>{message.body}</div>
-        </Styled.Message>
-      ))}
+          <MessageItem
+            key={message.id}
+            message={message}
+            relatedBoard={boards?.[message.linksId.board]}
+            relatedUser={users?.[message.linksId.user]}
+            loading={loading}
+          />
+        )
+      )}
       {meta && page > 1 && <Link to={`/messages/${page - 1}`}>{'<= Prev'}</Link>}
       {meta && page <= meta.totalPages && <Link to={`/messages/${page + 1}`}>{'Next =>'}</Link>}
     </>

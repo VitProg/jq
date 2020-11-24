@@ -1,3 +1,6 @@
+import { Gender } from './forum.constants'
+
+
 export interface User {
   id: number
   email?: string
@@ -5,12 +8,16 @@ export interface User {
   displayName: string
   url: string
   avatar: string
+  gender: Gender
   statistics: {
     posts: number
     karma: number
   }
-  token?: string
-  salt?: string
+  auth?: {
+    passwordHash?: string
+    token?: string
+    salt?: string
+  }
 }
 
 export interface Message {
@@ -52,6 +59,5 @@ export interface Topic {
   linksId: { board: number }
   board?: Board
 }
-
 
 

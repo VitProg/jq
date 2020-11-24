@@ -1,7 +1,8 @@
 import { BoardEntity, CategoryEntity, MemberEntity, MessageEntity, TopicEntity } from '../../entities'
-import { Board, Category, Message, Topic, User } from '../../../common/forum.entities'
-import { timestampToDate } from './date'
+import { Board, Category, Message, Topic, User } from '../../../common/forum/forum.entities'
 import { AnyObject } from '../../../common/utils/object'
+import { timestampToDate, toGender } from './transform'
+import { MemberDisplayNameField, MemberEmailField, MemberLoginField } from '../constants'
 
 
 function entityListToMap<E, O extends {id: number}>(
@@ -21,10 +22,11 @@ function entityListToMap<E, O extends {id: number}>(
 export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'> = []): User {
   const user: User = {
     id: member.idMember,
-    login: member.memberName,
-    displayName: member.realName,
+    login: member[MemberLoginField],
+    displayName: member[MemberDisplayNameField],
     url: member.urlName,
     avatar: member.avatar,
+    gender: toGender(member.gender),
     statistics: {
       posts: member.posts,
       karma: member.karma,
@@ -32,12 +34,14 @@ export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'>
   }
 
   if (withFields.includes('auth')) {
-    user.token = member.passwd
-    // user.salt = member.passwordSalt
+    user.auth = {
+      passwordHash: member.passwd,
+      salt: member.passwordSalt,
+    }
   }
 
   if (withFields.includes('email')) {
-    user.email = member.emailAddress
+    user.email = member[MemberEmailField]
   }
 
   return user

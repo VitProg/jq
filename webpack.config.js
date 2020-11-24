@@ -1,24 +1,33 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
+const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const ReactRefreshTypeScript = require('react-refresh-typescript').default;
+
+const isDevelopment = process.env.NODE_ENV !== 'production'
+
+console.log('Mode: ', isDevelopment ? 'development' : 'production');
 
 module.exports = {
-  mode: "development",
+  mode: isDevelopment ? 'development' : 'production',
   entry: './src/client/App.tsx',
   devtool: 'inline-source-map',
   module: {
     rules: [
       {
         test: /\.ts(x?)$/,
+        loader: "ts-loader",
         exclude: /node_modules/,
-        use: [
-          {
-            loader: "ts-loader",
-            options: {
-              configFile: 'tsconfig.client.json',
-            }
-          }
-        ]
+        options: {
+          configFile: 'tsconfig.client.json',
+          getCustomTransformers: () => (
+            isDevelopment
+              ? {
+                // before: [ReactRefreshTypeScript()]
+              }
+              : {}
+          ),
+        }
       }
     ]
   },
@@ -31,7 +40,11 @@ module.exports = {
   },
   devServer: {
     contentBase: path.resolve(__dirname, './dist/client'),
-    hot: true
+    hot: true,
+    historyApiFallback: true,
+    liveReload: false,
+    sockHost: 'localhost',
+    sockPort: 8080,
   },
   plugins: [
     new CopyPlugin({
@@ -39,8 +52,13 @@ module.exports = {
         { from: "./src/client/index.html", to: "index.html" },
       ],
     }),
-    new webpack.HotModuleReplacementPlugin({
-      //
-    })
-  ],
+    isDevelopment && new webpack.HotModuleReplacementPlugin(),
+    isDevelopment && new ReactRefreshPlugin({
+      overlay: {
+        sockIntegration: "wds",
+        sockHost: 'localhost',
+        sockPort: 8080,
+      },
+    }),
+  ].filter(Boolean),
 };

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { BoardEntity, CategoryEntity } from '../../entities'
-import { Board, Category } from '../../../common/forum.entities'
+import { Board, Category } from '../../../common/forum/forum.entities'
 import { Repository } from 'typeorm'
 import { toBoard, toBoardMap, toCategory, toCategoryMap } from '../utils/mapper'
 
