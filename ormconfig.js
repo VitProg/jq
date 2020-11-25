@@ -29,6 +29,8 @@ module.exports = [
       migrationsDir: "src/migration",
       entitiesDir: "src/server/entities"
     },
-    logging: isDevelopment,
+    logging: isDevelopment ? 'all' : false,
+    logger: isDevelopment ? 'advanced-console' : undefined,
+    maxQueryExecutionTime: isDevelopment ? 250 : 1000,
   }
 ]

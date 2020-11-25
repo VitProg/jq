@@ -9,9 +9,14 @@ export enum MessageRelations {
 }
 
 export type MessageRelationsArray = Array<MessageRelations>
-export type MessageRelationsTypes = {
+export type MessageRelationsRecord = {
   [MessageRelations.topic]?: Record<number, ITopic>,
   [MessageRelations.board]?: Record<number, IBoard>,
   [MessageRelations.user]?: Record<number, IUser>,
+}
+export type MessageRelationsSingle = {
+  [MessageRelations.topic]?: ITopic,
+  [MessageRelations.board]?: IBoard,
+  [MessageRelations.user]?: IUser,
 }
 export const MessageAllRelations = [MessageRelations.board, MessageRelations.topic, MessageRelations.user]

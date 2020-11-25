@@ -7,7 +7,7 @@
     "experimentalDecorators": true,
     "target": "es2017",
     "lib": [
-      "ES2019.Object",
+      "ES2019.Object"
     ],
     "sourceMap": true,
     "moduleResolution": "node",

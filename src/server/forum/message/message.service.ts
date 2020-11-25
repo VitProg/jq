@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate'
-import { MessageAllRelations, MessageRelations, MessageRelationsArray, MessageRelationsTypes } from '../../../common/forum/forum.entity-relations'
+import { MessageAllRelations, MessageRelations, MessageRelationsArray, MessageRelationsRecord } from '../../../common/forum/forum.entity-relations'
 import { LastMessageResponse } from '../../../common/forum/forum.responses'
 import { FindManyOptions, In, Not, Repository } from 'typeorm'
 import { MessageEntity } from '../../entities'
@@ -42,7 +42,7 @@ export class MessageService {
 
     const messages = (data.items).map(toMessage)
 
-    const relations = {} as MessageRelationsTypes
+    const relations = {} as MessageRelationsRecord
 
     if (withRelations.includes(MessageRelations.user)) {
       const userIds = new Set(messages.map(message => message.linksId.user))

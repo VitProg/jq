@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IBoard, ITopic } from '../../../common/forum/forum.interfaces'
 import { InjectRepository } from '@nestjs/typeorm'
-import { AttachmentEntity, BoardEntity, MemberEntity, RelatedSubjectEntity, TopicEntity } from '../../entities'
+import { AttachmentEntity, BoardEntity, MemberEntity, MessageEntity, RelatedSubjectEntity, TopicEntity } from '../../entities'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 import { toTopic, toTopicMap, toUser, toUserMap } from '../utils/mapper'
 import { AnyObject } from '../../../common/utils/object'
@@ -16,8 +16,9 @@ export class TopicService {
   private query(): SelectQueryBuilder<TopicEntity> {
     return this.topicRepository
       .createQueryBuilder()
-      .addSelect('rs.subject as subject')
       .leftJoin(RelatedSubjectEntity, 'rs', `rs.id_topic = ${TopicEntity.name}.id_topic`)
+      .leftJoin(MessageEntity, 'fm', `rs.subject IS NULL AND fm.id_msg = ${TopicEntity.name}.id_first_msg`)
+      .addSelect('IF(fm.subject IS NULL, rs.subject, fm.subject) as `subject`')
   }
 
   private rawToItems(data: {entities: TopicEntity[], raw: AnyObject[]}) {

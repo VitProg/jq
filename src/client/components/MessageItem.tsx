@@ -1,22 +1,17 @@
 import React, { FC } from 'react'
-import { IBoard, IMessage, ITopic } from '../common/forum/forum.interfaces'
-import { Avatar, createStyles, Link, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
-import { User } from '../common/forum/entities/user'
-import {Link as RouterLink} from 'react-router-dom'
-import PersonIcon from '@material-ui/icons/Person';
-import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
-import { ForumConfiguration } from '../common/forum/forum.constants'
-import { UserLink } from './User/UserLink'
+import { IMessage } from '../../common/forum/forum.interfaces'
+import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
+import { User } from '../../common/forum/entities/user'
+import { UserLink } from '../User/UserLink'
 import parser from 'bbcode-to-react'
-import { UserAvatar } from './User/UserAvatar'
+import { UserAvatar } from '../User/UserAvatar'
+import { MessageRelationsSingle } from '../../common/forum/forum.entity-relations'
 
 
 interface ExternalProps {
   message: IMessage
   user?: User
-  topic?: ITopic
-  board?: IBoard
-  loading?: boolean
+  relations?: MessageRelationsSingle
 }
 
 type Props = ExternalProps
@@ -33,15 +28,11 @@ export const MessageItem: FC<Props> = (props) => {
 
   const classes = useStyles()
 
-  const {
-    message,
-    board,
-    topic,
-    user,
-    loading = false,
-  } = props
-
   const subjects: any[] = []
+
+  const { message } = props
+  const { board, topic } = props.relations ?? { board: undefined, topic: undefined }
+  const user = User.create(props.relations?.user)
 
   if (board?.category?.name) {
     subjects.push(board?.category?.name)
@@ -54,7 +45,7 @@ export const MessageItem: FC<Props> = (props) => {
   }
 
   const html = parser.toReact(message.body
-    .replace(/<br\s*\/?>/gm, "\n")
+    .replace(/<br\s*\/?>/gm, '\n')
     .split('&nbsp;').join(' ')
     .split('&quot;').join('"')
   )
@@ -70,9 +61,9 @@ export const MessageItem: FC<Props> = (props) => {
           <div>
             <UserLink user={user}/>
             {subjects.length &&
-              <Typography component='div'>
-                {subjects.join(' / ')}
-              </Typography>
+            <Typography component='div'>
+              {subjects.join(' / ')}
+            </Typography>
             }
           </div>
         }
@@ -80,7 +71,7 @@ export const MessageItem: FC<Props> = (props) => {
           // <div dangerouslySetInnerHTML={{__html: html}}/>
           html
         }
-        secondaryTypographyProps={{component: 'div', className: classes.messageBody}}
+        secondaryTypographyProps={{ component: 'div', className: classes.messageBody }}
       />
     </ListItem>
   )
