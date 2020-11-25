@@ -1,4 +1,4 @@
-import { Board, Topic, User } from './forum.entities'
+import { IBoard, ITopic, IUser } from './forum.interfaces'
 import webpack from 'webpack'
 
 
@@ -10,8 +10,8 @@ export enum MessageRelations {
 
 export type MessageRelationsArray = Array<MessageRelations>
 export type MessageRelationsTypes = {
-  [MessageRelations.topic]?: Record<number, Topic>,
-  [MessageRelations.board]?: Record<number, Board>,
-  [MessageRelations.user]?: Record<number, User>,
+  [MessageRelations.topic]?: Record<number, ITopic>,
+  [MessageRelations.board]?: Record<number, IBoard>,
+  [MessageRelations.user]?: Record<number, IUser>,
 }
 export const MessageAllRelations = [MessageRelations.board, MessageRelations.topic, MessageRelations.user]

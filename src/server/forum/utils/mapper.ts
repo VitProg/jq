@@ -1,8 +1,9 @@
 import { BoardEntity, CategoryEntity, MemberEntity, MessageEntity, TopicEntity } from '../../entities'
-import { Board, Category, Message, Topic, User } from '../../../common/forum/forum.entities'
+import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/forum/forum.interfaces'
 import { AnyObject } from '../../../common/utils/object'
 import { timestampToDate, toGender } from './transform'
 import { MemberDisplayNameField, MemberEmailField, MemberLoginField } from '../constants'
+import { ObjectID } from 'typeorm'
 
 
 function entityListToMap<E, O extends {id: number}>(
@@ -18,9 +19,8 @@ function entityListToMap<E, O extends {id: number}>(
   return map
 }
 
-
-export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'> = []): User {
-  const user: User = {
+export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'> = []): IUser {
+  const user: IUser = {
     id: member.idMember,
     login: member[MemberLoginField],
     displayName: member[MemberDisplayNameField],
@@ -51,7 +51,7 @@ export function toUser(member: MemberEntity, withFields: Array<'email' | 'auth'>
 export const toUserMap = (memberEntityList: MemberEntity[], withFields: Array<'email' | 'auth'> = []) => entityListToMap(memberEntityList, toUser, withFields)
 
 
-export function toMessage(message: MessageEntity): Message {
+export function toMessage(message: MessageEntity): IMessage {
   return {
     id: message.idMsg,
     linksId: {
@@ -69,12 +69,13 @@ export const toMessageMap = (messageEntityList: MessageEntity[]) => entityListTo
 
 
 
-export function toTopic(topic: TopicEntity): Topic {
+export function toTopic(topic: TopicEntity & {subject?: string}): ITopic {
   return {
     id: topic.idTopic,
     // subject: topic.subject,
     url: topic.url,
     isSticky: topic.isSticky === 1,
+    subject: topic.subject ?? `topic-${topic.idTopic}`,
     linksId: {
       board: topic.idBoard,
     },
@@ -84,7 +85,7 @@ export function toTopic(topic: TopicEntity): Topic {
 export const toTopicMap = (topicEntityList: TopicEntity[]) => entityListToMap(topicEntityList, toTopic)
 
 
-export function toBoard(board: BoardEntity): Board {
+export function toBoard(board: BoardEntity): IBoard {
   return {
     id: board.idBoard,
     name: board.name,
@@ -99,7 +100,7 @@ export function toBoard(board: BoardEntity): Board {
 export const toBoardMap = (boardEntityList: BoardEntity[]) => entityListToMap(boardEntityList, toBoard)
 
 
-export function toCategory(category: CategoryEntity): Category {
+export function toCategory(category: CategoryEntity): ICategory {
   return {
     id: category.idCat,
     name: category.name,

@@ -3,8 +3,13 @@ const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
 const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const ReactRefreshTypeScript = require('react-refresh-typescript').default;
+const dotenv = require('dotenv');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
+
+dotenv.config({
+  path: '.env'
+});
 
 console.log('Mode: ', isDevelopment ? 'development' : 'production');
 
@@ -60,5 +65,13 @@ module.exports = {
         sockPort: 8080,
       },
     }),
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: 'development',
+      FORUM_AVATAR_BASE_URL: undefined,
+      FORUM_GALLERY_BASE_URL: undefined,
+      FORUM_ATTACHMENTS_BASE_URL: undefined,
+      FORUM_USER_LINK_PATTERN: undefined,
+      FORUM_DEFAULT_AVATAR: undefined,
+    })
   ].filter(Boolean),
 };

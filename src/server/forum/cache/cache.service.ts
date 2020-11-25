@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { BoardEntity, CategoryEntity } from '../../entities'
-import { Board, Category } from '../../../common/forum/forum.entities'
+import { IBoard, ICategory } from '../../../common/forum/forum.interfaces'
 import { Repository } from 'typeorm'
 import { toBoard, toBoardMap, toCategory, toCategoryMap } from '../utils/mapper'
 
 @Injectable()
 export class CacheService {
 
-  private _boardMap = new Map<number, Board>()
-  private _categoryMap = new Map<number, Category>()
+  private _boardMap = new Map<number, IBoard>()
+  private _categoryMap = new Map<number, ICategory>()
 
   constructor (
     @InjectRepository(BoardEntity) private readonly boardRepository: Repository<BoardEntity>,
@@ -33,11 +33,11 @@ export class CacheService {
     Object.values(this._boardMap).forEach(board => board.category = this._categoryMap.get(board.linksId.category))
   }
 
-  get categoryMap(): ReadonlyMap<number, Readonly<Category>> {
+  get categoryMap(): ReadonlyMap<number, Readonly<ICategory>> {
     return this._categoryMap
   }
 
-  get boardMap(): ReadonlyMap<number, Readonly<Board>> {
+  get boardMap(): ReadonlyMap<number, Readonly<IBoard>> {
     return this._boardMap
   }
 

@@ -4,10 +4,10 @@ import { MessageAllRelations, MessageRelationsArray } from '../common/forum/foru
 import { between } from '../common/utils/number'
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
 import { LocalAuthGuard } from './auth/guards/local-auth.guard'
-import { User } from '../common/forum/forum.entities'
 import { AuthService } from './auth/auth.service'
 import { UserService } from './user/user.service'
 import { MessageService } from './forum/message/message.service'
+import { IUser } from '../common/forum/forum.interfaces'
 
 
 const ITEMS_ON_PAGE = 50
@@ -25,13 +25,13 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  async login(@Request() req: {user: User}) {
+  async login(@Request() req: {user: IUser}) {
     return this.authService.login(req.user);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req: {user: User}) {
+  getProfile(@Request() req: {user: IUser}) {
     return req.user;
   }
 

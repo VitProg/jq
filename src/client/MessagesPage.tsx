@@ -1,17 +1,18 @@
 import React, { FC, useEffect, useState } from 'react'
-import * as Styled from './styled'
 import { Link, useParams } from 'react-router-dom'
 import { LastMessageResponse } from '../common/forum/forum.responses'
-import { Board, Message, Topic, User } from '../common/forum/forum.entities'
+import { IBoard, IMessage, ITopic, IUser } from '../common/forum/forum.interfaces'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
 import { MessageItem } from './MessageItem'
+import { Pagination, PaginationItem } from '@material-ui/lab'
+import { User } from '../common/forum/entities/user'
 
 
-export const MessagesPage: FC<{}> = (props) => {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [users, setRelatedUsers] = useState<Record<number, User>>({})
-  const [topics, setRelatedTopics] = useState<Record<number, Topic>>({})
-  const [boards, setRelatedBoards] = useState<Record<number, Board>>({})
+export const MessagesPage: FC = (props) => {
+  const [messages, setMessages] = useState<IMessage[]>([])
+  const [users, setRelatedUsers] = useState<Record<number, IUser>>({})
+  const [topics, setRelatedTopics] = useState<Record<number, ITopic>>({})
+  const [boards, setRelatedBoards] = useState<Record<number, IBoard>>({})
 
   const [loading, setLoading] = useState(false)
 
@@ -24,12 +25,12 @@ export const MessagesPage: FC<{}> = (props) => {
   }, [routePage])
 
   useEffect(() => {
-    let abortController = new AbortController();
+    const abortController = new AbortController()
 
     setLoading(true)
 
     fetch(
-      `/api/last-messages?relations=board,user&pageSize=5&page=${page}`,
+      `/api/last-messages?relations=board,user,topic&pageSize=5&page=${page}`,
       {
         signal: abortController.signal,
       }
@@ -78,20 +79,31 @@ export const MessagesPage: FC<{}> = (props) => {
     }
   }, [page])
 
+  const pagination = meta ?
+    <Pagination
+      count={meta.totalPages}
+      page={meta.currentPage >> 0}
+      onChange={event => console.log(event)}
+      renderItem={(item) => <PaginationItem {...item} component={Link} to={`/messages/${item.page}`}/>}
+    /> : null
+//todo
   return (
     <>
+      {pagination}
       {messages.map(message => (
           <MessageItem
             key={message.id}
             message={message}
-            relatedBoard={boards?.[message.linksId.board]}
-            relatedUser={users?.[message.linksId.user]}
+            topic={topics?.[message.linksId.topic]}
+            board={boards?.[message.linksId.board]}
+            user={User.create(users?.[message.linksId.user])}
             loading={loading}
           />
         )
       )}
-      {meta && page > 1 && <Link to={`/messages/${page - 1}`}>{'<= Prev'}</Link>}
-      {meta && page <= meta.totalPages && <Link to={`/messages/${page + 1}`}>{'Next =>'}</Link>}
+      {/*{meta && page > 1 && <Link to={`/messages/${page - 1}`}>{'<= Prev'}</Link>}*/}
+      {/*{meta && page <= meta.totalPages && <Link to={`/messages/${page + 1}`}>{'Next =>'}</Link>}*/}
+      {pagination}
     </>
   )
 }

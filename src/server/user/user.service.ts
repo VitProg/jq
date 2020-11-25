@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { MemberEntity } from '../entities'
-import { FindManyOptions, FindOperator, Repository } from 'typeorm'
+import { AttachmentEntity, MemberEntity } from '../entities'
+import { FindManyOptions, FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
 import { MemberEmailField, MemberLoginField } from '../forum/constants'
 import { toUser, toUserMap } from '../forum/utils/mapper'
 import { FindConditions } from 'typeorm/find-options/FindConditions'
-import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate'
+import { IPaginationOptions, paginate, paginateRaw, Pagination } from 'nestjs-typeorm-paginate'
 import { ActiveUsersResponse } from '../../common/forum/forum.responses'
-import { Topic, User } from '../../common/forum/forum.entities'
+import { ITopic, IUser } from '../../common/forum/forum.interfaces'
+import { ObjectLiteral } from 'typeorm/common/ObjectLiteral'
+import { AnyObject } from '../../common/utils/object'
 
 
 @Injectable()
@@ -18,18 +20,42 @@ export class UserService {
     //
   }
 
-  async findByIdsToMap (ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<Map<number, User>> {
-    const idSet = new Set(ids)
-    const map = new Map<number, Topic>()
-    const entities = await this.memberRepository.findByIds([...idSet])
-    return toUserMap(entities, withFields)
+  private query(): SelectQueryBuilder<MemberEntity> {
+    return this.memberRepository
+      .createQueryBuilder()
+      .addSelect('a.filename as member_avatar')
+      .leftJoin(AttachmentEntity, 'a', `a.id_member = ${MemberEntity.name}.id_member AND a.attachment_type = 1 AND a.approved = 1`)
   }
 
-  async findByIds (ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<User[]> {
+  private rawToItems(data: {entities: MemberEntity[], raw: AnyObject[]}, withFields: Array<'email' | 'auth'> = []) {
+    return data.entities.map((value: any, index: number) => ({
+      ...value,
+      avatar: data.raw[index]?.member_avatar,
+    })).map(m => toUser(m, withFields))
+  }
+
+  private rawToMap(data: {entities: MemberEntity[], raw: AnyObject[]}, withFields: Array<'email' | 'auth'> = []) {
+    return toUserMap(data.entities.map((value: any, index: number) => ({
+      ...value,
+      avatar: data.raw[index]?.member_avatar,
+    })))
+  }
+
+
+
+  async findByIdsToMap (ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<Map<number, IUser>> {
+    const idSet = new Set(ids)
+    const data = await this.query()
+      .whereInIds([...idSet])
+      .getRawAndEntities()
+    return this.rawToMap(data, withFields)
+  }
+
+  async findByIds (ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<IUser[]> {
     return [...(await this.findByIdsToMap(ids, withFields)).values()]
   }
 
-  async findByIdsToRecord(ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<Record<number, User>> {
+  async findByIdsToRecord(ids: number[] | Set<number>, withFields: Array<'email' | 'auth'> = []): Promise<Record<number, IUser>> {
     const map = await this.findByIdsToMap(ids, withFields)
     return Object.fromEntries(map.entries())
   }
@@ -50,43 +76,56 @@ export class UserService {
       return undefined
     }
 
-    let where: FindConditions<MemberEntity> | Array<FindConditions<MemberEntity>> = []
+    let where: ObjectLiteral | Array<ObjectLiteral> = []
 
     if (login && email) {
-      where = [
-        { [MemberLoginField]: login, [MemberEmailField]: email },
-      ]
+      where = {
+        [MemberLoginField]: login, [MemberEmailField]: email,
+      }
     } else if (login) {
       where = { [MemberLoginField]: login }
     } else if (email) {
       where = { [MemberEmailField]: email }
     }
 
-    const member = await this.memberRepository.findOne({
-      where,
-    })
+    const data = await this.query()
+      .where(where)
+      // .getRawOne()
+      .getRawAndEntities()
 
-    return member ? toUser(member, ['email', 'auth']) : undefined
+    const items = this.rawToItems(data, ['email', 'auth'])
+    return items?.[0]
   }
 
 
   async getActiveUsers (options: IPaginationOptions): Promise<ActiveUsersResponse> {
-    const findOptions: FindManyOptions<MemberEntity> = {
-      where: {
+    // todo переделать когда зальется тот ПР https://github.com/nestjsx/nestjs-typeorm-paginate/pull/375
+    const query = this.query()
+      .where({
         isSpammer: 0,
         posts: new FindOperator('moreThan', 0)
-      },
-      order: {
+      })
+      .orderBy({
         posts: 'DESC',
-        lastLogin: 'DESC'
-      },
-    }
+        last_login: 'DESC'
+      })
+      .limit(options.limit)
+      .skip((options.page - 1) * options.limit)
 
-    const data = await paginate(this.memberRepository, options, findOptions)
+    const data = await query.getRawAndEntities()
+    const totalItems = await query.getCount();
+
+    const items = this.rawToItems(data)
 
     return {
-      ...data,
-      items: data.items.map(m => toUser(m)),
+      items,
+      meta: {
+        totalPages: Math.ceil(totalItems / options.limit),
+        currentPage: options.page,
+        itemsPerPage: options.limit,
+        itemCount: items.length,
+        totalItems,
+      }
     }
   }
 

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common'
 import crypto from 'crypto'
 import { UserService } from '../user/user.service'
 import { omit } from '../../common/utils/object'
-import { User } from '../../common/forum/forum.entities'
 import { JwtService } from '@nestjs/jwt'
+import { IUser } from '../../common/forum/forum.interfaces'
 
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AuthService {
     return hash.digest('hex')
   }
 
-  async validateUser (username: string, password: string): Promise<User | undefined> {
+  async validateUser (username: string, password: string): Promise<IUser | undefined> {
     const login = username.includes('@') ? undefined : username;
     const email = username.includes('@') ? username : undefined;
 
@@ -40,7 +40,7 @@ export class AuthService {
     return undefined
   }
 
-  async login(user: User) {
+  async login(user: IUser) {
     const payload = { username: user.login, sub: user.id}
     return {
       access_token: this.jwtService.sign(payload)

@@ -1,6 +1,6 @@
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { User } from '../../../common/forum/forum.entities'
+import { IUser } from '../../../common/forum/forum.interfaces'
 
 
 @Injectable()
@@ -12,7 +12,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser = User>(err: any, user: any, info: any, context: any, status?: any): TUser {
+  handleRequest<TUser = IUser>(err: any, user: any, info: any, context: any, status?: any): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException();

@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 
 const isTsNode = process.env.RUN_MODE === 'ts-node'
+const isDevelopment = process.env.NODE_ENV !== 'production'
 
 dotenv.config({
   path: '.env'
@@ -28,5 +29,6 @@ module.exports = [
       migrationsDir: "src/migration",
       entitiesDir: "src/server/entities"
     },
+    logging: isDevelopment,
   }
 ]

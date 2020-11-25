@@ -1,7 +1,7 @@
 import { Gender } from './forum.constants'
 
 
-export interface User {
+export interface IUser {
   id: number
   email?: string
   login: string
@@ -20,7 +20,7 @@ export interface User {
   }
 }
 
-export interface Message {
+export interface IMessage {
   id: number
   body: string
   createdAt?: Date
@@ -30,12 +30,12 @@ export interface Message {
     topic: number
     board: number
   },
-  user?: User
+  user?: IUser
   topic?: unknown
   board?: unknown
 }
 
-export interface Board {
+export interface IBoard {
   id: number
   url: string
   name: string
@@ -43,21 +43,22 @@ export interface Board {
   linksId: {
     category: number
   }
-  category?: Category
+  category?: ICategory
 }
 
-export interface Category {
+export interface ICategory {
   id: number
   name: string
   order: number
 }
 
-export interface Topic {
+export interface ITopic {
   id: number
   isSticky: boolean
   url: string
+  subject?: string
   linksId: { board: number }
-  board?: Board
+  board?: IBoard
 }
 
 
