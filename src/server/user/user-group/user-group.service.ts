@@ -14,9 +14,41 @@ export class UserGroupService {
 
   async getByUser (user: IUser): Promise<Array<Readonly<IUserGroup>>> {
     const userGroupMap = await this.forumCacheService.getUserGroupMap()
-    return user.groupIds
+
+    const groups = user.groupIds
       .map(id => userGroupMap.get(id))
       .filter(Boolean) as Array<Readonly<IUserGroup>>
+
+    groups.push(...(await this.getGroupsByUserStatistics(user.statistics)))
+
+    return groups
+  }
+
+  async getGroupsByUserStatistics(statistics: IUser['statistics']) {
+    const userGroupMap = await this.forumCacheService.getUserGroupMap()
+    const userGroupArray = [...userGroupMap.values()]
+
+    let groupByPosts: IUserGroup | undefined
+    let groupByKarma: IUserGroup | undefined
+    let postsI = 0
+
+    for (const group of userGroupArray) {
+      if (group.minPosts && statistics.posts >= group.minPosts && postsI < group.minPosts) {
+        groupByPosts = group
+        postsI = group.minPosts
+      }
+    }
+
+    //todo by karma
+
+    const groups: IUserGroup[] = []
+    if (groupByPosts) {
+      groups.push(groupByPosts)
+    }
+    if (groupByKarma) {
+      groups.push(groupByKarma)
+    }
+    return groups
   }
 
   userInGroups(user: IUser, ...groupIds: number[]) {
