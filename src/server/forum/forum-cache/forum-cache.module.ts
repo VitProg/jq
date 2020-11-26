@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Module, OnModuleInit } from '@nestjs/common'
-import { CacheService } from './cache.service'
+import { ForumCacheService } from './forum-cache.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { BoardEntity, CategoryEntity } from '../../entities'
 import { BoardModule } from '../board/board.module'
@@ -14,19 +14,19 @@ import { BoardModule } from '../board/board.module'
     forwardRef(() => BoardModule),
   ],
   providers: [
-    CacheService,
+    ForumCacheService,
   ],
   exports: [
-    CacheService,
+    ForumCacheService,
   ],
 })
-export class CacheModule implements OnModuleInit {
+export class ForumCacheModule implements OnModuleInit {
   constructor (
-    @Inject(forwardRef(() => CacheService)) private readonly cacheService: CacheService,
+    @Inject(forwardRef(() => ForumCacheService)) private readonly cacheService: ForumCacheService,
   ) {
   }
 
   async onModuleInit () {
-    await this.cacheService.init()
+    await this.cacheService.refresh()
   }
 }

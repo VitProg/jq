@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { PermissionService } from './permission/permission.service';
 import * as Entities from '../entities'
 
 @Module({
@@ -22,6 +23,7 @@ import * as Entities from '../entities'
   ],
   providers: [
     UserService,
+    PermissionService,
   ],
   exports: [
     UserService,

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { CacheService } from '../cache/cache.service'
 import { IBoard } from '../../../common/forum/forum.interfaces'
+import { ForumCacheService } from '../forum-cache/forum-cache.service'
 
 
 @Injectable()
 export class BoardService {
   constructor (
-    private cacheService: CacheService
+    private forumCacheService: ForumCacheService
   ) {
   }
 
@@ -16,11 +16,11 @@ export class BoardService {
     const map = new Map<number, IBoard>()
 
     for (const id of idSet) {
-      const board = this.cacheService.boardMap.get(id)
+      const board = this.forumCacheService.boardMap.get(id)
       if (board) {
         map.set(id, {
           ...board,
-          category: this.cacheService.categoryMap.get(board.linksId.category)
+          category: this.forumCacheService.categoryMap.get(board.linksId.category)
         })
       }
     }

@@ -26,7 +26,7 @@ module.exports = [
     migrations: ["dist/server/migration/1*{.ts,.js}"],
     migrationsTableName: "migrations_typeorm",
     cli: {
-      migrationsDir: "src/migration",
+      migrationsDir: "src/server/migration",
       entitiesDir: "src/server/entities"
     },
     logging: isDevelopment ? 'all' : false,

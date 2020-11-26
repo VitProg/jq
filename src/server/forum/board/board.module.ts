@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { BoardService } from './board.service'
-import { CacheModule } from '../cache/cache.module'
+import { ForumCacheModule } from '../forum-cache/forum-cache.module'
 
 
 @Module({
-  imports: [CacheModule],
+  imports: [ForumCacheModule],
   providers: [BoardService],
   exports: [BoardService],
 })

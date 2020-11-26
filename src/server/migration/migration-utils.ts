@@ -22,9 +22,12 @@ export enum allTables {
   polls = 'polls',
   related_subjects = 'related_subjects',
   topics = 'topics',
+  //
+  permissions = 'permissions',
+  membergroups = 'membergroups',
 }
 
-export async function * walkByDBTables(type: 'data' | 'create', whiteList: string[] = Object.values(allTables)) {
+export async function * walkByDBTables(type: 'data' | 'create', whiteList: string[]) {
   const dbDataDirectory = path.resolve('data', 'db')
 
   // const readDir = util.promisify(fs.readdir)

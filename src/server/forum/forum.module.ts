@@ -1,14 +1,13 @@
-import { forwardRef, Inject, Module, OnModuleInit } from '@nestjs/common'
-import { CacheService } from './cache/cache.service'
+import { Module } from '@nestjs/common'
 import { BoardModule } from './board/board.module'
 import { TopicModule } from './topic/topic.module'
-import { CacheModule } from './cache/cache.module'
+import { ForumCacheModule } from './forum-cache/forum-cache.module'
 import { MessageModule } from './message/message.module'
 
 
 @Module({
   imports: [
-    // CacheModule,
+    ForumCacheModule,
     BoardModule,
     MessageModule,
     TopicModule,

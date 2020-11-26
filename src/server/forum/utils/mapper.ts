@@ -8,12 +8,14 @@ import { ObjectID } from 'typeorm'
 
 function entityListToMap<E, O extends {id: number}>(
   entityList: E[],
-  toObjectFunction: (entity: E, ...args: any[]) => O,
+  toObjectFunction?: (entity: E, ...args: any[]) => O,
   ...args: any[]
 ): Map<number, O> {
   const map = new Map<number, O>()
   entityList.forEach(entity => {
-    const obj = toObjectFunction(entity, ...args)
+    const obj = toObjectFunction ?
+      toObjectFunction(entity, ...args) :
+      entity as any
     map.set(obj.id >>> 0, obj)
   })
   return map
@@ -109,4 +111,6 @@ export function toCategory(category: CategoryEntity): ICategory {
 }
 
 export const toCategoryMap = (categoryEntityList: CategoryEntity[]) => entityListToMap(categoryEntityList, toCategory)
+
+export const toMap = <E extends {id: number}>(list: E[]) => entityListToMap<E, E>(list)
 
