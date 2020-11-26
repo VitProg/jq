@@ -1,27 +1,36 @@
 const dotenv = require('dotenv');
 
+const isTsNode = process.env.RUN_MODE === 'ts-node'
+const isDevelopment = process.env.NODE_ENV !== 'production'
+
 dotenv.config({
   path: '.env'
 });
 
 module.exports = [
   {
-    // name: 'default',
     type: 'mariadb',
     host: process.env.MYSQL_HOST,
     port: process.env.MYSQL_PORT,
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    entities: ['dist/entities/**/*.entity{.ts,.js}'],
+    entities:
+      isTsNode
+        ? ['src/server/entities/**/*.entity{.ts,.js}']
+        : ['dist/server/entities/**/*.entity{.ts,.js}'],
     entityPrefix: process.env.TABLE_PREFIX && '',
     synchronize: false,
-    migrations: ["dist/migration/1*{.ts,.js}"],
-    migrationsTableName: "migrations_typeorm",
     migrationsRun: false,
+    dropSchema: false,
+    migrations: ["dist/server/migration/1*{.ts,.js}"],
+    migrationsTableName: "migrations_typeorm",
     cli: {
-      migrationsDir: "migration",
-      entitiesDir: "src/entities"
+      migrationsDir: "src/server/migration",
+      entitiesDir: "src/server/entities"
     },
+    logging: isDevelopment ? 'all' : false,
+    logger: isDevelopment ? 'advanced-console' : undefined,
+    maxQueryExecutionTime: isDevelopment ? 250 : 1000,
   }
 ]

@@ -37,3 +37,7 @@ lerna-debug.log*
 
 /.env
 /.env.prod
+tsconfig.build.tsbuildinfo
+tsconfig.client.tsbuildinfo
+tsconfig.tsbuildinfo
+/~webpack.config.js

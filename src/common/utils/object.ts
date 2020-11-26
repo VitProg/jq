@@ -1,4 +1,4 @@
-export type AnyObject = Record<keyof object, any>
+export type AnyObject = Record<symbol | string | number, any>
 
 
 export type ArrayValues<obj extends any[]> =
@@ -11,22 +11,19 @@ export type UnionToIntersection<Union> =
 
 
 export function omit<R extends AnyObject, Keys extends Array<keyof R>>(record: R, ...omitKeys: Keys): Omit<R, ArrayValues<Keys>> {
-  const out = {}
+  const out: any = {}
   const keys = Object.keys(record).filter(key => !omitKeys.includes(key as any))
   for (const key of keys) {
-    out[key] = record[key]
+    out[key] = (record as any)[key]
   }
   return out as any
 }
 
 export function pick<R extends AnyObject, Keys extends Array<keyof R>>(record: R, ...omitKeys: Keys): Pick<R, ArrayValues<Keys>> {
-  const out = {}
+  const out: any = {}
   const keys = Object.keys(record).filter(key => omitKeys.includes(key as any))
   for (const key of keys) {
-    out[key] = record[key]
+    out[key] = (record as any)[key]
   }
-  // for (const key of Object.keys(record)) {
-  //   console.log(typeof key)
-  // }
   return out as any
 }
