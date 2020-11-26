@@ -72,11 +72,6 @@ module.exports = {
       FORUM_ATTACHMENTS_BASE_URL: undefined,
       FORUM_USER_LINK_PATTERN: undefined,
       FORUM_DEFAULT_AVATAR: undefined,
-      REDIS_HOST: undefined,
-      REDIS_PORT: undefined,
-      REDIS_DB: undefined,
-      REDIS_PASSWORD: undefined,
-      REDIS_PREFIX: undefined,
     })
   ].filter(Boolean),
 };

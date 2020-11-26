@@ -15,6 +15,7 @@ export class AuthService {
     //
   }
 
+  //todo move to encryptionService/Module
   hash (login: string, password: string) {
     const hash = crypto.createHash('sha1')
     hash.update(login.toLowerCase() + password)
@@ -41,9 +42,9 @@ export class AuthService {
   }
 
   async login(user: IUser) {
-    const payload = { username: user.login, sub: user.id}
+    // const payload = { username: user.login, sub: user.id}
     return {
-      access_token: this.jwtService.sign(payload)
+      access_token: this.jwtService.sign(user)
     }
   }
 

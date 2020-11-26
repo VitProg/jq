@@ -26,14 +26,14 @@ export class AppController {
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  async login(@Request() req: {user: IUser}) {
-    return this.authService.login(req.user);
+  async login(@Request() request: {user: IUser}) {
+    return this.authService.login(request.user);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req: {user: IUser}) {
-    return req.user;
+  @Get('user')
+  async user(@Request() request: {user: IUser}) {
+    return request.user;
   }
 
   @UseInterceptors(CacheInterceptor)
