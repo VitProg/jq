@@ -9,6 +9,7 @@ export interface IUser {
   url: string
   avatar: string
   gender: Gender
+  groupIds: number[]
   statistics: {
     posts: number
     karma: number
@@ -18,6 +19,8 @@ export interface IUser {
     token?: string
     salt?: string
   }
+  permissions?: string[]
+  groups?: IUserGroup[]
 }
 
 export interface IMessage {
@@ -61,4 +64,16 @@ export interface ITopic {
   board?: IBoard
 }
 
+export interface IPermission {
+  groupId: number
+  name: string
+}
+
+export interface IUserGroup {
+  id: number
+  name: string
+  minPosts?: number
+  maxMessages?: number
+  color?: string
+}
 

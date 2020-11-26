@@ -1,4 +1,3 @@
-
 export * from './attachment.entity'
 export * from './board.entity'
 export * from './category.entity'
@@ -11,3 +10,5 @@ export * from './poll.entity'
 export * from './pollChoice.entity'
 export * from './relatedSubject.entity'
 export * from './topic.entity'
+export * from './permission.entity'
+export * from './memberGroup.entity'

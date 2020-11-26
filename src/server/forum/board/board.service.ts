@@ -15,12 +15,15 @@ export class BoardService {
 
     const map = new Map<number, IBoard>()
 
+    const boardMap = await this.forumCacheService.getBoardMap()
+    const categoryMap = await this.forumCacheService.getCategoryMap()
+
     for (const id of idSet) {
-      const board = this.forumCacheService.boardMap.get(id)
+      const board = boardMap.get(id)
       if (board) {
         map.set(id, {
           ...board,
-          category: this.forumCacheService.categoryMap.get(board.linksId.category)
+          category: categoryMap.get(board.linksId.category)
         })
       }
     }

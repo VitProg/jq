@@ -1,5 +1,5 @@
 import { CacheInterceptor, CacheTTL, Controller, Get, Param, Post, Query, Request, UseGuards, UseInterceptors } from '@nestjs/common'
-import { stringToRelationsArray } from './forum/utils/relations'
+import { stringToParams } from './forum/utils/relations'
 import { MessageAllRelations, MessageRelationsArray } from '../common/forum/forum.entity-relations'
 import { between } from '../common/utils/number'
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
@@ -8,6 +8,7 @@ import { AuthService } from './auth/auth.service'
 import { UserService } from './user/user.service'
 import { MessageService } from './forum/message/message.service'
 import { IUser } from '../common/forum/forum.interfaces'
+import { WithFields } from './user/types'
 
 
 const ITEMS_ON_PAGE = 50
@@ -46,18 +47,20 @@ export class AppController {
     return this.messageService.getLastMessages({
       limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
       page,
-    }, stringToRelationsArray(relations ?? '', MessageAllRelations))
+    }, stringToParams(relations ?? '', MessageAllRelations))
   }
 
   @Get('active-users')
   async activeUsers (
     @Query('page') page = 1,
     @Query('pageSize') pageSize = ITEMS_ON_PAGE,
+    @Query('with') _withFields: string = 'groups'
   ) {
+    let withFields = stringToParams<WithFields>(_withFields ?? '', ['groups', 'permissions'])
     return this.userService.getActiveUsers({
       limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
       page,
-    })
+    }, withFields)
   }
 
   ////

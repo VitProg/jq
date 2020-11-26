@@ -1,4 +1,4 @@
-import { IUser as IUser } from '../forum.interfaces'
+import { IUser as IUser, IUserGroup } from '../forum.interfaces'
 import { ForumConfiguration, Gender } from '../forum.constants'
 import { ObjectID } from 'typeorm'
 
@@ -15,6 +15,9 @@ export class User implements IUser {
     posts: number
     karma: number
   }
+  // permissions?: string[]
+  // groups?: IUserGroup[]
+  groupIds!: number[]
 
   private constructor () {
   }
@@ -41,4 +44,17 @@ export class User implements IUser {
       .replace(/{id}/, this.id.toString())
       .replace(/{url}/, this.url)
   }
+
+  // // todo ??
+  // checkAccess(...permissions: string[]) {
+  //   if (!this.permissions) {
+  //     throw new Error('Permissions for user not loaded')
+  //   }
+  //   return permissions.every(p => this.permissions!.includes(p))
+  // }
+  //
+  // // todo ??
+  // checkGroup(...groups: number[]) {
+  //   return groups.every(g => this.groupIds.includes(g))
+  // }
 }
