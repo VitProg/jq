@@ -8,6 +8,9 @@ import { AuthModule } from './auth/auth.module'
 import { UserModule } from './user/user.module'
 import configuration from './config/configuration'
 import { GlobalModule } from './global.module'
+import { SecureModule } from './secure/secure.module';
+import { TestInterceptor } from './test.interceptor'
+import { APP_INTERCEPTOR } from '@nestjs/core'
 
 
 @Module({
@@ -16,17 +19,22 @@ import { GlobalModule } from './global.module'
       isGlobal: true,
       load: [configuration]
     }),
+    AuthModule,
     TypeOrmModule.forRoot(),
     ForumModule,
-    AuthModule,
     UserModule,
     GlobalModule,
+    SecureModule,
   ],
   controllers: [
     AppController,
   ],
   providers: [
-    AppService,
+    // AppService,
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TestInterceptor,
+    // }
   ],
 })
 export class AppModule {

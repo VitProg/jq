@@ -1,13 +1,9 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, Param, Post, Query, Request, UseGuards, UseInterceptors } from '@nestjs/common'
+import { CacheInterceptor, CacheTTL, Controller, Get, Query, UseInterceptors } from '@nestjs/common'
 import { stringToParams } from './forum/utils/relations'
-import { MessageAllRelations, MessageRelationsArray } from '../common/forum/forum.entity-relations'
+import { MessageAllRelations } from '../common/forum/forum.entity-relations'
 import { between } from '../common/utils/number'
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard'
-import { LocalAuthGuard } from './auth/guards/local-auth.guard'
-import { AuthService } from './auth/auth.service'
 import { UserService } from './user/user.service'
 import { MessageService } from './forum/message/message.service'
-import { IUser } from '../common/forum/forum.interfaces'
 import { WithFields } from './user/types'
 
 
@@ -18,22 +14,9 @@ const MIN_ITEMS_ON_PAGE = 5
 @Controller('api')
 export class AppController {
   constructor (
-    private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly messageService: MessageService,
   ) {
-  }
-
-  @UseGuards(LocalAuthGuard)
-  @Post('auth/login')
-  async login(@Request() request: {user: IUser}) {
-    return this.authService.login(request.user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('user')
-  async user(@Request() request: {user: IUser}) {
-    return request.user;
   }
 
   @UseInterceptors(CacheInterceptor)

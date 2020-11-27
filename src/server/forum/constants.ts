@@ -1,4 +1,5 @@
 
+export const MemberIdField = 'idMember' as const
 export const MemberLoginField = 'memberName' as const
 export const MemberDisplayNameField = 'realName' as const
 export const MemberEmailField = 'emailAddress' as const

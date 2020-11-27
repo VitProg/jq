@@ -42,6 +42,7 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
     url: member.urlName,
     avatar: member.avatar,
     gender: toGender(member.gender),
+    lastLogin: member.lastLogin ? new Date(member.lastLogin * 1000) : undefined,
     groupIds: [...groupIds.values()],
     statistics: {
       posts: member.posts,

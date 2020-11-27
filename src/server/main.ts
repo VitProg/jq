@@ -1,8 +1,12 @@
+import { TestInterceptor } from './test.interceptor'
+
+
 require('dotenv').config()
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { NextFunction, Request, Response } from 'express'
 import { NestExpressApplication } from '@nestjs/platform-express'
+import cookieParser from 'cookie-parser'
 
 
 async function bootstrap () {
@@ -17,6 +21,8 @@ async function bootstrap () {
     res.header('x-powered-by', 'JQ NestJs Server')
     next()
   })
+
+  app.use(cookieParser());
 
   await app.listen(3000)
 }

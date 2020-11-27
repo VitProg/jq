@@ -18,6 +18,7 @@ export class User implements IUser {
   // permissions?: string[]
   // groups?: IUserGroup[]
   groupIds!: number[]
+  lastLogin?: Date
 
   private constructor () {
   }

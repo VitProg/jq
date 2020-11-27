@@ -9,6 +9,7 @@ export interface IUser {
   url: string
   avatar: string
   gender: Gender
+  lastLogin?: Date
   groupIds: number[]
   statistics: {
     posts: number

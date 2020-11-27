@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { AttachmentEntity, MemberEntity } from '../entities'
 import { FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
-import { MemberEmailField, MemberLoginField } from '../forum/constants'
+import { MemberEmailField, MemberIdField, MemberLoginField } from '../forum/constants'
 import { toUser, toUserMap } from '../forum/utils/mapper'
 import { IPaginationOptions } from 'nestjs-typeorm-paginate'
 import { ActiveUsersResponse } from '../../common/forum/forum.responses'
@@ -96,6 +96,15 @@ export class UserService {
     return this.getByLoginOrEmail({ email }, withFields)
   }
 
+  async getById (id: number, withFields: WithFields = ['email', 'auth']): Promise<IUser | undefined> {
+    const data = await this.query()
+      .where({ [MemberIdField]: id })
+      .getRawAndEntities()
+
+    const items = await this.rawToItems(data, withFields)
+    return items?.[0]
+  }
+
   async getByLoginOrEmail (config: { login?: string, email?: string }, withFields: WithFields = ['email', 'auth']) {
     const login = config.login?.trim()
     const email = config.email?.trim()
@@ -160,4 +169,18 @@ export class UserService {
   }
 
 
+  getUserByRefreshToken (refreshToken: string, fingerprintLight: Promise<string>, userId: number) {
+    return Promise.resolve(undefined)
+  }
+
+  async updateLastLogin (id: number) {
+    return ((await this.memberRepository.update(
+      {
+        [MemberIdField]: id,
+      },
+      {
+        lastLogin: () => 'unix_timestamp()',
+      }
+    )).affected ?? 0) > 0
+  }
 }

@@ -4,7 +4,7 @@ import { IUser } from '../../../common/forum/forum.interfaces'
 
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class jwtRefreshTokenGuard extends AuthGuard('jwt-refresh-token') {
 
   canActivate(context: ExecutionContext) {
     // Add your custom authentication logic here
