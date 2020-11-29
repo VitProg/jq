@@ -4,7 +4,7 @@ import { IUser } from '../../common/forum/forum.interfaces'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { AuthService } from './auth.service'
 import { Request as ExpressRequest } from 'express'
-import { RefreshTokenService } from './refresh-token/refresh-token.service'
+import { TokenService } from './token/token.service'
 import { jwtRefreshTokenGuard } from './guards/jwt-refresh-token.guard'
 
 
@@ -13,7 +13,6 @@ export class AuthController {
 
   constructor (
     private readonly authService: AuthService,
-    private readonly refreshTokenService: RefreshTokenService,
   ) {
   }
 
@@ -27,20 +26,24 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('user')
-  async user(@Request() request: ExpressRequest & {user: IUser}) {
-    const user = request.user;
+  @Post('logout')
+  async logout(@Request() request: ExpressRequest & {user: IUser}) {
+    const result = await this.authService.logout(request);
 
-    return {
-      ...user,
-    }
+    return result
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout-all')
+  async logoutAll(@Request() request: ExpressRequest & {user: IUser}) {
+    const result = await this.authService.logoutAll(request);
+
+    return result
   }
 
   @UseGuards(jwtRefreshTokenGuard)
   @Post('refresh-token')
   async refreshToken(@Request() request: ExpressRequest & {user: IUser}) {
-    console.log('refreshToken', request)
-
     const result = await this.authService.refreshToken(request)
 
     return result
@@ -50,5 +53,18 @@ export class AuthController {
   async smf(@Request() request: ExpressRequest){
     return request.cookies
   }
+
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('user')
+  async user(@Request() request: ExpressRequest & {user: IUser}) {
+    const user = request.user;
+
+    return {
+      ...user,
+    }
+  }
+
 
 }

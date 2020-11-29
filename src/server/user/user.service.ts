@@ -136,7 +136,6 @@ export class UserService {
 
 
   async getActiveUsers (options: IPaginationOptions, withFields: WithFields = []): Promise<ActiveUsersResponse> {
-    console.log(options)
     // todo переделать когда зальется тот ПР https://github.com/nestjsx/nestjs-typeorm-paginate/pull/375
     const query = this.query()
       .where({
@@ -150,7 +149,6 @@ export class UserService {
       .limit(options.limit)
       .offset((options.page - 1) * options.limit)
 
-    console.log(query.getSql())
     const data = await query.getRawAndEntities()
     const totalItems = await query.getCount()
 

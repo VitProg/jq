@@ -1,13 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { BoardEntity, CategoryEntity, PermissionEntity } from '../../entities'
-import { IBoard, ICategory, IPermission, IUserGroup } from '../../../common/forum/forum.interfaces'
+import { BoardEntity, CategoryEntity, MemberGroupEntity, PermissionEntity } from '../../entities'
+import { IBoard, ICategory, IUserGroup } from '../../../common/forum/forum.interfaces'
 import { Repository } from 'typeorm'
 import { toBoardMap, toCategoryMap, toMap, toPermissionByGroupsMap, toUserGroupMap } from '../utils/mapper'
 import { safeJsonParse } from '../../../common/utils/json'
 import { REDIS_CLIENT } from '../../di.symbols'
 import { RedisClient } from '../../types'
-import { MemberGroupEntity } from '../../entities/memberGroup.entity'
 import { isArray, isMap } from '../../../common/type-guards'
 
 
@@ -87,7 +86,7 @@ export class ForumCacheService {
     console.log('ForumCache refresh complete')
   }
 
-  async refreshCategories(forceFromDb = false) {
+  async refreshCategories (forceFromDb = false) {
     const redisData = await this.redis.get(CATEGORIES_KEY)
     const fromRedis = forceFromDb ? undefined : safeJsonParse<ICategory[]>(redisData)
     if (fromRedis && isArray(fromRedis)) {
@@ -107,9 +106,9 @@ export class ForumCacheService {
     this.expiredAt[Types.category] = Date.now() + EXPIRED_LOCAL * 1000
   }
 
-  async refreshBoards(forceFromDb = false) {
+  async refreshBoards (forceFromDb = false) {
     const redisData = await this.redis.get(BOARDS_KEY)
-    const fromRedis = forceFromDb ? undefined :safeJsonParse<IBoard[]>(redisData)
+    const fromRedis = forceFromDb ? undefined : safeJsonParse<IBoard[]>(redisData)
     if (fromRedis && isArray(fromRedis)) {
       console.log(' - boards from redis')
       this._getBoardMap = toMap(fromRedis)
@@ -124,9 +123,9 @@ export class ForumCacheService {
     this.expiredAt[Types.board] = Date.now() + EXPIRED_LOCAL * 1000
   }
 
-  async refreshUserGroups(forceFromDb = false){
+  async refreshUserGroups (forceFromDb = false) {
     const redisData = await this.redis.get(USER_GROUPS_KEY)
-    const fromRedis = forceFromDb ? undefined :safeJsonParse<IUserGroup[]>(redisData)
+    const fromRedis = forceFromDb ? undefined : safeJsonParse<IUserGroup[]>(redisData)
     if (fromRedis && isArray(fromRedis)) {
       console.log(' - user groups from redis')
       this._getUserGroupMap = toMap(fromRedis)
@@ -140,8 +139,8 @@ export class ForumCacheService {
     this.expiredAt[Types.userGroup] = Date.now() + EXPIRED_LOCAL * 1000
   }
 
-  async refreshPermissions(forceFromDb = false) {
-    let fromRedis: Map<number, string[]> | undefined;
+  async refreshPermissions (forceFromDb = false) {
+    let fromRedis: Map<number, string[]> | undefined
 
     if (!forceFromDb) {
       try {
@@ -167,7 +166,7 @@ export class ForumCacheService {
 
   }
 
-  protected refreshIfNeeded(type: Types) {
+  protected refreshIfNeeded (type: Types) {
     const now = Date.now()
     if (this.expiredAt[type] < now && !this.refreshing) {
       console.log('ForumCache refresh by ', type, this.expiredAt[type], now, this.refreshing)

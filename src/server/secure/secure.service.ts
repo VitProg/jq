@@ -64,9 +64,6 @@ export class SecureService {
     }
     const hash = this.sha256(JSON.stringify(data))
 
-    // console.log('Fingerprint data:', data)
-    // console.log('Fingerprint hash:', hash)
-
     return hash
   }
 

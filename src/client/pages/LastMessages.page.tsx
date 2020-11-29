@@ -66,7 +66,6 @@ export const LastMessagesPage: FC = observer(function LastMessagesPage (props) {
 
     return () => {
       if (promise && !promise.isCanceled()) {
-        console.log('MP cancel()')
         promise.cancel()
       }
     }

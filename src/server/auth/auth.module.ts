@@ -7,7 +7,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { UserModule } from '../user/user.module'
 import { SecureModule } from '../secure/secure.module'
 import { AuthController } from './auth.controller';
-import { RefreshTokenService } from './refresh-token/refresh-token.service';
+import { TokenService } from './token/token.service';
 import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh-token.strategy'
 
 
@@ -26,7 +26,7 @@ import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh-token.strategy
     LocalStrategy,
     JwtStrategy,
     JwtRefreshTokenStrategy,
-    RefreshTokenService,
+    TokenService,
   ],
   controllers: [
     AuthController,

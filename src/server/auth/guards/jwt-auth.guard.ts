@@ -15,7 +15,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest<TUser = IUser>(err: any, user: any, info: any, context: any, status?: any): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
-      throw err || new UnauthorizedException();
+      throw err || new UnauthorizedException('jwt - handleRequest');
     }
     return user;
   }

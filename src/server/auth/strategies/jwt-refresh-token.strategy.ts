@@ -6,7 +6,7 @@ import { Request } from 'express'
 import { UserService } from '../../user/user.service'
 import { JwtRefreshTokenStrategyValidatePayload, JwtStrategyValidatePayload } from '../types'
 import { SecureService } from '../../secure/secure.service'
-import { RefreshTokenService } from '../refresh-token/refresh-token.service'
+import { TokenService } from '../token/token.service'
 
 
 @Injectable()
@@ -18,7 +18,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly secureService: SecureService,
-    private readonly refreshTokenService: RefreshTokenService,
+    private readonly tokenService: TokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => {
@@ -32,23 +32,28 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
   async validate (request: Request, payload: JwtRefreshTokenStrategyValidatePayload) {
     const tokenInCookie = request?.cookies?.[this.configService.get('JWT_REFRESH_TOKEN_COOKIE')];
 
-    const tokenExist = await this.refreshTokenService.tokenExist(payload.sub, tokenInCookie)
+    const userId = payload.sub
+
+    const tokenExist = await this.tokenService.has(userId, tokenInCookie)
 
     if (!tokenExist) {
-      throw new UnauthorizedException('refresh token not exist')
+      throw new UnauthorizedException('refresh - token not exist')
     }
 
     const fingerprintLight = await this.secureService.generateFingerprintLight(request)
 
     if (fingerprintLight !== payload.fingerprintLight) {
-      throw new UnauthorizedException('fingerprint not valid');
+      throw new UnauthorizedException('refresh - fingerprint not valid');
     }
 
-    const user = await this.userService.getById(payload.sub)
+    const user = await this.userService.getById(userId)
 
     if (!user) {
-      throw new UnauthorizedException('user not found');
+      throw new UnauthorizedException('refresh - user not found');
     }
+
+    // remove token from redis
+    await this.tokenService.removeByFingerprint(userId, fingerprintLight)
 
     return user
   }

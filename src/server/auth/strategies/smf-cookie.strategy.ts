@@ -13,7 +13,7 @@ export class SmfCookieStrategy extends PassportStrategy(Strategy) {
     const user = await this.authService.validateUser(username, password);
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('smf - user not found');
     }
     return user;
   }
