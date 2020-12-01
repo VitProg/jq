@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate'
 import { MessageAllRelations, MessageRelations, MessageRelationsArray, MessageRelationsRecord } from '../../../common/forum/forum.entity-relations'
-import { LastMessageResponse } from '../../../common/forum/forum.responses'
+import { LastMessageResponse } from '../../../common/responses/forum.responses'
 import { FindManyOptions, In, Not, Repository } from 'typeorm'
 import { MessageEntity } from '../../entities'
 import { BoardsIgnored } from '../constants'

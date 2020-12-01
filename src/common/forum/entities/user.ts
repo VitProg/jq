@@ -1,6 +1,7 @@
 import { IUser as IUser, IUserGroup } from '../forum.interfaces'
 import { ForumConfiguration, Gender } from '../forum.constants'
 import { ObjectID } from 'typeorm'
+import slug from 'slug'
 
 
 export class User implements IUser {
@@ -39,11 +40,15 @@ export class User implements IUser {
     return this.displayName ?? this.login
   }
 
-  get link () {
-    const pattern = ForumConfiguration.userLinkPattern
-    return pattern
-      .replace(/{id}/, this.id.toString())
-      .replace(/{url}/, this.url)
+  // get link () {
+  //   const pattern = ForumConfiguration.userLinkPattern
+  //   return pattern
+  //     .replace(/{id}/, this.id.toString())
+  //     .replace(/{url}/, this.url)
+  // }
+
+  get slug () {
+    return this.url ?? slug(this.login)
   }
 
   // // todo ??

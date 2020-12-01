@@ -1,21 +1,26 @@
 import React, { FC, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
 import { Pagination, PaginationItem } from '@material-ui/lab'
 import { useInjection } from '../ioc/ioc.react'
 import { ApiServiceSymbol } from '../ioc/ioc.symbols'
 import { IApiService } from '../services/interfaces'
-import { IBoard, IMessage, ITopic, IUser } from '../../common/forum/forum.interfaces'
-import { useStateRecord } from '../hooks/use-state-record'
+import { IMessage } from '../../common/forum/forum.interfaces'
 import { useStore } from '../hooks/use-store'
-import { MessageList } from '../components/MessageList'
+import { MessageList } from '../components/Message/MessageList'
 import { observer } from 'mobx-react-lite'
 import { MessageRelationsRecord } from '../../common/forum/forum.entity-relations'
+import { RouteLink } from '../components/Route/RouteLink'
+import { routes } from '../routes'
+import { RoutePagination } from '../components/Route/RoutePagination'
 
 
-export const LastMessagesPage: FC = observer(function LastMessagesPage (props) {
+interface Props {
+  page?: number
+}
+
+export const LastMessagesPage: FC<Props> = observer(function LastMessagesPage (props) {
   const apiService = useInjection<IApiService>(ApiServiceSymbol)
-  const { ui } = useStore()
+  const { uiStore } = useStore()
 
   const [data, setData] = useState<{
     messages: IMessage[]
@@ -23,21 +28,15 @@ export const LastMessagesPage: FC = observer(function LastMessagesPage (props) {
     meta: IPaginationMeta
   }>()
 
-  // const [messages, setMessages] = useState<IMessage[]>([])
-  // const [users, , updateUsers] = useStateRecord<number, IUser>({})
-  // const [topics, , updateTopics] = useStateRecord<number, ITopic>({})
-  // const [boards, , updateBoards] = useStateRecord<number, IBoard>({})
-  // const [meta, setMeta] = useState<IPaginationMeta | undefined>()
-
-  const { page: routePage } = useParams<{ page?: string }>()
-  const [page, setPage] = useState(parseInt(routePage ?? '1', 10))
+  const routePage = props.page ?? 1
+  const [page, setPage] = useState(routePage)
 
   useEffect(() => {
-    setPage(parseInt(routePage ?? '1', 10))
+    setPage(routePage)
   }, [routePage])
 
   useEffect(() => {
-    ui.setLoading(true)
+    uiStore.setLoading(true)
 
     const promise = apiService.loadLastMessages({
       page,
@@ -47,7 +46,7 @@ export const LastMessagesPage: FC = observer(function LastMessagesPage (props) {
 
     promise
       .finally(() => {
-        ui.setLoading(false)
+        uiStore.setLoading(false)
       })
       .then(response => {
         setData({
@@ -71,12 +70,13 @@ export const LastMessagesPage: FC = observer(function LastMessagesPage (props) {
     }
   }, [page])
 
-  const pagination = data?.meta ?
-    <Pagination
+  const pagination = data?.meta
+    ? <RoutePagination
       count={data.meta.totalPages}
       page={data.meta.currentPage >> 0}
-      renderItem={(item) => <PaginationItem {...item} component={Link} to={`/messages/${item.page}`}/>}
-    /> : null
+      route={p => routes.lastMessages({page: p.page})}
+    />
+    : null
 
   return (
     <>

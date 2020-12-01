@@ -1,8 +1,7 @@
-import { IRootStore } from '../mobx/store/types'
-import { useInjection } from '../ioc/ioc.react'
-import { RootStoreSymbol } from '../ioc/ioc.symbols'
+import { IRootStore } from '../store/types'
+import { store } from '../store'
 
 
-export function useStore(): IRootStore {
-  return useInjection<IRootStore>(RootStoreSymbol)
+export function useStore (): IRootStore {
+  return store
 }

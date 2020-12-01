@@ -9,8 +9,7 @@ import { UserModule } from './user/user.module'
 import configuration from './config/configuration'
 import { GlobalModule } from './global.module'
 import { SecureModule } from './secure/secure.module';
-import { TestInterceptor } from './test.interceptor'
-import { APP_INTERCEPTOR } from '@nestjs/core'
+import { MyModule } from './my/my.module';
 
 
 @Module({
@@ -25,6 +24,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core'
     UserModule,
     GlobalModule,
     SecureModule,
+    MyModule,
   ],
   controllers: [
     AppController,

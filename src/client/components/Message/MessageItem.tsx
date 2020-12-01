@@ -1,11 +1,11 @@
 import React, { FC } from 'react'
-import { IMessage } from '../../common/forum/forum.interfaces'
+import { IMessage } from '../../../common/forum/forum.interfaces'
 import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
-import { User } from '../../common/forum/entities/user'
+import { User } from '../../../common/forum/entities/user'
 import { UserLink } from '../User/UserLink'
 import parser from 'bbcode-to-react'
 import { UserAvatar } from '../User/UserAvatar'
-import { MessageRelationsSingle } from '../../common/forum/forum.entity-relations'
+import { MessageRelationsSingle } from '../../../common/forum/forum.entity-relations'
 
 
 interface ExternalProps {
@@ -19,7 +19,12 @@ type Props = ExternalProps
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     messageBody: {
-      whiteSpace: 'pre-line'
+      whiteSpace: 'pre-line',
+      wordBreak: 'break-word',
+
+      '& img, & iframe, & object, & table': {
+        maxWidth: '100%',
+      }
     }
   })
 )

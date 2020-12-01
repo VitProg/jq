@@ -11,6 +11,7 @@ import { TokenService } from './token/token.service'
 import { convertSimpleExpiresToSeconds } from '../common/date'
 import { REDIS_CLIENT } from '../di.symbols'
 import { RedisClient } from '../types'
+import { CookieOptions } from 'express-serve-static-core'
 
 
 @Injectable()
@@ -30,8 +31,10 @@ export class AuthService {
     const login = username.includes('@') ? undefined : username
     const email = username.includes('@') ? username : undefined
 
-    const user = await this.userService.getByLoginOrEmail({ login, email })
 
+
+    const user = await this.userService.getByLoginOrEmail({ login, email })
+    console.log({login, email, password, user})
     if (!user || !user.auth?.passwordHash) {
       return undefined
     }
@@ -75,25 +78,31 @@ export class AuthService {
       algorithm: 'HS256'
     })
 
-    const ex = convertSimpleExpiresToSeconds(this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN') ?? '')
-    if (ex) {
-      const saveTokenResult = await this.tokenService.add(user.id, fingerprintLight, refreshToken, ex)
-
-      if (saveTokenResult) {
-        //todo write to cookie
-      }
-    }
+    const ex = convertSimpleExpiresToSeconds(this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN', ''))
+    const saveTokenResult = !!ex && await this.tokenService.add(user.id, fingerprintLight, refreshToken, ex)
 
     return {
       accessToken,
       refreshToken,
+      ...(ex && saveTokenResult ? {
+        cookie: this.getCookieOptions(ex),
+      }: {}),
+    }
+  }
+
+  private getCookieOptions(ex: number): CookieOptions & {name: string} {
+    return {
+      name: this.configService.get('JWT_REFRESH_TOKEN_COOKIE')!,
+      path: '/api/auth/',
+      domain: this.configService.get('COOKIE_DOMAIN', 'localhost'),
+      maxAge: ex,
+      secure:  !!this.configService.get('isProd'),
+      httpOnly: true,
     }
   }
 
   async login (request: Request & { user: IUser }) {
-    // todo не оператся на lastlogin, надо хранить дату последней генерации токена и добавлять ее в генерацию токена!
-    // todo lastLogin перезаписывать только при логине, а не рефреше токена,
-    //      лучше общую логику вынести в приватный метод и переисползвать в login() и refreshToken()
+    // todo     лучше общую логику вынести в приватный метод и переисползвать в login() и refreshToken()
 
     await this.logout(request)
 
@@ -124,6 +133,10 @@ export class AuthService {
     await this.tokenService.setLastJwtByFingerprint(user.id, fingerprintLight, lastTime)
 
     await this.tokenService.removeByFingerprint(user.id, fingerprintLight)
+
+    return {
+      cookie: this.getCookieOptions(-1)
+    }
   }
 
   async logoutAll (request: Request & { user: IUser }) {
@@ -137,6 +150,10 @@ export class AuthService {
     // const fingerprintLight = await this.secureService.generateFingerprintLight(request)
     await this.tokenService.removeAllLastJwt(user.id)
     await this.tokenService.removeByUser(user.id)
+
+    return {
+      cookie: this.getCookieOptions(-1)
+    }
   }
 
 

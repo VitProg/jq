@@ -5,6 +5,12 @@ export const isArray = <V>(val: any): val is Array<V> => {
   return Array.isArray(val)
 }
 
+export function isFunction<F extends ((...args: any[]) => any) = ((...args: any[]) => any)>(
+  val: any
+): val is F {
+  return typeof val === 'function'
+}
+
 export const isObject = <T extends AnyObject>(val: any): val is T => {
   return !isArray(val) && typeof val === 'object'
 }

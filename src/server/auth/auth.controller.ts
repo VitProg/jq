@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Request, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 import { IUser } from '../../common/forum/forum.interfaces'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { AuthService } from './auth.service'
-import { Request as ExpressRequest } from 'express'
-import { TokenService } from './token/token.service'
+import { Request, Response } from 'express'
 import { jwtRefreshTokenGuard } from './guards/jwt-refresh-token.guard'
+import { omit } from '../../common/utils/object'
+import { RefreshTokenResponse } from '../../common/responses/auth.responses'
 
 
 @Controller('api/auth')
@@ -19,52 +20,92 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() request: ExpressRequest & {user: IUser}) {
-    const result = await this.authService.login(request);
+  async login (
+    @Req() request: Request & { user: IUser },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.login(request)
 
-    return result
+    if (result.cookie) {
+      const {name, ...options} = result.cookie
+      response.cookie(name, result.refreshToken, options)
+    }
+
+    return omit(result, 'cookie', 'refreshToken')
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Request() request: ExpressRequest & {user: IUser}) {
-    const result = await this.authService.logout(request);
+  async logout (
+    @Req() request: Request & { user: IUser },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.logout(request)
 
-    return result
+    if (result.cookie) {
+      const {name, ...options} = result.cookie
+      response.cookie(name, '', options)
+    }
+
+    return omit(result, 'cookie')
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout-all')
-  async logoutAll(@Request() request: ExpressRequest & {user: IUser}) {
-    const result = await this.authService.logoutAll(request);
+  async logoutAll (
+    @Req() request: Request & { user: IUser },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.logoutAll(request)
 
-    return result
+    if (result.cookie) {
+      const {name, ...options} = result.cookie
+      response.cookie(name, '', options)
+    }
+
+    return omit(result, 'cookie')
   }
 
   @UseGuards(jwtRefreshTokenGuard)
   @Post('refresh-token')
-  async refreshToken(@Request() request: ExpressRequest & {user: IUser}) {
+  async refreshToken (
+    @Req() request: Request & { user: IUser },
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<RefreshTokenResponse> {
     const result = await this.authService.refreshToken(request)
 
-    return result
-  }
-
-  @Get('smf')
-  async smf(@Request() request: ExpressRequest){
-    return request.cookies
-  }
-
-
-
-  @UseGuards(JwtAuthGuard)
-  @Get('user')
-  async user(@Request() request: ExpressRequest & {user: IUser}) {
-    const user = request.user;
-
-    return {
-      ...user,
+    if (result.cookie) {
+      const {name, ...options} = result.cookie
+      response.cookie(name, result.refreshToken, options)
     }
+
+    return omit(result, 'cookie', 'refreshToken')
   }
+
+  @Post('smf')
+  async smf (
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return request.cookies
+    // if (result.cookie) {
+    //   const {name, ...options} = result.cookie
+    //   response.cookie(name, result.refreshToken, options)
+    // }
+    // return omit(result, 'cookie')
+
+  }
+
+  //
+  // @UseGuards(JwtAuthGuard)
+  // @Get('user')
+  // async user (@Req() request: Request & { user: IUser }) {
+  //   const user = request.user
+  //
+  //   return {
+  //     ...user,
+  //   }
+  // }
 
 
 }
