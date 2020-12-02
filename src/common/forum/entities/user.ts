@@ -40,27 +40,12 @@ export class User implements IUser {
     return this.displayName ?? this.login
   }
 
-  // get link () {
-  //   const pattern = ForumConfiguration.userLinkPattern
-  //   return pattern
-  //     .replace(/{id}/, this.id.toString())
-  //     .replace(/{url}/, this.url)
-  // }
-
   get slug () {
-    return this.url ?? slug(this.login)
+    if (this.url) {
+      return this.url
+    }
+    return slug(this.displayName, {
+      lower: true,
+    })
   }
-
-  // // todo ??
-  // checkAccess(...permissions: string[]) {
-  //   if (!this.permissions) {
-  //     throw new Error('Permissions for user not loaded')
-  //   }
-  //   return permissions.every(p => this.permissions!.includes(p))
-  // }
-  //
-  // // todo ??
-  // checkGroup(...groups: number[]) {
-  //   return groups.every(g => this.groupIds.includes(g))
-  // }
 }

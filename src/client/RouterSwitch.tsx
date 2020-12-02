@@ -1,39 +1,28 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { useRoute, session, AppRoute, routes, useRouteHistory, isModalRoute, modalRoutes, ifRoute } from './routes'
+import React, { FC } from 'react'
 import { IndexPage } from './pages/Index.page'
 import { LastMessagesPage } from './pages/LastMessages.page'
 import { LoginModal } from './pages/auth/LoginModal'
-import { Keyboard } from '@material-ui/icons'
-import { ArrayValues } from '../common/utils/object'
 import { ProfilePage } from './pages/my/Profile.page'
+import { observer } from 'mobx-react-lite'
+import { toJS } from 'mobx'
+import { store } from './store'
+import { IRouteStore } from './store/types'
+import { routerSession, routes } from './routing'
+import { ifRoute } from './routing/utils'
 
 
+export const RouterSwitch: FC = observer(function RouterSwitch () {
+  console.log('!!!', toJS(store.routeStore.current))
 
-
-
-export const RouterSwitch: FC = () => {
-  const {
-    route,
-    lastRoute,
-    noModalRoute,
-    history,
-    isModal,
-  } = useRouteHistory()
-
-  console.log('!!!', {
-    route,
-    lastRoute,
-    noModalRoute,
-    history,
-    isModal,
-  })
-
-  const onModalClose = () => {
-    debugger
-    if (noModalRoute?.href) {
-      session.replace(noModalRoute.href)
+  const onModalClose = (rs: IRouteStore) => {
+    if (rs.noModalRoute?.href) {
+      routerSession.replace(rs.noModalRoute.href)
     } else {
-      session.back()
+      if (rs.last) {
+        rs.back()
+      } else {
+        rs.replace(routes.index())
+      }
     }
   }
 
@@ -41,14 +30,38 @@ export const RouterSwitch: FC = () => {
 
   return (
     <>
-      {ifRoute('index', noModalRoute, route => <IndexPage/>)}
-      {ifRoute('lastMessages', noModalRoute, route => <LastMessagesPage page={route.params.page ?? 1}/>)}
-      {ifRoute('profile', noModalRoute, route => <ProfilePage/>)}
+      {/* MODALS */}
 
-      {/*Modals*/}
-
-      {isModal && ifRoute('login', route, route => <LoginModal isOpen={true} onClose={onModalClose}/>)}
+      {store.routeStore.isModal && ifRoute({
+        name: 'login',
+        route: store.routeStore.current,
+        guard: r => !store.userStore.isAuth,
+        render: route => <LoginModal isOpen={true} onClose={() => onModalClose(store.routeStore)}/>,
+      })}
       {/*{isModal && ifRoute('registration', route, route => <RegistrationModal isOpen={true} onClose={onModalClose}/>)}*/}
+
+      {/* PAGES */}
+
+      {ifRoute({
+        name: 'index',
+        route: store.routeStore.noModalRoute,
+        render: route => <IndexPage/>,
+      })}
+
+      {ifRoute({
+        name: 'lastMessages',
+        route: store.routeStore.noModalRoute,
+        render: route => <LastMessagesPage page={route.params.page ?? 1}/>,
+      })}
+
+      {ifRoute({
+        name: 'profile',
+        route: store.routeStore.noModalRoute,
+        guard: r => store.userStore.isAuth ? true : routes.login(),
+        saveRedirect: true,
+        render: route => <ProfilePage/>,
+      })}
+
     </>
   )
-}
+})

@@ -1,9 +1,14 @@
 import { container } from './ioc.container'
-import { IApiService } from '../services/interfaces'
-import { ApiServiceSymbol } from './ioc.symbols'
+import { IApiService } from '../services/types'
 import { ApiService } from '../services/api.service'
-import { IRootStore } from '../store/types'
-import { RootStore } from '../store/root.store'
+import { ApiServiceSymbol, AuthServiceSymbol, MessagesServiceSymbol, ProfileServiceSymbol } from '../services/ioc.symbols'
+import { AuthService } from '../services/my/auth.service'
+import { IAuthService, IProfileService } from '../services/my/types'
+import { ProfileService } from '../services/my/profile.service'
+import { IMessagesService } from '../services/forum/types'
+import { MessagesService } from '../services/forum/messages.service'
 
 container.bind<IApiService>(ApiServiceSymbol).to(ApiService)
-// container.bind<IRootStore>(RootStoreSymbol).to(RootStore)
+container.bind<IAuthService>(AuthServiceSymbol).to(AuthService)
+container.bind<IProfileService>(ProfileServiceSymbol).to(ProfileService)
+container.bind<IMessagesService>(MessagesServiceSymbol).to(MessagesService)

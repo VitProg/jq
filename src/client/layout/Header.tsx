@@ -10,7 +10,6 @@ import { RouteLink } from '../components/Route/RouteLink'
 export const Header: FC = observer(function Header(props) {
 
   const { userStore } = useStore()
-  debugger
   return (
     <header>
       <AppBar position="static">

@@ -1,11 +1,15 @@
-import React, { FC, FormEvent, useRef, useState } from 'react'
-import { Backdrop, Button, Fade, FormControlLabel, Grid, Link, makeStyles, Modal, TextField, Theme, Checkbox, Typography, Avatar } from '@material-ui/core'
+import React, { FC } from 'react'
+import { Avatar, Backdrop, Button, Fade, Grid, Link, makeStyles, Modal, TextField, Theme, Typography } from '@material-ui/core'
 import { LockOutlined } from '@material-ui/icons'
 import { observer } from 'mobx-react-lite'
 import { useInjection } from '../../ioc/ioc.react'
-import { IApiService, LoginRequest } from '../../services/interfaces'
-import { ApiServiceSymbol } from '../../ioc/ioc.symbols'
-import { useStore } from '../../hooks/use-store'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { User } from '../../../common/forum/entities/user'
+import { store } from '../../store'
+import { IAuthService } from '../../services/my/types'
+import { AuthServiceSymbol } from '../../services/ioc.symbols'
 
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -37,6 +41,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }))
 
+const schema = z.object({
+  username: z.string().nonempty('Введите ваш логин или email'),
+  password: z.string().nonempty('Введите ваш пароль'),
+  remember: z.boolean().optional(),
+})
+
+type Schema = z.infer<typeof schema>;
 
 interface Props {
   isOpen: boolean
@@ -46,28 +57,35 @@ interface Props {
 export const LoginModal: FC<Props> = observer(function LoginModal (props) {
   const classes = useStyles()
 
-  const form = useRef<HTMLFormElement>(null)
+  const {
+    errors,
+    control,
+    handleSubmit,
+    setError,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+  })
 
-  const apiService = useInjection<IApiService>(ApiServiceSymbol)
+  const authService = useInjection<IAuthService>(AuthServiceSymbol)
 
-  const [formData, setFormData] = useState<Partial<LoginRequest>>({})
+  const onSubmit = async (data: Schema) => {
+    let user: User | undefined
 
-  const handleLoginClick = async (event: FormEvent) => {
-    event.preventDefault()
-
-    if (formData.username && formData.password) {
-      const user = await apiService.login({
-        username: formData.username,
-        password: formData.password,
-      })
-
+    try {
+      user = await authService.login(data)
+      if (store.routeStore.saved) {
+        store.routeStore.replaceSaved()
+      }
       props.onClose()
-    } else {
-      //todo errors
+    } catch {
+    } finally {
+      if (!user) {
+        setError('username', {
+          message: 'Неверный логин и/или пароль',
+          type: 'validate',
+        })
+      }
     }
-
-    //todo validation
-    //todo send to apiService
   }
 
   return (
@@ -89,43 +107,47 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
           <Typography component="h1" variant="h5">
             Вход
           </Typography>
-          <form ref={form as any} className={classes.form} onSubmit={handleLoginClick}>
-            <TextField
+          <form className={classes.form} onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+              as={TextField}
+              control={control}
               variant="outlined"
               margin="normal"
-              required
+              defaultValue=''
               fullWidth
-              id="login"
               label="Логин / Email"
-              name="login"
+              name="username"
               autoComplete="email"
-              onChange={(event) => setFormData({
-                ...formData,
-                username: event.target.value.trim()
-              })}
-              value={formData?.username}
               autoFocus
+              error={!!errors.username}
+              helperText={errors.username?.message}
             />
-            <TextField
+            <Controller
+              as={TextField}
+              control={control}
               variant="outlined"
               margin="normal"
-              required
+              defaultValue=''
               fullWidth
               name="password"
               label="Пароль"
               type="password"
-              id="password"
-              onChange={(event) => setFormData({
-                ...formData,
-                password: event.target.value.trim()
-              })}
-              value={formData?.password}
               autoComplete="current-password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
             />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary"/>}
-              label="Запомнить меня"
-            />
+            {/*<FormControlLabel*/}
+            {/*  control={*/}
+            {/*    <Controller*/}
+            {/*      as={Checkbox}*/}
+            {/*      control={control}*/}
+            {/*      name='remember'*/}
+            {/*      value="remember"*/}
+            {/*      color="primary"*/}
+            {/*    />*/}
+            {/*  }*/}
+            {/*  label="Запомнить меня"*/}
+            {/*/>*/}
             <Button
               type="submit"
               size="large"

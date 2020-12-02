@@ -1,17 +1,19 @@
 import React, { FC } from 'react'
 import { PaginationProps } from '@material-ui/lab/Pagination/Pagination'
 import { Pagination, PaginationItem, PaginationRenderItemParams } from '@material-ui/lab'
-import { Route } from 'type-route'
-import { routes } from '../../routes'
+import { AppRoute } from '../../routing/types'
 
 
 type Props = PaginationProps & {
-  route: (params: PaginationRenderItemParams) => Route<typeof routes>
+  route: (params: PaginationRenderItemParams) => AppRoute
 }
 
 export const RoutePagination: FC<Props> = (props) => {
-
   const { route, ...paginationProps } = props
+
+  if ((paginationProps?.count ?? 0) <= 1) {
+    return null
+  }
 
   const renderItem = (item: PaginationRenderItemParams) => {
     if (item.type === 'end-ellipsis' || item.type === 'start-ellipsis') {

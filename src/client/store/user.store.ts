@@ -1,9 +1,9 @@
 import { IRootStore, IUserStore } from './types'
-import { action, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx'
 import { User } from '../../common/forum/entities/user'
 import { container } from '../ioc/ioc.container'
-import { IApiService } from '../services/interfaces'
-import { ApiServiceSymbol } from '../ioc/ioc.symbols'
+import { IAuthService } from '../services/my/types'
+import { AuthServiceSymbol } from '../services/ioc.symbols'
 
 
 const REFRESH_TOKEN_INTERVAL = 4.5 * 60 * 1000 // 4.5 minutes
@@ -18,20 +18,20 @@ export class UserStore implements IUserStore {
       // root: false
       user: observable,
       token: observable,
-      setUser: action,
-      clearUser: action,
+      setUser: action.bound,
+      clearUser: action.bound,
+      isAuth: computed,
     })
   }
 
   private refreshTokenTick () {
-    container.get<IApiService>(ApiServiceSymbol).refreshToken()
+    container.get<IAuthService>(AuthServiceSymbol).refreshToken()
       .catch((e) => {
         console.warn(e)
       })
   }
 
   private startRefreshTokenInterval () {
-    debugger
     this.stopRefreshTokenInterval()
     this.refreshTokenInterval = setInterval(() => this.refreshTokenTick(), REFRESH_TOKEN_INTERVAL)
   }
@@ -55,7 +55,6 @@ export class UserStore implements IUserStore {
     this.stopRefreshTokenInterval()
     this.token = token
     if (this.token) {
-      debugger
       this.startRefreshTokenInterval()
     }
   }
@@ -64,6 +63,10 @@ export class UserStore implements IUserStore {
     this.user = undefined
     this.token = undefined
     this.stopRefreshTokenInterval()
+  }
+
+  get isAuth (): boolean {
+    return !!this.user && !!this.token
   }
 
 

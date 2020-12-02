@@ -5,8 +5,8 @@ import { Menu, MenuItem } from '@material-ui/core'
 import { User } from '../../../common/forum/entities/user'
 import { RouteLink } from '../../components/Route/RouteLink'
 import { useInjection } from '../../ioc/ioc.react'
-import { ApiServiceSymbol } from '../../ioc/ioc.symbols'
-import { IApiService } from '../../services/interfaces'
+import { AuthServiceSymbol } from '../../services/ioc.symbols'
+import { IAuthService } from '../../services/my/types'
 
 
 interface Props {
@@ -19,7 +19,7 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
   }
 
   const [menuOpened, setMenuOpened] = useState<null | HTMLElement>(null)
-  const apiService = useInjection<IApiService>(ApiServiceSymbol)
+  const authService = useInjection<IAuthService>(AuthServiceSymbol)
 
   const handleAvatarClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
@@ -38,7 +38,7 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
 
   const handleLogoutClick = async () => {
     handleMenuClose()
-    await apiService.logout()
+    await authService.logout()
   }
 
   return (

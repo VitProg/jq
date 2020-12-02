@@ -1,22 +1,22 @@
 import React, { DOMAttributes, HTMLAttributes, ReactElement, ReactNode, useCallback } from 'react'
 import { preventDefaultLinkClickBehavior } from 'type-route'
-import { ExtractRouteProps, routes } from '../../routes'
+
 import { Button, Link, MenuItem } from '@material-ui/core'
 import { AnyObject } from '../../../common/utils/object'
 import { isFunction } from '../../../common/type-guards'
 import { OverridableComponent } from '@material-ui/core/OverridableComponent'
+import { AppRouteKeys, ExtractRouteProps } from '../../routing/types'
+import { routes } from '../../routing'
 
 
 const a = document.createElement('a')
 
-// type types = 'simple' | 'mui-link' | 'mui-button'
 type Types = typeof Button | typeof Link | typeof MenuItem | 'a'
-type DefaultType = typeof HTMLAnchorElement
 
 type IfDefinedProps<Check, True, False = never> = Check extends AnyObject ? True : False
 
 
-type GenerateProps<R extends keyof typeof routes,
+type GenerateProps<R extends AppRouteKeys,
   T extends Types = 'a'> =
   {
     component?: T
@@ -40,14 +40,14 @@ type GenerateProps<R extends keyof typeof routes,
     )
 
 
-export const RouteLink = <R extends keyof typeof routes, T extends Types = 'a', > (
+export const RouteLink = <R extends AppRouteKeys, T extends Types = 'a', > (
   props: GenerateProps<R, T>
 ): ReactElement<GenerateProps<R, T>> => {
 
   if (!props) {
-    debugger
+    return null as any
   }
-  const { to, component = 'mui-link', route: toProps, ...componentProps } = props as typeof props & { route: any }
+  const { to, component = Link, route: toProps, ...componentProps } = props as typeof props & { route: any }
 
   const route = routes[to](toProps)
 

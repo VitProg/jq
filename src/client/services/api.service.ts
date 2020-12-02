@@ -1,159 +1,176 @@
 import KY from 'ky-universal'
-import { LastMessageResponse } from '../../common/responses/forum.responses'
-import { IApiService, LastMessageRequest, LoginRequest } from './interfaces'
-import { abortedRequestPromise } from './utils'
-import { action, makeObservable } from 'mobx'
-import { User } from '../../common/forum/entities/user'
-import { LoginResponse, RefreshTokenResponse } from '../../common/responses/auth.responses'
-import { ProfileResponse } from '../../common/responses/my.responses'
+import { IApiService } from './types'
 import { store } from '../store'
+import { Options } from 'ky'
+import { container } from '../ioc/ioc.container'
+import { ApiSendConfig, IAuthService } from './my/types'
+import { AuthServiceSymbol } from './ioc.symbols'
+import { isArray, isObject } from '../../common/type-guards'
+import { CancelablePromiseType } from 'cancelable-promise'
+import { abortedRequestPromise } from './utils'
 
+
+const MAX_REFRESH_TOKEN_TRY_COUNT = 2
 
 export class ApiService implements IApiService {
   private readonly baseApiUrl = '/api' // todo from env
-  private ky!: typeof KY
 
   constructor () {
-    this.createKY()
+  }
 
-    makeObservable(this, {
-      loadLastMessages: action
+  delete<T> (endpoint: string, config?: Omit<ApiSendConfig<T>, "searchParams" | "method" | 'endpoint'>): Promise<T | undefined> {
+    return this.send({
+      endpoint,
+      method: 'delete',
+      ...config,
     })
   }
 
-  loadLastMessages (params: LastMessageRequest) {
-    const abortController = new AbortController()
+  get<T> (endpoint: string, config?: Omit<ApiSendConfig<T>, "json" | "method" | 'endpoint'>): Promise<T | undefined> {
+    return this.send({
+      endpoint,
+      method: 'get',
+      ...config,
+    })
+  }
 
-    const searchParams = new URLSearchParams()
-    for (const [key, value] of Object.entries(params)) {
-      switch (key) {
-        case 'relations':
-          searchParams.set(key, value.join(','))
-          break
-        default:
-          searchParams.set(key, value)
+  patch<T> (endpoint: string, config?: Omit<ApiSendConfig<T>, "searchParams" | "method" | 'endpoint'>): Promise<T | undefined> {
+    return this.send({
+      endpoint,
+      method: 'patch',
+      ...config,
+    })
+  }
+
+  post<T> (endpoint: string, config?: Omit<ApiSendConfig<T>, "searchParams" | "method" | 'endpoint'>): Promise<T | undefined> {
+    return this.send({
+      endpoint,
+      method: 'post',
+      ...config,
+    })
+  }
+
+  put<T> (endpoint: string, config?: Omit<ApiSendConfig<T>, "searchParams" | "method" | 'endpoint'>): Promise<T | undefined> {
+    return this.send({
+      endpoint,
+      method: 'put',
+      ...config,
+    })
+  }
+
+
+  send<T> (config: ApiSendConfig<T>): Promise<T> {
+    const {
+      endpoint,
+      method = 'get',
+      body,
+      json,
+      searchParams,
+      addHeaders,
+      withAuthHeaders = true,
+      withCookies = true,
+      refreshTokenIsAccessError = true,
+      cancelable = false,
+      reformat,
+    } = config
+
+    let options: Options = {
+      method,
+      prefixUrl: this.baseApiUrl,
+      headers: withAuthHeaders ? this.authHeaders : {},
+      credentials: withCookies ? 'same-origin' : 'omit',
+    }
+
+    if (refreshTokenIsAccessError) {
+      options = {
+        ...options,
+        ...this.retryOptions,
       }
     }
 
-    const promise = this.ky
-      .get('last-messages', {
-        searchParams,
-        signal: abortController.signal,
-        headers: this.headers,
-      })
-      .json<LastMessageResponse>()
-
-    return abortedRequestPromise(
-      promise,
-      abortController
-    )
-  }
-
-  async login (params: LoginRequest): Promise<undefined | User> {
-    const response = await this.ky.post('auth/login', {
-      json: params,
-      headers: this.headers,
-    }).json<LoginResponse>()
-
-    if (response) {
-      await this.saveSession(response.accessToken)
-      await this.updateProfile()
+    let abortController: AbortController
+    if (cancelable) {
+      abortController = new AbortController()
+      options.signal = abortController.signal
     }
 
-    return store.userStore.user
-  }
+    if (addHeaders) {
+      options.headers = {
+        ...options.headers,
+        ...(addHeaders as any)
+      }
+    }
 
-  async refreshToken (updateProfile = false): Promise<void> {
-    try {
-      const response = await this.ky
-        .post('auth/refresh-token', { headers: {} })
-        .json<RefreshTokenResponse>()
-
-      if (response) {
-        await this.saveSession(response.accessToken)
-        if (updateProfile) {
-          await this.updateProfile()
+    if (searchParams) {
+      const search = new URLSearchParams()
+      for (const [key, value] of Object.entries(searchParams)) {
+        if (isArray(value)) {
+          search.set(key, value.join(','))
+        } else if (isObject(value)) {
+          search.set(key, JSON.stringify(value))
+        } else {
+          search.set(key, value.toString())
         }
       }
-    } catch {
-    }
-  }
-
-  async logout () {
-    await this.ky
-      .post('auth/logout', { headers: this.headers })
-      .json<LoginResponse>()
-
-    this.clearSession()
-  }
-
-  async logoutAll () {
-    await this.ky
-      .post('auth/logoutAll', { headers: this.headers })
-      .json<LoginResponse>()
-
-    this.clearSession()
-  }
-
-  async profile (): Promise<ProfileResponse | undefined> {
-    return this.ky
-      .get('my/profile', { headers: this.headers })
-      .json<ProfileResponse>()
-  }
-
-  private clearSession () {
-    store.userStore.clearUser()
-    this.createKY()
-  }
-
-  private async saveSession (accessToken: string | undefined) {
-    if (!accessToken) {
-      return this.clearSession()
+      options.searchParams = search
     }
 
-    store.userStore.setToken(accessToken)
-
-    this.createKY()
-  }
-
-  private async updateProfile() {
-    const user = User.create(await this.profile())
-    if (user) {
-      store.userStore.setUser(user, store.userStore.token)
-    } else {
-      store.userStore.clearUser()
+    if (body) {
+      options.body = body
     }
+
+    if (json) {
+      options.json = json
+    }
+
+    let promise = KY(endpoint, options).json<T>()
+
+    if (reformat) {
+      promise = promise.then(data => {
+        reformat(data)
+        return data
+      })
+    }
+
+    if (cancelable) {
+      return abortedRequestPromise(
+        promise,
+        abortController!,
+      ) as any
+    }
+    return promise
   }
 
-  private createKY () {
-    this.ky = (this.ky?.extend ?? KY.create)({
-      prefixUrl: this.baseApiUrl,
-      headers: this.headers,
-      credentials: 'same-origin',
+  get retryOptions (): Options {
+    return {
+      retry: {
+        limit: MAX_REFRESH_TOKEN_TRY_COUNT,
+        methods: ['post', 'get', 'put', 'delete', 'patch'],
+        statusCodes: [401, 500, 502, 503, 504],
+      },
       hooks: {
-        afterResponse: [
-          // Or retry with a fresh token on a 401 error
-          async (input, options, response) => {
-            if (response.status === 401) {
-              debugger
-              await this.refreshToken()
-              return this.ky(input, {
-                ...options,
-                headers: {
-                  ...options.headers,
-                  ...this.headers,
+        beforeRetry: [
+          async ({ request, options, error, retryCount }) => {
+            if ((error as any)?.response?.status === 401) {
+              const authService = container.get<IAuthService>(AuthServiceSymbol)
+              await authService.refreshToken()
+              const auth = this.authHeaders
+              if (auth) {
+                for (const [k, v] of Object.entries(auth)) {
+                  request.headers.set(k, v)
                 }
-              });
+              }
             }
           }
         ],
       }
-    })
+    }
   }
 
-  private get headers () {
-    return store.userStore.token ? {
-      'Authorization': `Bearer ${store.userStore.token}`,
-    } : {}
+  // noinspection JSMethodCanBeStatic
+  private get authHeaders (): undefined | Record<string, string> {
+    if (store.userStore.token) {
+      return { 'Authorization': `Bearer ${store.userStore.token}` }
+    }
   }
 }

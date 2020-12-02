@@ -18,3 +18,6 @@ export const abortedRequestPromise = <T>(promise: Promise<T>, abortController: A
     }
   )
 }
+
+//todo
+export const asCancelablePromise = <T>(promise: Promise<T>): CancelablePromiseType<T> => promise as any

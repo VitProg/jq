@@ -73,7 +73,6 @@ export const MessageItem: FC<Props> = (props) => {
           </div>
         }
         secondary={
-          // <div dangerouslySetInnerHTML={{__html: html}}/>
           html
         }
         secondaryTypographyProps={{ component: 'div', className: classes.messageBody }}
