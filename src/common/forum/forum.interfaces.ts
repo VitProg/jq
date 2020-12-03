@@ -35,8 +35,8 @@ export interface IMessage {
     board: number
   },
   user?: IUser
-  topic?: unknown
-  board?: unknown
+  topic?: ITopic
+  board?: IBoard
 }
 
 export interface IBoard {

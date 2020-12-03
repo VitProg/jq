@@ -1,5 +1,5 @@
 import { noMatch, ValueSerializer } from 'type-route'
-import { User } from '../../../common/forum/entities/user'
+import { User } from '../../../common/forum/models/user'
 
 
 const userUrlRule = /([\w\d-_]+)-(\d+)/

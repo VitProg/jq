@@ -1,10 +1,8 @@
 
-export interface LoginResponse {
+export interface ILoginResponse {
   accessToken: string
-  // refreshToken: string
 }
 
-export interface RefreshTokenResponse {
+export interface IRefreshTokenResponse {
   accessToken: string
-  // refreshToken: string
 }

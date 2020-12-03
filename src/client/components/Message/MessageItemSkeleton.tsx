@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
-import { User } from '../../../common/forum/entities/user'
+import { User } from '../../../common/forum/models/user'
 import parser from 'bbcode-to-react'
 import { Skeleton } from '@material-ui/lab'
 

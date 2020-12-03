@@ -37,11 +37,7 @@ export const LastMessagesPage: FC<Props> = observer(function LastMessagesPage (p
   useEffect(() => {
     uiStore.setLoading(true)
 
-    const promise = messagesService.latest({
-      page,
-      pageSize: 5,
-      relations: ['board', 'user', 'topic'],
-    })
+    const promise = messagesService.latest({page})
 
     promise
       .finally(() => {

@@ -1,6 +1,6 @@
-import { ProfileResponse } from '../../../common/responses/my.responses'
-import { User } from '../../../common/forum/entities/user'
+import { User } from '../../../common/forum/models/user'
 import { LoginRequest } from '../types'
+import { IProfileResponse } from '../../../common/responses/forum.responses'
 
 
 export interface IAuthService {
@@ -16,7 +16,7 @@ export interface IAuthService {
 
 export interface IProfileService {
 
-  profile (): Promise<ProfileResponse | undefined>
+  profile (): Promise<IProfileResponse | undefined>
 }
 
 
@@ -25,9 +25,10 @@ export interface ApiSendConfig<T> {
   method: 'get' | 'post' | 'delete' | 'put' | 'patch',
   body?: Blob | ArrayBufferView | ArrayBuffer | FormData | URLSearchParams | ReadableStream<Uint8Array> | string,
   json?: any,
+  parseAsJson?: boolean,
   searchParams?: Record<string, any>,
   addHeaders?: Record<string, string>,
-  withAuthHeaders?: boolean,
+  withJWTHeaders?: boolean,
   withCookies?: boolean,
   refreshTokenIsAccessError?: boolean,
   reformat?: (data: T) => void,

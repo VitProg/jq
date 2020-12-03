@@ -6,14 +6,13 @@ import { container } from '../ioc/ioc.container'
 import { ApiSendConfig, IAuthService } from './my/types'
 import { AuthServiceSymbol } from './ioc.symbols'
 import { isArray, isObject } from '../../common/type-guards'
-import { CancelablePromiseType } from 'cancelable-promise'
 import { abortedRequestPromise } from './utils'
 
 
 const MAX_REFRESH_TOKEN_TRY_COUNT = 2
 
 export class ApiService implements IApiService {
-  private readonly baseApiUrl = '/api' // todo from env
+  private readonly baseApiUrl = '/api'
 
   constructor () {
   }
@@ -65,9 +64,10 @@ export class ApiService implements IApiService {
       method = 'get',
       body,
       json,
+      parseAsJson = true,
       searchParams,
       addHeaders,
-      withAuthHeaders = true,
+      withJWTHeaders = true,
       withCookies = true,
       refreshTokenIsAccessError = true,
       cancelable = false,
@@ -77,7 +77,7 @@ export class ApiService implements IApiService {
     let options: Options = {
       method,
       prefixUrl: this.baseApiUrl,
-      headers: withAuthHeaders ? this.authHeaders : {},
+      headers: withJWTHeaders ? this.authHeaders : {},
       credentials: withCookies ? 'same-origin' : 'omit',
     }
 
@@ -123,13 +123,19 @@ export class ApiService implements IApiService {
       options.json = json
     }
 
-    let promise = KY(endpoint, options).json<T>()
+    let promise: Promise<any>
 
-    if (reformat) {
-      promise = promise.then(data => {
-        reformat(data)
-        return data
-      })
+    if (parseAsJson) {
+      promise = KY(endpoint, options).json<T>()
+
+      if (reformat) {
+        promise = promise.then(data => {
+          reformat(data)
+          return data
+        })
+      }
+    } else {
+      promise = KY(endpoint, options)
     }
 
     if (cancelable) {

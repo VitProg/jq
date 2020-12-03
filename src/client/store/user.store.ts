@@ -1,6 +1,6 @@
 import { IRootStore, IUserStore } from './types'
 import { action, computed, makeObservable, observable } from 'mobx'
-import { User } from '../../common/forum/entities/user'
+import { User } from '../../common/forum/models/user'
 import { container } from '../ioc/ioc.container'
 import { IAuthService } from '../services/my/types'
 import { AuthServiceSymbol } from '../services/ioc.symbols'

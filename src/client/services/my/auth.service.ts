@@ -2,11 +2,12 @@ import { IAuthService, IProfileService } from './types'
 import { inject } from '../../ioc/ioc.decoratos'
 import { IApiService, LoginRequest } from '../types'
 import { makeAutoObservable } from 'mobx'
-import { User } from '../../../common/forum/entities/user'
-import { LoginResponse, RefreshTokenResponse } from '../../../common/responses/auth.responses'
+import { User } from '../../../common/forum/models/user'
+import { ILoginResponse, IRefreshTokenResponse } from '../../../common/responses/auth.responses'
 import { store } from '../../store'
 import { container } from '../../ioc/ioc.container'
 import { ApiServiceSymbol, ProfileServiceSymbol } from '../ioc.symbols'
+import { createUserModel } from '../../../common/forum/fabrics/create-user.fabric'
 
 
 export class AuthService implements IAuthService {
@@ -17,13 +18,16 @@ export class AuthService implements IAuthService {
   }
 
   async login (params: LoginRequest): Promise<undefined | User> {
+    const base64 = btoa(`${params.username}:${params.password}`);
+
     const response = await this.api
-      .post<LoginResponse>(
+      .post<ILoginResponse>(
         'auth/login',
         {
-          json: params,
-          withAuthHeaders: false,
+          // json: params,
+          withJWTHeaders: false,
           refreshTokenIsAccessError: false,
+          addHeaders: {'Authorization': `Basic ${base64}`},
         }
       )
 
@@ -38,10 +42,10 @@ export class AuthService implements IAuthService {
   async refreshToken (updateProfile = false): Promise<boolean> {
     try {
       const response = await this.api
-        .post<RefreshTokenResponse>(
+        .post<IRefreshTokenResponse>(
           'auth/refresh-token',
           {
-            withAuthHeaders: false,
+            withJWTHeaders: false,
             refreshTokenIsAccessError: false,
           }
         )
@@ -61,9 +65,12 @@ export class AuthService implements IAuthService {
 
   async logout () {
     await this.api
-      .post<LoginResponse>(
+      .post<ILoginResponse>(
         'auth/logout',
-        { withAuthHeaders: true }
+        {
+          withJWTHeaders: true,
+          parseAsJson: false,
+        }
       )
 
     this.clearSession()
@@ -71,9 +78,12 @@ export class AuthService implements IAuthService {
 
   async logoutAll () {
     await this.api
-      .post<LoginResponse>(
+      .post<ILoginResponse>(
         'auth/logoutAll',
-        { withAuthHeaders: true }
+        {
+          withJWTHeaders: true,
+          parseAsJson: false,
+        }
       )
 
     this.clearSession()
@@ -96,7 +106,7 @@ export class AuthService implements IAuthService {
   private async updateProfile () {
     const profileService = container.get<IProfileService>(ProfileServiceSymbol)
 
-    const user = User.create(await profileService.profile())
+    const user = createUserModel(await profileService.profile())
     if (user) {
       store.userStore.setUser(user, store.userStore.token)
     } else {

@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { SecureService } from './secure/secure.service'
+import { SecureService } from './modules/secure/secure.service'
 import { tap } from 'rxjs/operators'
 
 @Injectable()

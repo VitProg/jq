@@ -1,11 +1,12 @@
 import React, { FC } from 'react'
 import { IMessage } from '../../../common/forum/forum.interfaces'
 import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
-import { User } from '../../../common/forum/entities/user'
+import { User } from '../../../common/forum/models/user'
 import { UserLink } from '../User/UserLink'
 import parser from 'bbcode-to-react'
 import { UserAvatar } from '../User/UserAvatar'
 import { MessageRelationsSingle } from '../../../common/forum/forum.entity-relations'
+import { createUserModel } from '../../../common/forum/fabrics/create-user.fabric'
 
 
 interface ExternalProps {
@@ -37,7 +38,7 @@ export const MessageItem: FC<Props> = (props) => {
 
   const { message } = props
   const { board, topic } = props.relations ?? { board: undefined, topic: undefined }
-  const user = User.create(props.relations?.user)
+  const user = createUserModel(props.relations?.user)
 
   if (board?.category?.name) {
     subjects.push(board?.category?.name)

@@ -2,10 +2,12 @@ import { makeAutoObservable } from 'mobx'
 import { IMessagesService } from './types'
 import { inject } from '../../ioc/ioc.decoratos'
 import { IApiService, LastMessageRequest } from '../types'
-import { LastMessageResponse } from '../../../common/responses/forum.responses'
+import { ILatestMessageResponse } from '../../../common/responses/forum.responses'
 import { asCancelablePromise } from '../utils'
 import { ApiServiceSymbol } from '../ioc.symbols'
 
+const LATEST_MAX_PAGES = 10
+const LATEST_PAGE_SIZE = 10
 
 export class MessagesService implements IMessagesService {
   @inject(ApiServiceSymbol) api!: IApiService
@@ -15,13 +17,23 @@ export class MessagesService implements IMessagesService {
   }
 
   latest (params: LastMessageRequest) {
+    const searchParams: typeof params = {
+      pageSize: LATEST_PAGE_SIZE,
+      relations: ['board', 'user', 'topic'],
+      ...params
+    }
+
     return asCancelablePromise(
       this.api
-        .get<LastMessageResponse>(
-          'last-messages',
+        .get<ILatestMessageResponse>(
+          'message/latest',
           {
-            searchParams: params,
-            reformat: data => data.meta.currentPage = data.meta.currentPage >>> 0,
+            searchParams,
+            reformat: (data) => {
+              data.meta.currentPage = data.meta.currentPage >>> 0
+              data.meta.totalItems = Math.min(LATEST_MAX_PAGES * data.meta.itemsPerPage, data.meta.totalItems)
+              data.meta.totalPages = Math.min(LATEST_MAX_PAGES, data.meta.totalPages)
+            },
             cancelable: true,
           })
     )

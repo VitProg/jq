@@ -1,24 +1,15 @@
 import React, { FC } from 'react'
-import { User } from '../../../common/forum/entities/user'
-import { Avatar } from '@material-ui/core'
+import { User } from '../../../common/forum/models/user'
+import { Avatar, Badge, createStyles, Theme, withStyles } from '@material-ui/core'
 import { ForumConfiguration } from '../../../common/forum/forum.constants'
-import styled from 'styled-components'
 import { RouteLink } from '../Route/RouteLink'
-
-
-const StyledLink = styled.a`
-  text-decoration: none;
-
-  &:hover, &:active, &:focus {
-    text-decoration: none;
-  }
-`
 
 interface Props {
   user?: User
   withLink?: boolean
   onCLick?: (event: React.MouseEvent<HTMLElement>) => void
 }
+
 
 export const UserAvatar: FC<Props> = (props) => {
   const {
@@ -28,23 +19,19 @@ export const UserAvatar: FC<Props> = (props) => {
   } = props
 
   if (user) {
-    const avatar = user.avatarUrl ?? ForumConfiguration.defaultAvatar
+    const avatar = user.avatarUrl
+    const latter = user.name.substr(0, 1)
 
     if (withLink) {
       return (
         <Avatar
-          // component={RouteLink}
           onClick={onCLick}
           alt={user.name}
           src={avatar}
-          // to={'user'}
-          // props={{
-          //   user: {
-          //     userId: user.id,
-          //     loginUrl: user.slug
-          //   }
-          // }}
-        />
+          component={RouteLink as any}
+          to={'user'}
+          route={{user}}
+        >{latter}</Avatar>
       )
     }
 

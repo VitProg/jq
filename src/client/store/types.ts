@@ -1,4 +1,4 @@
-import { User } from '../../common/forum/entities/user'
+import { User } from '../../common/forum/models/user'
 import { AppRoute } from '../routing/types'
 
 

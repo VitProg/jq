@@ -1,4 +1,4 @@
-import { User } from '../../../common/forum/entities/user'
+import { User } from '../../../common/forum/models/user'
 import React, { FC } from 'react'
 import { Typography, TypographyTypeMap } from '@material-ui/core'
 import { RouteLink } from '../Route/RouteLink'
