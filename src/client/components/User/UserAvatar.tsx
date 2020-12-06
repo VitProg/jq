@@ -1,8 +1,10 @@
 import React, { FC } from 'react'
 import { User } from '../../../common/forum/models/user'
-import { Avatar, Badge, createStyles, Theme, withStyles } from '@material-ui/core'
-import { ForumConfiguration } from '../../../common/forum/forum.constants'
+import { Avatar } from '@material-ui/core'
 import { RouteLink } from '../Route/RouteLink'
+import { observer } from 'mobx-react-lite'
+import { store } from '../../store'
+
 
 interface Props {
   user?: User
@@ -11,7 +13,7 @@ interface Props {
 }
 
 
-export const UserAvatar: FC<Props> = (props) => {
+export const UserAvatar: FC<Props> = observer(function UserAvatar (props) {
   const {
     user,
     withLink = false,
@@ -19,7 +21,7 @@ export const UserAvatar: FC<Props> = (props) => {
   } = props
 
   if (user) {
-    const avatar = user.avatarUrl
+    const avatar = store.configStore.getUserAvatarUrl(user)
     const latter = user.name.substr(0, 1)
 
     if (withLink) {
@@ -30,7 +32,7 @@ export const UserAvatar: FC<Props> = (props) => {
           src={avatar}
           component={RouteLink as any}
           to={'user'}
-          route={{user}}
+          route={{ user }}
         >{latter}</Avatar>
       )
     }
@@ -47,8 +49,7 @@ export const UserAvatar: FC<Props> = (props) => {
   return (
     <Avatar
       onClick={onCLick}
-      alt=''
-      src={ForumConfiguration.defaultAvatar}
-    />
+      alt='?'
+    >?</Avatar>
   )
-}
+})

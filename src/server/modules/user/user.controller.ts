@@ -4,7 +4,7 @@ import { stringToParams } from '../forum/utils/relations'
 import { WithFields } from './types'
 import { between } from '../../../common/utils/number'
 import { UserService } from './user.service'
-import { MessageService } from '../forum/modules/message/message.service'
+
 
 const ITEMS_ON_PAGE = 50
 const MAX_ITEMS_ON_PAGE = 200

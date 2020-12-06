@@ -18,7 +18,7 @@ export class AuthService implements IAuthService {
   }
 
   async login (params: LoginRequest): Promise<undefined | User> {
-    const base64 = btoa(`${params.username}:${params.password}`);
+    const base64 = btoa(params.username + ':' + params.password);
 
     const response = await this.api
       .post<ILoginResponse>(
@@ -36,7 +36,7 @@ export class AuthService implements IAuthService {
       await this.updateProfile()
     }
 
-    return store.userStore.user
+    return store.myStore.user
   }
 
   async refreshToken (updateProfile = false): Promise<boolean> {
@@ -92,14 +92,14 @@ export class AuthService implements IAuthService {
 
   // noinspection JSMethodCanBeStatic
   private clearSession () {
-    store.userStore.clearUser()
+    store.myStore.clearUser()
   }
 
   private async saveSession (accessToken: string | undefined) {
     if (!accessToken) {
       return this.clearSession()
     }
-    store.userStore.setToken(accessToken)
+    store.myStore.setToken(accessToken)
   }
 
   // noinspection JSMethodCanBeStatic
@@ -108,9 +108,9 @@ export class AuthService implements IAuthService {
 
     const user = createUserModel(await profileService.profile())
     if (user) {
-      store.userStore.setUser(user, store.userStore.token)
+      store.myStore.setUser(user, store.myStore.token)
     } else {
-      store.userStore.clearUser()
+      store.myStore.clearUser()
     }
   }
 

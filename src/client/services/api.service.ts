@@ -175,8 +175,8 @@ export class ApiService implements IApiService {
 
   // noinspection JSMethodCanBeStatic
   private get authHeaders (): undefined | Record<string, string> {
-    if (store.userStore.token) {
-      return { 'Authorization': `Bearer ${store.userStore.token}` }
+    if (store.myStore.token) {
+      return { 'Authorization': `Bearer ${store.myStore.token}` }
     }
   }
 }

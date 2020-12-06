@@ -1,7 +1,10 @@
 import React, { FC } from 'react'
 import { RouteLink } from '../components/Route/RouteLink'
+import { store } from '../store'
 
 export const IndexPage: FC = () => {
+
+  store.seoStore.setTitle('Главная страница')
 
   return (
     <div>

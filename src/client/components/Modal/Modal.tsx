@@ -1,58 +1,85 @@
-import { Backdrop, Fade, makeStyles, Modal as MUIModal, Theme } from '@material-ui/core'
-import React, { ComponentType, FC } from 'react'
+import { Backdrop, Fade, IconButton, Modal as MUIModal } from '@material-ui/core'
+import React, { FC, useMemo } from 'react'
+import { StyleProps, useModalStyles } from './styles'
+import { omit } from '../../../common/utils/object'
+import { ModalProps as MainModalProps } from '../types'
+import { isFunction } from '../../../common/type-guards'
+import { Close } from '@material-ui/icons'
+import { joinClassNames, joinClassNamesMass } from '../ui-kit/utils'
 
 
-const useStyles = makeStyles((theme: Theme) => ({
-  modal: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(3, 4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    outline: 'none',
-  },
-  header: {},
-  content: {},
-  footer: {}
-}))
-
-
-interface Props {
-  isOpen: boolean
-  onClose: () => void
-  header?: () => ((props: ComponentType<any>) => React.ReactNode) | React.ReactNode
-  content?: () => ((props: ComponentType<any>) => React.ReactNode) | React.ReactNode
-  footer?: () => ((props: ComponentType<any>) => React.ReactNode) | React.ReactNode
+export type ModalProps = Partial<StyleProps> & MainModalProps & {
+  header?: (() => React.ReactNode) | React.ReactNode
+  content?: (() => React.ReactNode) | React.ReactNode
+  footer?: (() => React.ReactNode) | React.ReactNode
+  form?: React.FormHTMLAttributes<HTMLFormElement>
+  classNames?: {
+    modal?: string
+    paper?: string
+    header?: string
+    content?: string
+    footer?: string
+  }
 }
 
-export const Modal: FC<Props> = function Modal (props) {
-  const classes = useStyles()
+export const Modal: FC<ModalProps> = function Modal (props) {
+  const classes = useModalStyles({
+    headerColor: 'primary',
+    ...omit(props, 'isOpen', 'onClose', 'header', 'content', 'footer', 'form', 'classNames')
+  })
+
+  const classNames = useMemo(
+    () => (joinClassNamesMass(
+      classes,
+      {
+        ...props.classNames,
+        form: props.form ? joinClassNames(classes.form, props.form.className) : '',
+      },
+    )),
+    [props.classNames, props.form]
+  )
+
+  const inner = useMemo(() => (
+    <Fade in={props.isOpen}>
+      <div className={classNames.paper}>
+        {props.header && (
+          <header className={classNames.header}>
+            {isFunction(props.header) ? props.header() : props.header}
+            <IconButton onClick={props.onClose} className={classes.headerClose}>
+              <Close/>
+            </IconButton>
+          </header>
+        )}
+        <section className={classNames.content}>
+          {isFunction(props.content) ? props.content() : props.content}
+          {props.children}
+        </section>
+        {props.footer && (
+          <header className={classNames.footer}>
+            {isFunction(props.footer) ? props.footer() : props.footer}
+          </header>
+        )}
+      </div>
+    </Fade>
+  ), [props.isOpen, props.onClose, props.header, props.content, props.footer, classNames])
 
   return (
     <MUIModal
       open={props.isOpen}
       onClose={props.onClose}
-      className={classes.modal}
+      className={classNames.modal}
       closeAfterTransition
       BackdropComponent={Backdrop}
       BackdropProps={{
         timeout: 500,
       }}
     >
-      <Fade in={props.isOpen}>
-        <div className={classes.paper}>
-          {props.header && props.header()}
-          {props.content && props.content()}
-          {props.children}
-          {props.footer && props.footer()}
-        </div>
-      </Fade>
+      {props.form ?
+        <form {...props.form} className={classNames.form}>
+          {inner}
+        </form> :
+        inner
+      }
     </MUIModal>
   )
 }

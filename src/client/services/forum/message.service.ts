@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx'
-import { IMessagesService } from './types'
+import { IMessageService } from './types'
 import { inject } from '../../ioc/ioc.decoratos'
 import { IApiService, LastMessageRequest } from '../types'
 import { ILatestMessageResponse } from '../../../common/responses/forum.responses'
@@ -9,7 +9,7 @@ import { ApiServiceSymbol } from '../ioc.symbols'
 const LATEST_MAX_PAGES = 10
 const LATEST_PAGE_SIZE = 10
 
-export class MessagesService implements IMessagesService {
+export class MessageService implements IMessageService {
   @inject(ApiServiceSymbol) api!: IApiService
 
   constructor () {

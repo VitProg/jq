@@ -1,4 +1,4 @@
-import { IRootStore, IUserStore } from './types'
+import { IRootStore, IMyStore } from './types'
 import { action, computed, makeObservable, observable } from 'mobx'
 import { User } from '../../common/forum/models/user'
 import { container } from '../ioc/ioc.container'
@@ -8,12 +8,12 @@ import { AuthServiceSymbol } from '../services/ioc.symbols'
 
 const REFRESH_TOKEN_INTERVAL = 4.5 * 60 * 1000 // 4.5 minutes
 
-export class UserStore implements IUserStore {
+export class MyStore implements IMyStore {
   user?: User = undefined
   token?: string = undefined
   private refreshTokenInterval: number | undefined
 
-  constructor (readonly root: IRootStore) {
+  constructor () {
     makeObservable(this, {
       // root: false
       user: observable,

@@ -25,5 +25,5 @@
     "src/client",
     "dist",
     "src/server/test"
-  ]
+  ],
 }

@@ -10,10 +10,8 @@ const HISTORY_LENGTH = 20
 const asAppRoute = (route: StoredRoute): AppRoute => route as AppRoute
 
 export class RouteStore implements IRouteStore {
-  constructor (readonly root: IRootStore) {
+  constructor () {
     makeAutoObservable(this, {
-      root: false,
-
       history: observable,
       saved: observable,
 
@@ -37,6 +35,7 @@ export class RouteStore implements IRouteStore {
   saved: StoredRoute | undefined = undefined
 
   handleRouter (route: AppRoute): void {
+    //todo синхронизировать историю согласно route.action = 'pop' | 'replace' | 'push'
     this.save(route)
   }
 

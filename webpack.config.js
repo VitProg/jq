@@ -64,14 +64,28 @@ module.exports = {
         sockHost: 'localhost',
         sockPort: 8080,
       },
+      exclude: [
+        /node_modules/,
+        /src\/server/,
+        /server/,
+      ],
+      include: [
+        /\.([jt]sx?)$/i
+      ]
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
-      FORUM_AVATAR_BASE_URL: undefined,
-      FORUM_GALLERY_BASE_URL: undefined,
-      FORUM_ATTACHMENTS_BASE_URL: undefined,
-      FORUM_USER_LINK_PATTERN: undefined,
-      FORUM_DEFAULT_AVATAR: undefined,
+      FORUM_AVATAR_BASE_URL: '',
+      FORUM_GALLERY_BASE_URL: '',
+      FORUM_ATTACHMENTS_BASE_URL: '',
+      FORUM_USER_LINK_PATTERN: '',
+      FORUM_DEFAULT_AVATAR: '',
+      SEO_BASE_TITLE: '',
+      SEO_BASE_DESCRIPTION: '',
+      SEO_BASE_KEYWORDS: '',
+      FORUM_MESSAGE_PAGE_SIZE: '',
+      FORUM_TOPIC_PAGE_SIZE: '',
+      FORUM_USER_PAGE_SIZE: '',
     })
   ].filter(Boolean),
 };

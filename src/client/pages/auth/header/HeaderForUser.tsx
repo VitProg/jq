@@ -1,12 +1,12 @@
 import React, { FC, useCallback, useState } from 'react'
 import { observer } from 'mobx-react-lite'
-import { UserAvatar } from '../../components/User/UserAvatar'
+import { UserAvatar } from '../../../components/User/UserAvatar'
 import { Menu, MenuItem } from '@material-ui/core'
-import { User } from '../../../common/forum/models/user'
-import { RouteLink } from '../../components/Route/RouteLink'
-import { useInjection } from '../../ioc/ioc.react'
-import { AuthServiceSymbol } from '../../services/ioc.symbols'
-import { IAuthService } from '../../services/my/types'
+import { User } from '../../../../common/forum/models/user'
+import { RouteLink } from '../../../components/Route/RouteLink'
+import { useInjection } from '../../../ioc/ioc.react'
+import { AuthServiceSymbol } from '../../../services/ioc.symbols'
+import { IAuthService } from '../../../services/my/types'
 
 
 interface Props {

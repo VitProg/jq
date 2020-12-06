@@ -1,7 +1,8 @@
 import { RootStore } from './root.store'
+import { IRootStore, IRouteStore } from './types'
 
 
-export const store = new RootStore()
+export const store: IRootStore = new RootStore()
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 if (isDevelopment) {

@@ -9,8 +9,11 @@ import { MessageRelationsRecord } from '../../common/forum/forum.entity-relation
 import { RoutePagination } from '../components/Route/RoutePagination'
 import { Container } from '@material-ui/core'
 import { routes } from '../routing'
-import { MessagesServiceSymbol } from '../services/ioc.symbols'
-import { IMessagesService } from '../services/forum/types'
+import { ForumServiceSymbol, MessageServiceSymbol } from '../services/ioc.symbols'
+import { IForumService, IMessageService } from '../services/forum/types'
+import { store } from '../store'
+import { mute } from '../../common/utils/promise'
+import { usePage } from '../hooks/use-page'
 
 
 interface Props {
@@ -18,61 +21,29 @@ interface Props {
 }
 
 export const LastMessagesPage: FC<Props> = observer(function LastMessagesPage (props: Props) {
-  const messagesService = useInjection<IMessagesService>(MessagesServiceSymbol)
-  const { uiStore } = useStore()
+// debugger
+  const { uiStore, forumStore } = useStore()
 
-  const [data, setData] = useState<{
-    messages: IMessage[]
-    relations: MessageRelationsRecord,
-    meta: IPaginationMeta
-  }>()
+  const [page] = usePage(props)
 
-  const routePage = props.page ?? 1
-  const [page, setPage] = useState(routePage)
+  store.seoStore.setTitle('Последние сообщения')
+  if (page > 1) {
+    store.seoStore.addTitle(`Страница: ${page}`)
+  }
 
-  useEffect(() => {
-    setPage(routePage)
-  }, [routePage])
+  /// todo
+  const pageData = forumStore.messageStore.getPage({
+    page,
+    type: 'latest',
+  })
 
-  useEffect(() => {
-    uiStore.setLoading(true)
-
-    const promise = messagesService.latest({page})
-
-    promise
-      .finally(() => {
-        uiStore.setLoading(false)
-      })
-      .then(response => {
-        if (response) {
-          setData({
-            messages: response.items,
-            meta: response.meta,
-            relations: {
-              user: response.relations?.user,
-              topic: response.relations?.topic,
-              board: response.relations?.board,
-            }
-          })
-        } else {
-          setData(undefined)
-        }
-      })
-      .catch(err => {
-        console.warn(err)
-      })
-
-    return () => {
-      if (promise && !promise.isCanceled()) {
-        promise.cancel()
-      }
-    }
-  }, [page])
+  const relationData = forumStore.getRelations('message', pageData?.items)
+  /// ----
 
   const pagination =
     <RoutePagination
-      count={data?.meta.totalPages ?? props?.page ?? 1}
-      page={uiStore.loading ? props.page : (data?.meta.currentPage ?? props?.page ?? 1)}
+      count={pageData?.meta.totalPages ?? (props?.page ?? -1) + 2}
+      page={uiStore.loading ? props.page : (pageData?.meta.currentPage ?? props?.page ?? 1)}
       route={p => routes.lastMessages({ page: p.page })}
     />
 
@@ -80,8 +51,8 @@ export const LastMessagesPage: FC<Props> = observer(function LastMessagesPage (p
     <Container>
       {pagination}
       <MessageList
-        messages={uiStore.loading ? undefined : data?.messages}
-        relations={data?.relations}
+        messages={uiStore.loading ? undefined : pageData?.items}
+        relations={relationData}
       />
       {pagination}
     </Container>

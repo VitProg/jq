@@ -2,14 +2,14 @@ import React, { FC } from 'react'
 import { AppBar, Button, Link, Toolbar, Typography } from '@material-ui/core'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '../hooks/use-store'
-import { HeaderForUser } from '../pages/auth/HeaderForUser'
-import { HeaderForGuest } from '../pages/auth/HeaderForGuest'
+import { HeaderForUser } from '../pages/auth/header/HeaderForUser'
+import { HeaderForGuest } from '../pages/auth/header/HeaderForGuest'
 import { RouteLink } from '../components/Route/RouteLink'
 
 
 export const Header: FC = observer(function Header(props) {
 
-  const { userStore } = useStore()
+  const { myStore } = useStore()
   return (
     <header>
       <AppBar position="static">
@@ -23,8 +23,8 @@ export const Header: FC = observer(function Header(props) {
           {/*<Button variant="outlined" color="primary" component={Link} to="/messages">*/}
           {/*  Last messages*/}
           {/*</Button>*/}
-          {userStore.user ?
-            <HeaderForUser user={userStore.user}/> :
+          {myStore.user ?
+            <HeaderForUser user={myStore.user}/> :
             <HeaderForGuest/>
           }
         </Toolbar>

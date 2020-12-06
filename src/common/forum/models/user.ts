@@ -1,6 +1,5 @@
-import { IUser as IUser, IUserGroup } from '../forum.interfaces'
-import { ForumConfiguration, Gender } from '../forum.constants'
-import { ObjectID } from 'typeorm'
+import { IUser as IUser } from '../forum.interfaces'
+import { Gender } from '../forum.constants'
 import slug from 'slug'
 
 
@@ -20,10 +19,6 @@ export class User implements IUser {
   // groups?: IUserGroup[]
   groupIds!: number[]
   lastLogin?: Date
-
-  get avatarUrl () {
-    return this.avatar ? ForumConfiguration.avatarBaseUrl + this.avatar : undefined
-  }
 
   get name () {
     return this.displayName ?? this.login
