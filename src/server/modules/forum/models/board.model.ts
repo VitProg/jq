@@ -1,5 +1,6 @@
 import { IBoard, ICategory } from '../../../../common/forum/forum.interfaces'
 import { ApiProperty } from '@nestjs/swagger'
+import { CategoryModel } from './category.model'
 
 
 export class BoardModel implements IBoard {
@@ -16,14 +17,17 @@ export class BoardModel implements IBoard {
   description!: string
 
   @ApiProperty()
+  forGroups?: number[]
+
+  @ApiProperty()
+  order!: number
+
+  @ApiProperty()
   linksId!: {
+    parent: number
     category: number
   }
 
   @ApiProperty()
-  category?: {
-    id: number
-    name: string
-    order: number
-  }
+  parent?: BoardModel
 }

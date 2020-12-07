@@ -10,7 +10,6 @@ import cookieParser from 'cookie-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 
-
 async function bootstrap () {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
 

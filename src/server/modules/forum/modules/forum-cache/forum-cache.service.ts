@@ -114,7 +114,14 @@ export class ForumCacheService {
       this._getBoardMap = toMap(fromRedis)
     } else {
       console.log(' - boards from DB', forceFromDb)
-      const entityList = await this.boardRepository.find()
+      const entityList = await this.boardRepository.find({
+        where: {
+          hidden: 0
+        },
+        order: {
+          boardOrder: 'ASC'
+        }
+      })
       this._getBoardMap = toBoardMap(entityList)
       Object.values(this._getBoardMap).forEach(board => board.category = this._getCategoryMap.get(board.linksId.category))
       const result = await this.redis.setex(BOARDS_KEY, EXPIRED, JSON.stringify([...this._getBoardMap.values()]))

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { AttachmentEntity, BoardEntity, MemberEntity, MessageEntity, RelatedSubjectEntity, TopicEntity } from '../../../../entities'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 import { toTopic, toTopicMap, toUser, toUserMap } from '../../utils/mapper'
-import { AnyObject } from '../../../../../common/utils/object'
+import { AnyObject } from '../../../../../common/utils/types'
 
 @Injectable()
 export class TopicService {

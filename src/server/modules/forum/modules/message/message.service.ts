@@ -8,8 +8,8 @@ import { BoardsIgnored } from '../../constants'
 import { toMessage } from '../../utils/mapper'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UserService } from '../../../user/user.service'
-import { BoardService } from '../board/board.service'
 import { TopicService } from '../topic/topic.service'
+import { BoardService } from '../board/board.service'
 
 
 @Injectable()
@@ -25,7 +25,8 @@ export class MessageService {
 
   async getLastMessages (
     options: IPaginationOptions,
-    withRelations: MessageRelationsArray = MessageAllRelations
+    withRelations: MessageRelationsArray = MessageAllRelations,
+    boardIds: number[] = []
   ): Promise<ILatestMessageResponse> {
     const findOptions: FindManyOptions<MessageEntity> = {
       order: {
@@ -33,7 +34,7 @@ export class MessageService {
         updateTimestamp: 'DESC',
       },
       where: {
-        idBoard: Not(In(BoardsIgnored)),
+        idBoard: !boardIds ? Not(In(BoardsIgnored)) : In(boardIds),
         approved: 1,
       }
     }

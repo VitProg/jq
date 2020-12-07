@@ -3,6 +3,8 @@ import { BoardModule } from './modules/board/board.module'
 import { TopicModule } from './modules/topic/topic.module'
 import { ForumCacheModule } from './modules/forum-cache/forum-cache.module'
 import { MessageModule } from './modules/message/message.module'
+import { CategoryModule } from './modules/category/category.module';
+
 
 
 @Module({
@@ -11,12 +13,13 @@ import { MessageModule } from './modules/message/message.module'
     BoardModule,
     MessageModule,
     TopicModule,
+    CategoryModule,
   ],
   exports: [
     BoardModule,
     MessageModule,
     TopicModule,
-  ]
+  ],
 })
 export class ForumModule {
 }

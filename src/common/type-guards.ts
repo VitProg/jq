@@ -1,4 +1,4 @@
-import { AnyObject } from './utils/object'
+import { AnyObject } from './utils/types'
 
 
 export const isArray = <V>(val: any): val is Array<V> => {

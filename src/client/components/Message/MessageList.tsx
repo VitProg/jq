@@ -1,7 +1,11 @@
 import React, { FC } from 'react'
 import { Box } from '@material-ui/core'
 import { IMessage } from '../../../common/forum/forum.interfaces'
-import { MessageRelationsRecord } from '../../../common/forum/forum.entity-relations'
+import {
+  MessageRelations,
+  MessageRelationsRecord,
+  MessageRelationsSingle
+} from '../../../common/forum/forum.entity-relations'
 import { MessageItem } from './MessageItem'
 import { observer } from 'mobx-react-lite'
 import { MessageItemSkeleton } from './MessageItemSkeleton'
@@ -13,6 +17,21 @@ interface Props {
 }
 
 const skeletons = [79, 120, 60, 100, 88]
+
+const getRelations = (message: IMessage, relations?: MessageRelationsRecord) => {
+  const result: MessageRelationsSingle = {
+    topic: relations?.topic?.[message.linksId.topic],
+    board: relations?.board?.[message.linksId.board],
+    user: relations?.user?.[message.linksId.user],
+  }
+
+  const categoryId = result.board?.linksId.category
+  if (categoryId && relations?.category) {
+    result.category = relations?.category[categoryId]
+  }
+
+  return result
+}
 
 export const MessageList: FC<Props> = observer(function MessageList (props) {
 
@@ -29,11 +48,7 @@ export const MessageList: FC<Props> = observer(function MessageList (props) {
               <MessageItem
                 key={message.id}
                 message={message}
-                relations={{
-                  topic: props.relations?.topic?.[message.linksId.topic],
-                  board: props.relations?.board?.[message.linksId.board],
-                  user: props.relations?.user?.[message.linksId.user],
-                }}
+                relations={getRelations(message, props.relations)}
               />
             )
           )

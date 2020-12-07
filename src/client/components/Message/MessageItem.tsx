@@ -37,11 +37,11 @@ export const MessageItem: FC<Props> = (props) => {
   const subjects: any[] = []
 
   const { message } = props
-  const { board, topic } = props.relations ?? { board: undefined, topic: undefined }
+  const { board, topic, category } = props.relations ?? { board: undefined, topic: undefined, category: undefined, }
   const user = createUserModel(props.relations?.user)
 
-  if (board?.category?.name) {
-    subjects.push(board?.category?.name)
+  if (category?.name) {
+    subjects.push(category?.name)
   }
   if (board?.name) {
     subjects.push(board?.name)

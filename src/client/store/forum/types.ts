@@ -1,13 +1,12 @@
 import { IRouteStore, IUIStore } from '../types'
 import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/forum/forum.interfaces'
-import { AnyObject } from '../../../common/utils/object'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
+import { AnyObject, GetFirstArgumentType, PartialBy } from '../../../common/utils/types'
 
 
 export type Hash = string
 export type Model = AnyObject & {id: number, linksId?: Partial<Record<ForumStoreType, number>>}
-
-
+export type RequestStatus = 'loaded' | 'pending' | 'error'
 
 export interface IForumStore {
   readonly routeStore: IRouteStore
@@ -25,6 +24,8 @@ export interface IForumStore {
   ): RelationsMap<DataType>
 
   getStore<DataType extends ForumStoreType> (dataType: DataType): GetForumStore<DataType>
+
+  clearAll(): void
 }
 
 export interface IMessageStore extends DataStorePages<IMessage, MessageDataPageProps> {
@@ -63,12 +64,17 @@ export type TopicDataPageProps = {
 
 export type PageData<T extends Model, PageProps extends { meta: IPaginationMeta } > = {items: Array<T>, meta: IPaginationMeta, props: PageProps}
 
+export type DataStoreGetMethods = 'get' | 'getMany' | 'getAll'
+
 export type DataStore<T extends Model, DataEx extends AnyObject = {}, ItemEx extends AnyObject = {}> = {
   forumStore: IForumStore
   items: Map<number, DataItem<T, ItemEx>>
+  statuses: Map<string, RequestStatus>
   maxStoredItems?: number
   defaultExpireIn?: number
+
   flush (): void
+  clear (): void
 
   set (data: DataStoreSetData<T>): void
 
@@ -81,18 +87,31 @@ export type DataStore<T extends Model, DataEx extends AnyObject = {}, ItemEx ext
     asRecord: AsRecord,
   ): undefined | (AsRecord extends true ? Record<number, T> : T[])
 
+  getAll <AsRecord extends true | false = false>(
+    asRecord: AsRecord,
+  ): AsRecord extends true ? Record<number, T> : T[]
+
+  getStatus <M extends DataStoreGetMethods>(type: M, props: GetFirstArgumentType<DataStore<T, DataEx, ItemEx>[M]>): RequestStatus | undefined
+  setStatus <M extends DataStoreGetMethods>(type: M, props: GetFirstArgumentType<DataStore<T, DataEx, ItemEx>[M]>, status: RequestStatus | undefined): void
 } & DataEx
 
+export type DataStorePagesGetMethods = DataStoreGetMethods | 'getPage'
+
+
 export type DataStorePages<T extends Model, PageProps extends { meta: IPaginationMeta }, DataEx extends AnyObject = {}, ItemEx extends AnyObject = {}> =
-  Omit<DataStore<T, DataEx, { hash: Hash[] } & ItemEx>, 'set' | 'setMany'> &
+  Omit<DataStore<T, DataEx, { hash: Hash[] } & ItemEx>, 'set' | 'setMany' | 'getStatus' | 'setStatus'> &
   {
     pages: Record<Hash, PageProps>
 
     getPage (data: DataStorePagesGetPageData<PageProps>): {items: T[], meta: IPaginationMeta} | undefined
+    getPageMeta (data: DataStorePagesGetPageMetaData<PageProps>): Omit<IPaginationMeta, 'currentPage'> | undefined
 
     set (data: DataStorePagesSetData<PageProps, T>): void
     setMany (data: DataStorePagesSetManyData<PageProps, T>): void
     setPage (data: DataStorePagesSetManyData<PageProps, T>): void
+
+    getStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<DataStorePages<T, PageProps, DataEx, ItemEx>[M]>): RequestStatus | undefined
+    setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<DataStorePages<T, PageProps, DataEx, ItemEx>[M]>, status: RequestStatus | undefined): void
   }
 
 export type DataItem<T extends Model, ItemEx extends AnyObject = {}> = {
@@ -106,6 +125,7 @@ export type DataStoreSetManyData<T extends Model> = {items: T[] | Record<number,
 export type DataStorePagesSetData<PageProps extends { meta: IPaginationMeta }, T extends Model> = DataStoreSetData<T> & {pageProps?: PageProps}
 export type DataStorePagesSetManyData<PageProps extends { meta: IPaginationMeta }, T extends Model> = DataStoreSetManyData<T> & {pageProps?: PageProps}
 export type DataStorePagesGetPageData<PageProps extends { meta: IPaginationMeta }> = Omit<PageProps, 'meta'> & { page: number }
+export type DataStorePagesGetPageMetaData<PageProps extends { meta: IPaginationMeta }> = Omit<PageProps, 'meta'>
 export type DataStorePagesSetPageData<PageProps extends { meta: IPaginationMeta }, T extends Model> = PageData<T, PageProps>
 
 type _ExtractPageProps<T> = T extends DataStorePages<any, infer PageProps> ? PageProps : never

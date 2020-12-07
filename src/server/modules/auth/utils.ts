@@ -1,5 +1,6 @@
 import { IUser } from '../../../common/forum/forum.interfaces'
 import { JwtRefreshTokenStrategyValidatePayload, JwtStrategyValidatePayload } from './types'
+import { ExecutionContext } from '@nestjs/common'
 
 export function lastLoginForJwt (lastLogin: Date | undefined) {
   return lastLogin ? (lastLogin.getTime() / 1000) >>> 0 : -1
@@ -23,4 +24,10 @@ export function userToJwtRefreshPayload (user: IUser, fingerprintLight: any): Om
     // avatar: user.avatar,
     fingerprintLight: fingerprintLight,
   }
+}
+
+
+export const getUserFromContext = (ctx: ExecutionContext): IUser | undefined => {
+  const request = ctx.switchToHttp().getRequest()
+  return request.user
 }

@@ -44,9 +44,13 @@ export interface IBoard {
   url: string
   name: string
   description: string
+  forGroups?: number[]
+  order: number
   linksId: {
+    parent: number
     category: number
   }
+  parent?: IBoard
   category?: ICategory
 }
 

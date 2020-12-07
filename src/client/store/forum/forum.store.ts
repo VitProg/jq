@@ -38,25 +38,50 @@ export class ForumStore implements IForumStore {
     // todo check it
     if (items) {
       for (const item of items as Model[]) {
-        if (item.linksId) {
-          for (const [dt, id] of Object.entries(item.linksId)) {
-            if (id && dt in relations) {
-              const store = this.getStore(dt as ForumStoreType)
-              const item = store.get(id)
-              if (item) {
-                (relations as any)[dt][id] = item
-              }
-            }
+        this.fillRelations(relations, item.linksId, dataType)
+      }
+    }
+    return relations
+  }
+
+  private fillRelations = (
+    relations: RelationsMap<any>,
+    linksId: Partial<Record<ForumStoreType, number>> | undefined,
+    currentType: ForumStoreType
+  ) => {
+    if (!linksId) {
+      return
+    }
+
+    for (const [dt, id] of Object.entries(linksId)) {
+      if (id) {
+        if (!(dt in relations)) {
+          (relations as any)[dt] = {}
+        }
+
+        if (!(id in (relations as any)[dt])) {
+          const dataType = (dt === 'parent' ? currentType : dt) as ForumStoreType
+          const store = this.getStore(dataType)
+          const item = store.get(id) as Model
+          if (item) {
+            (relations as any)[dt][id] = item
+
+            this.fillRelations(relations, item.linksId, dataType)
           }
         }
       }
     }
-
-    return relations
   }
 
   getStore<DataType extends ForumStoreType> (dataType: DataType): GetForumStore<DataType> {
     return (this as any)[dataType + 'Store']
   }
 
+  clearAll () {
+    this.messageStore.clear()
+    this.boardStore.clear()
+    this.categoryStore.clear()
+    this.topicStore.clear()
+    this.userStore.clear()
+  }
 }

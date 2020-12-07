@@ -29,6 +29,7 @@ export class ConfigStore implements IConfigStore {
   readonly seoBaseDescription: string | undefined
   readonly seoBaseKeywords: string[]
   readonly forumMessagePageSize: number
+  readonly forumMessageLatestMaxPages: number
   readonly forumTopicPageSize: number
   readonly forumUserPageSize: number
 
@@ -41,6 +42,7 @@ export class ConfigStore implements IConfigStore {
     this.seoBaseDescription = stringValue(process.env.SEO_BASE_DESCRIPTION)
     this.seoBaseKeywords = stringValue(process.env.SEO_BASE_KEYWORDS, '').split(', ')
     this.forumMessagePageSize = intValue(process.env.FORUM_MESSAGE_PAGE_SIZE, 10)
+    this.forumMessageLatestMaxPages = intValue(process.env.FORUM_MESSAGE_LATEST_MAX_PAGES, 10)
     this.forumTopicPageSize = intValue(process.env.FORUM_TOPIC_PAGE_SIZE, 25)
     this.forumUserPageSize = intValue(process.env.FORUM_USER_PAGE_SIZE, 20)
 

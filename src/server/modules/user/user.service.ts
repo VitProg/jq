@@ -8,10 +8,10 @@ import { IPaginationOptions } from 'nestjs-typeorm-paginate'
 import { IActiveUsersResponse } from '../../../common/responses/forum.responses'
 import { IUser } from '../../../common/forum/forum.interfaces'
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral'
-import { AnyObject } from '../../../common/utils/object'
 import { PermissionService } from './permission/permission.service'
 import { WithFields } from './types'
 import { UserGroupService } from './user-group/user-group.service'
+import { AnyObject } from '../../../common/utils/types'
 
 
 @Injectable()

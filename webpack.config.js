@@ -84,8 +84,13 @@ module.exports = {
       SEO_BASE_DESCRIPTION: '',
       SEO_BASE_KEYWORDS: '',
       FORUM_MESSAGE_PAGE_SIZE: '',
+      FORUM_MESSAGE_LATEST_MAX_PAGES: '',
       FORUM_TOPIC_PAGE_SIZE: '',
       FORUM_USER_PAGE_SIZE: '',
+    }),
+    new webpack.DefinePlugin({
+      PRODUCTION: JSON.stringify(!isDevelopment),
+      DEVELOPMENT: JSON.stringify(isDevelopment),
     })
   ].filter(Boolean),
 };

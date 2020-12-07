@@ -24,6 +24,7 @@ export interface IConfigStore {
   readonly seoBaseKeywords: string[]
 
   readonly forumMessagePageSize: number
+  readonly forumMessageLatestMaxPages: number
   readonly forumTopicPageSize: number
   readonly forumUserPageSize: number
 

@@ -2,29 +2,37 @@ import { isArray, isObject } from '../../../common/type-guards'
 import {
   BoardRelationsMap,
   DataItem,
-  DataStore,
-  DataStorePages,
-  DataStorePagesGetPageData,
+  DataStore, DataStoreGetMethods,
+  DataStorePages, DataStorePagesGetMethods,
+  DataStorePagesGetPageData, DataStorePagesGetPageMetaData,
   DataStorePagesSetData,
   DataStorePagesSetManyData,
   DataStoreSetData,
-  DataStoreSetManyData,
-  ForumStoreType,
+  DataStoreSetManyData, ForumNoPagesStoreType, ForumPagesStoreType,
+  ForumStoreType, GetForumStore,
   Hash,
   MessageDataPageProps,
   MessageRelationsMap,
   Model,
-  RelationsMap,
+  RelationsMap, RequestStatus,
   TopicRelationsMap
 } from './types'
-import { AnyObject, omit } from '../../../common/utils/object'
+import { omit } from '../../../common/utils/object'
 import { runInAction, transaction } from 'mobx'
-import { IPaginationMeta } from 'nestjs-typeorm-paginate'
+import { AnyObject, GetFirstArgumentType } from '../../../common/utils/types'
+import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
 
 
-export const IsMessageDataPageProps = (val: any): val is MessageDataPageProps =>
+export const isMessageDataPageProps = (val: any): val is MessageDataPageProps =>
   isObject(val) && 'type' in val
 
+export const isDataStore = <T extends ForumNoPagesStoreType | undefined>(val: any, type?: T): val is (T extends ForumStoreType ? GetForumStore<T> : DataStore<any>) => {
+  return isObject(val) && 'items' in val && 'forumStore' in val && 'statuses' in val && 'flush' in val &&
+    (type ? 'name' in val && val.name === type : true)
+}
+export const isDataStorePages = <T extends ForumPagesStoreType | undefined>(val: any, type?: T): val is (T extends ForumPagesStoreType ? GetForumStore<T> : DataStorePages<any, any>) => {
+  return isDataStore(val, type as any) && 'pages' in val
+}
 
 export const getBlankRelationsMap = <DataType extends ForumStoreType> (dataType: DataType): RelationsMap<DataType> => {
   if (dataType === 'message') {
@@ -60,7 +68,22 @@ export const dataStoreFlush = (store: DataStore<any>) => {
       if (now > expireAt) {
         debugger
         store.items.delete(key)
+
+        if (isDataStorePages(store)) {
+          // todo delete page
+        }
       }
+    }
+  })
+}
+
+export const dataStoreClear = (store: DataStore<any> | DataStorePages<any, any>) => {
+  runInAction(() => {
+    store.statuses.clear()
+    store.items.clear()
+
+    if (isDataStorePages(store)) {
+      store.pages = {}
     }
   })
 }
@@ -136,6 +159,7 @@ export const dataStorePagesSet = <DS extends DataStorePages<Item, PageProps>,
     const savePages = !_pageHash
 
     const pageHash = _pageHash ?? (data.pageProps ? dataStoreGetPageHash(data.pageProps.meta.currentPage, data.pageProps) : undefined)
+    const pageHashMulti = !_pageHash && data.pageProps ? dataStoreGetPageHash('*', data.pageProps) : undefined
 
     if (exist) {
       store.items.set(data.item.id, {
@@ -160,11 +184,21 @@ export const dataStorePagesSet = <DS extends DataStorePages<Item, PageProps>,
 
     if (savePages) {
       const page = (pageHash ? store.pages[pageHash] : undefined) ?? data.pageProps
-
       if (page && pageHash) {
         store.pages = {
           ...store.pages,
           [pageHash]: page,
+        }
+      }
+
+      const pageMulti = (pageHashMulti ? store.pages[pageHashMulti] : undefined) ?? data.pageProps
+      if (pageMulti && pageHashMulti) {
+        store.pages = {
+          ...store.pages,
+          [pageHashMulti]: {
+            ...pageMulti,
+            meta: omit(pageMulti.meta, 'currentPage'),
+          },
         }
       }
     }
@@ -185,6 +219,7 @@ export const dataStorePagesSetMany = <DS extends DataStorePages<Item, PageProps>
     }
 
     const pageHash = data.pageProps ? dataStoreGetPageHash(data.pageProps.meta.currentPage, data.pageProps) : undefined
+    const pageHashMulti = data.pageProps ? dataStoreGetPageHash('*', data.pageProps) : undefined
 
     const items = isArray(data.items) ? data.items : Object.values(data.items)
     for (const item of items) {
@@ -201,11 +236,21 @@ export const dataStorePagesSetMany = <DS extends DataStorePages<Item, PageProps>
     }
 
     const page = (pageHash ? store.pages[pageHash] : undefined) ?? data.pageProps
-
     if (page && pageHash) {
       store.pages = {
         ...store.pages,
         [pageHash]: page,
+      }
+    }
+
+    const pageMulti = (pageHashMulti ? store.pages[pageHashMulti] : undefined) ?? data.pageProps
+    if (pageMulti && pageHashMulti) {
+      store.pages = {
+        ...store.pages,
+        [pageHashMulti]: {
+          ...pageMulti,
+          meta: omit(pageMulti.meta, 'currentPage'),
+        },
       }
     }
   })
@@ -235,6 +280,25 @@ export const dataStoreGetMany = <DS extends DataStore<Item>, Item extends Model,
   }
 }
 
+export const dataStoreGetAll = <DS extends DataStore<Item>, Item extends Model, AsRecord extends true | false = false> (
+  store: DS,
+  asRecord?: AsRecord,
+): AsRecord extends true ? Record<number, Item> : Item[] => {
+  if (asRecord) {
+    const map: any = {}
+    for (const [id, item] of store.items) {
+      map[id] = item
+    }
+    return map
+  } else {
+    const arr: any = []
+    for (const [, item] of store.items) {
+      arr.push(item)
+    }
+    return arr
+  }
+}
+
 export const dataStorePagerGetPage = <Item extends Model,
   PageProps extends { meta: IPaginationMeta }> (
   store: DataStorePages<Item, PageProps>,
@@ -260,9 +324,57 @@ export const dataStorePagerGetPage = <Item extends Model,
   }
 }
 
+export const dataStorePagerGetPageMeta = <
+  Item extends Model,
+  PageProps extends { meta: IPaginationMeta }
+> (
+  store: DataStorePages<Item, PageProps>,
+  data: DataStorePagesGetPageMetaData<PageProps>,
+): Omit<IPaginationMeta, 'currentPage'> | undefined => {
+  const pageHash = dataStoreGetPageHash('*', data)
+  const page = store.pages[pageHash]
+
+  if (!page) {
+    return undefined
+  }
+
+  return omit(page.meta, 'currentPage')
+}
+
+export const dataStoreGetStatus = <
+  Item extends Model,
+  M extends DataStorePagesGetMethods | DataStoreGetMethods,
+>(
+  store: DataStore<Item, any> | DataStorePages<Item, any>,
+  type: M,
+  props: any
+): RequestStatus | undefined => {
+  const hash = dataStoreGetStatusHash(type, props)
+  return store.statuses.get(hash)
+}
+
+export const dataStoreSetStatus = <
+  Item extends Model,
+  M extends DataStorePagesGetMethods | DataStoreGetMethods,
+>(
+  store: DataStore<Item, any> | DataStorePages<Item, any>,
+  type: M,
+  props: any,
+  status: RequestStatus | undefined,
+): void => {
+  runInAction(() => {
+    const hash = dataStoreGetStatusHash(type, props)
+    if (status) {
+      store.statuses.set(hash, status)
+    } else {
+      store.statuses.delete(hash)
+    }
+  })
+}
+
 
 export const dataStoreGetPageHash = (
-  page: number,
+  page: number | '*',
   pageProps: AnyObject,
 ): Hash => {
   const arr = [
@@ -275,6 +387,28 @@ export const dataStoreGetPageHash = (
         .map(a => a[1])
     )
   ]
+  return arr.join(':')
+}
+
+export const dataStoreGetStatusHash = (
+  type: string,
+  props: any,
+): string => {
+  const arr: string[] = [type]
+  if (isObject(props)) {
+    arr.push(...(
+      Object
+        .entries(props)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(a => a[1])
+    ))
+  } else if (isArray(props)) {
+    arr.push(...(props.map((v: any) => v.toString())))
+  } else {
+    try {
+      arr.push(JSON.stringify(props))
+    } catch {}
+  }
   return arr.join(':')
 }
 

@@ -24,9 +24,7 @@ authService.refreshToken(true)
       store.uiStore.setDarkMode(prefersDarkMode)
 
       const forumService = container.get<IForumService>(ForumServiceSymbol)
-
-      mute(forumService.prepareAllData('board'))
-      mute(forumService.prepareAllData('category'))
+      // forumService.prepare()
 
       return (
         <IocProvider container={container}>

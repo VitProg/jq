@@ -2,11 +2,11 @@ import React, { DOMAttributes, HTMLAttributes, ReactElement, ReactNode, useCallb
 import { preventDefaultLinkClickBehavior } from 'type-route'
 
 import { Button, Link, MenuItem } from '@material-ui/core'
-import { AnyObject } from '../../../common/utils/object'
 import { isFunction } from '../../../common/type-guards'
 import { OverridableComponent } from '@material-ui/core/OverridableComponent'
 import { AppRouteKeys, ExtractRouteProps } from '../../routing/types'
 import { routes } from '../../routing'
+import { AnyObject } from '../../../common/utils/types'
 
 
 const a = document.createElement('a')

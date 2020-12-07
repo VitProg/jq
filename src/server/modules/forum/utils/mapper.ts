@@ -30,7 +30,7 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
   if (member.idGroup > 0) {
     groupIds.add(member.idGroup)
   }
-  const addGroups = member.additionalGroups.split(',').map(parseInt).filter(isNumber)
+  const addGroups = member.additionalGroups.split(',').filter(Boolean).map(group => parseInt(group, 10))
   for (const addGroup of addGroups) {
     groupIds.add(addGroup)
   }
@@ -107,7 +107,10 @@ export function toBoard (board: BoardEntity): IBoard {
     name: board.name,
     description: board.description,
     url: board.url,
+    forGroups: board.memberGroups.split(',').map(g => parseInt(g, 10)),
+    order: board.boardOrder,
     linksId: {
+      parent: board.idParent,
       category: board.idCat,
     },
   }

@@ -1,13 +1,14 @@
 import { makeAutoObservable } from 'mobx'
-import { IMessageService } from './types'
-import { inject } from '../../ioc/ioc.decoratos'
-import { IApiService, LastMessageRequest } from '../types'
-import { ILatestMessageResponse } from '../../../common/responses/forum.responses'
-import { asCancelablePromise } from '../utils'
-import { ApiServiceSymbol } from '../ioc.symbols'
+import { IMessageService } from '../types'
+import { inject } from '../../../ioc/ioc.decoratos'
+import { IApiService, LastMessageRequest } from '../../types'
+import { ILatestMessageResponse } from '../../../../common/responses/forum.responses'
+import { asCancelablePromise } from '../../utils'
+import { ApiServiceSymbol } from '../../ioc.symbols'
 
 const LATEST_MAX_PAGES = 10
 const LATEST_PAGE_SIZE = 10
+const WITH_RELATIONS: Array<'board' | 'topic' | 'user'> = ['user', 'topic']
 
 export class MessageService implements IMessageService {
   @inject(ApiServiceSymbol) api!: IApiService
@@ -19,7 +20,7 @@ export class MessageService implements IMessageService {
   latest (params: LastMessageRequest) {
     const searchParams: typeof params = {
       pageSize: LATEST_PAGE_SIZE,
-      relations: ['board', 'user', 'topic'],
+      relations: WITH_RELATIONS,
       ...params
     }
 
