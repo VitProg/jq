@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "dependabot"
+      prefix: "bot"
     open-pull-requests-limit: 10
     pull-request-branch-name:
       separator: "-"
@@ -23,7 +23,7 @@ updates:
     schedule:
       interval: "weekly"
     commit-message:
-      prefix: "dependabot-docker"
+      prefix: "bot-docker"
     open-pull-requests-limit: 4
     pull-request-branch-name:
       separator: "-"
