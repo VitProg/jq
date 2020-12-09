@@ -1,17 +1,6 @@
 import { ApiSendConfig } from './my/types'
 
 
-export interface LastMessageRequest {
-  relations?: Array<'board' | 'topic' | 'user'>
-  pageSize?: number
-  page?: number
-}
-
-export interface LoginRequest {
-  username: string
-  password: string
-}
-
 export interface IApiService {
   send<T> (config: ApiSendConfig<T>): Promise<T | undefined>
 

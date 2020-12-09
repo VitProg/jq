@@ -1,4 +1,18 @@
-import { DataStore, ExtractItem, ForumStoreType, GetForumStore, IBoardStore, ICategoryStore, IForumStore, IMessageStore, ITopicStore, IUserStore, Model, RelationsMap } from './types'
+import {
+  DataStore,
+  ExtractItem,
+  ForumStoreType,
+  ForumStoreTypeEX,
+  GetForumStore,
+  IBoardStore,
+  ICategoryStore,
+  IForumStore,
+  IMessageStore,
+  ITopicStore,
+  IUserStore,
+  Model,
+  RelationsMap
+} from './types'
 import { IRouteStore, IUIStore } from '../types'
 import { getBlankRelationsMap } from './utils'
 import { BoardStore } from './board.store'
@@ -62,18 +76,29 @@ export class ForumStore implements IForumStore {
         if (!(id in (relations as any)[dt])) {
           const dataType = (dt === 'parent' ? currentType : dt) as ForumStoreType
           const store = this.getStore(dataType)
-          const item = store.get(id) as Model
-          if (item) {
-            (relations as any)[dt][id] = item
+          if (!store) {
+            console.warn(`DataStore for ${dataType} not found!`)
+          } else {
+            const item = store.get(id) as Model
+            if (item) {
+              (relations as any)[dt][id] = item
 
-            this.fillRelations(relations, item.linksId, dataType)
+              this.fillRelations(relations, item.linksId, dataType)
+            }
           }
         }
       }
     }
   }
 
-  getStore<DataType extends ForumStoreType> (dataType: DataType): GetForumStore<DataType> {
+  getStore<DataType extends ForumStoreTypeEX> (dataType: DataType): GetForumStore<DataType> {
+    switch (dataType) {
+      case 'firstMessage':
+      case 'lastMessage':
+        return this.messageStore as GetForumStore<DataType>
+      case 'lastTopic':
+        return this.topicStore as GetForumStore<DataType>
+    }
     return (this as any)[dataType + 'Store']
   }
 

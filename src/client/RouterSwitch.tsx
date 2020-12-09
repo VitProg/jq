@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react'
 import { IndexPage } from './pages/Index.page'
-import { LastMessagesPage } from './pages/LastMessages.page'
+import { LastMessageListPage } from './pages/LastMessageList.page'
 import { LoginModal } from './pages/auth/login-modal/LoginModal'
 import { ProfilePage } from './pages/my/Profile.page'
 import { observer } from 'mobx-react-lite'
@@ -11,6 +11,9 @@ import { routerSession, routes } from './routing'
 import { ifRoute } from './routing/utils'
 import { RegistrationModal } from './pages/auth/registration-modal/RegistrationModal'
 import { ForgotPasswordModal } from './pages/auth/forgot-password-modal/ForgotPasswordModal'
+import { BoardListPage } from './pages/BoardList.page'
+import { BoardTopicList } from './pages/BoardTopicList.page'
+import { TopicMessageListPage } from './pages/TopicMessageList.page'
 
 
 export const RouterSwitch: FC = observer(function RouterSwitch () {
@@ -60,13 +63,25 @@ export const RouterSwitch: FC = observer(function RouterSwitch () {
       {ifRoute({
         name: 'index',
         route: store.routeStore.noModalRoute,
-        render: route => <IndexPage />,
+        render: route => <BoardListPage />,
       })}
 
       {ifRoute({
         name: 'lastMessages',
         route: store.routeStore.noModalRoute,
-        render: route => <LastMessagesPage  page={route.params.page ?? 1}/>,
+        render: route => <LastMessageListPage page={route.params.page ?? 1}/>,
+      })}
+
+      {ifRoute({
+        name: 'boardTopicList',
+        route: store.routeStore.noModalRoute,
+        render: route => <BoardTopicList page={route.params.page ?? 1} board={route.params.board}/>,
+      })}
+
+      {ifRoute({
+        name: 'topicMessageList',
+        route: store.routeStore.noModalRoute,
+        render: route => <TopicMessageListPage page={route.params.page ?? 1} topic={route.params.topic}/>,
       })}
 
       {ifRoute({

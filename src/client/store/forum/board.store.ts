@@ -37,18 +37,18 @@ export class BoardStore implements IBoardStore {
     when(
       () => this.items.size > 0,
       () => {
-        localStorage.setItem(LOCAL_STORAGE_KEY, dataStoreSerializeItems(this))
+        // localStorage.setItem(LOCAL_STORAGE_KEY, dataStoreSerializeItems(this))
       },
     )
 
-    const items = dataStoreDeserializeItems(this, localStorage.getItem(LOCAL_STORAGE_KEY))
-    localStorage.removeItem(LOCAL_STORAGE_KEY)
-    if (items) {
-      runInAction(() => {
-        this.items = items
-        this.setStatus('getAll', false, 'loaded')
-      })
-    }
+    // const items = dataStoreDeserializeItems(this, localStorage.getItem(LOCAL_STORAGE_KEY))
+    // localStorage.removeItem(LOCAL_STORAGE_KEY)
+    // if (items) {
+    //   runInAction(() => {
+    //     this.items = items
+    //     this.setStatus('getAll', false, 'loaded')
+    //   })
+    // }
   }
 
   readonly name = 'board' as const

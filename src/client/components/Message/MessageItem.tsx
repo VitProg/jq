@@ -1,13 +1,15 @@
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
 import { IMessage } from '../../../common/forum/forum.interfaces'
 import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
 import { User } from '../../../common/forum/models/user'
 import { UserLink } from '../User/UserLink'
-import parser from 'bbcode-to-react'
 import { UserAvatar } from '../User/UserAvatar'
 import { MessageRelationsSingle } from '../../../common/forum/forum.entity-relations'
 import { createUserModel } from '../../../common/forum/fabrics/create-user.fabric'
-
+import { parseBBCodes } from '../../Tags/parse'
+import { fromNowDate } from '../../utils/date'
+import { FromNowDate } from '../common/FromNowDate'
+import { RouteLink } from '../Route/RouteLink'
 
 interface ExternalProps {
   message: IMessage
@@ -34,7 +36,7 @@ export const MessageItem: FC<Props> = (props) => {
 
   const classes = useStyles()
 
-  const subjects: any[] = []
+  const subjects: ReactNode[] = []
 
   const { message } = props
   const { board, topic, category } = props.relations ?? { board: undefined, topic: undefined, category: undefined, }
@@ -44,18 +46,15 @@ export const MessageItem: FC<Props> = (props) => {
     subjects.push(category?.name)
   }
   if (board?.name) {
-    subjects.push(board?.name)
+    subjects.push(<RouteLink key={board.id} to={'boardTopicList'} route={{ board }}>{ board.name }</RouteLink>)
   }
   if (topic?.subject) {
-    subjects.push(topic?.subject)
+    subjects.push(<RouteLink key={topic.id} to={'topicMessageList'} route={{ topic }}>{ topic.subject }</RouteLink>)
   }
 
-  const html = parser.toReact(message.body
-    .replace(/<br\s*\/?>/gm, '\n')
-    .split('&nbsp;').join(' ')
-    .split('&quot;').join('"')
-  )
+  const body = parseBBCodes(message.body)
 
+  const date = message.dates.createdAt
 
   return (
     <ListItem alignItems={'flex-start'}>
@@ -66,15 +65,16 @@ export const MessageItem: FC<Props> = (props) => {
         primary={
           <div>
             <UserLink user={user}/>
-            {subjects.length &&
+            {date && <Typography component='div' variant='body2'><FromNowDate date={date}/></Typography>}
+            {subjects.length ?
             <Typography component='div'>
-              {subjects.join(' / ')}
-            </Typography>
+              {subjects.map((s, index) => <>{s}{index < subjects.length - 1 ? ' / ' : ''}</>)}
+            </Typography> : ''
             }
           </div>
         }
         secondary={
-          html
+          body
         }
         secondaryTypographyProps={{ component: 'div', className: classes.messageBody }}
       />

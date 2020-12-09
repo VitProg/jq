@@ -12,7 +12,7 @@ import './ioc'
 import { store } from './store'
 import { observer } from 'mobx-react-lite'
 import { IForumService } from './services/forum/types'
-import { mute } from '../common/utils/promise'
+import './utils/date'
 
 
 const authService = container.get<IAuthService>(AuthServiceSymbol)

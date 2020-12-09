@@ -18,7 +18,7 @@ export class BoardPrepareService {
 
       const boardList = await this.boardService.getAll()
       store.forumStore.boardStore.setMany({
-        items: boardList
+        items: boardList.items
       })
 
       store.forumStore.boardStore.setStatus('getAll', false, 'loaded')

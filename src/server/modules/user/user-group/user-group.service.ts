@@ -15,7 +15,7 @@ export class UserGroupService {
   async getByUser (user: IUser): Promise<Array<Readonly<IUserGroup>>> {
     const userGroupMap = await this.forumCacheService.getUserGroupMap()
 
-    const groups = user.groupIds
+    const groups = user.settings.groupIds
       .map(id => userGroupMap.get(id))
       .filter(Boolean) as Array<Readonly<IUserGroup>>
 
@@ -52,7 +52,7 @@ export class UserGroupService {
   }
 
   userInGroups(user: IUser, ...groupIds: number[]) {
-    return groupIds.every(g => user.groupIds.includes(g))
+    return groupIds.every(g => user.settings.groupIds.includes(g))
   }
 
   /**
@@ -61,7 +61,7 @@ export class UserGroupService {
    */
   async fillForUsers<IN extends Map<number, IUser> | Record<number, IUser> | IUser[]>(users: IN): Promise<IN> {
     for (let user of walkByAny(users)) {
-      user.groups = await this.getByUser(user)
+      user.settings.groups = await this.getByUser(user)
     }
 
     return users

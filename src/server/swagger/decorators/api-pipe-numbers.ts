@@ -2,11 +2,12 @@ import { applyDecorators } from '@nestjs/common'
 import { ApiParam, ApiQuery } from '@nestjs/swagger'
 
 
-export const ApiPipeNumbersParam = (name: string): MethodDecorator => {
+export const ApiPipeNumbers = (name: string, where: 'query' | 'param'): MethodDecorator => {
   return applyDecorators(
-    ApiParam({
+    (where === 'param' ? ApiParam : ApiQuery)({
       name,
       style: 'pipeDelimited',
+      type: 'number',
       schema: {
         type: 'array',
         items: { type: 'number' },

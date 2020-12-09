@@ -17,17 +17,29 @@ export class BoardModel implements IBoard {
   description!: string
 
   @ApiProperty()
-  forGroups?: number[]
+  notice?: string
 
   @ApiProperty()
-  order!: number
+  onlyIndexNotice?: string
+
+  @ApiProperty()
+  settings!: {
+    forGroups?: number[]
+    onlyIndexGroups?: number[]
+    order: number
+    level: number
+  }
 
   @ApiProperty()
   linksId!: {
     parent: number
     category: number
+    lastMessage?: number
   }
 
   @ApiProperty()
-  parent?: BoardModel
+  counters?: {
+    topics: number
+    messages: number
+  }
 }

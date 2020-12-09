@@ -1,13 +1,21 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, Param, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common'
 import { ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BoardService } from './board.service'
-import { omit } from '../../../../../common/utils/object'
 import { BoardModel } from '../../models/board.model'
-import { ApiPipeNumbersParam } from '../../../../swagger/decorators/api-pipe-numbers-param'
+import { ApiPipeNumbers } from '../../../../swagger/decorators/api-pipe-numbers'
 import { WithUser } from '../../../auth/decorators/with-user'
 import { User } from '../../../auth/decorators/user'
-import { IUser } from '../../../../../common/forum/forum.interfaces'
+import { IBoard, IUser } from '../../../../../common/forum/forum.interfaces'
 import { getUserGroups } from '../../../../../common/forum/utils'
+import { ParsePipedStringPipe } from '../../../../pipes/parse-piped-string.pipe'
+import { BoarAllRelations, BoardRelationsArray } from '../../../../../common/forum/forum.entity-relations'
+import { BoardManyResponse } from '../responses/board-many.response'
+import { MessageService } from '../message/message.service'
+import { boardWithoutGroups } from '../../utils/omit'
+import { ParsePipedIntPipe } from '../../../../pipes/parse-piped-int.pipe'
+import { ParseIntOptionalPipe } from '../../../../pipes/parse-int-optional.pipe'
+import { ApiPipeStrings } from '../../../../swagger/decorators/api-pipe-strings'
+import { BoardDynamicDataDto } from '../../dto/board-dynamic-data.dto'
 
 
 const DEVELOPMENT = process.env.NODE_ENV !== 'production'
@@ -16,38 +24,60 @@ const DEVELOPMENT = process.env.NODE_ENV !== 'production'
 @Controller('board')
 export class BoardController {
   constructor (
-    private readonly boardService: BoardService
+    private readonly boardService: BoardService,
+    private readonly messageService: MessageService,
   ) {
   }
 
   @WithUser()
-  // @UseInterceptors(CacheInterceptor)
-  // @CacheTTL(DEVELOPMENT ? 5 : 60)
   @Get()
-  @ApiQuery({ name: 'parentId', type: Number })
-  // @ApiQuery({ name: 'forGroups', type: [Number] })
-  async findAll (@User() user?: IUser, parentId: number = 0/*, forGroups: number[] = [-1]*/): Promise<BoardModel[]> {
+  @ApiQuery({ name: 'parentId', type: Number, required: false })
+  @ApiPipeStrings({
+    name: 'relations',
+    where: 'query',
+    description: BoarAllRelations.join('|'),
+    enum: BoarAllRelations,
+    enumName: 'BoarAllRelations',
+    required: false,
+  })
+  async findAll (
+    @User() user?: IUser,
+    @Query('parentId', ParseIntOptionalPipe) parentId: number = 0,
+    @Query('relations', new ParsePipedStringPipe()) withRelations: BoardRelationsArray = [],
+  ): Promise<BoardManyResponse> {
     const forGroups = getUserGroups(user)
     const result = await this.boardService.findAll(parentId, forGroups)
-    return result.map(board => omit(board, 'forGroups'))
+    const data: IBoard[] = result.map(board => boardWithoutGroups(board))
+
+    const relations = await this.boardService.getRelations(data, withRelations)
+
+    return {
+      items: data,
+      relations,
+    }
   }
 
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(DEVELOPMENT ? 5 : 60)
+  // @UseInterceptors(CacheInterceptor)
+  // @CacheTTL(DEVELOPMENT ? 5 : 60)
   @Get(':id')
   @ApiQuery({ name: 'id', type: Number })
-  async findOne (@Param('id') id: string): Promise<BoardModel | undefined> {
+  async findOne (@Param('id', ParseIntPipe) id: number): Promise<BoardModel | undefined> {
     const result = await this.boardService.findOne(id)
-    return result ? omit(result, 'forGroups') : undefined
+    return result ? boardWithoutGroups(result) : undefined
   }
 
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(DEVELOPMENT ? 5 : 60)
+  // @UseInterceptors(CacheInterceptor)
+  // @CacheTTL(DEVELOPMENT ? 5 : 60)
   @Get('many/:ids')
-  @ApiPipeNumbersParam('ids')
-  async findByIds (@Param('ids') ids: string): Promise<BoardModel[]> {
-    const idArray = ids.split(/[^\d]/).filter(Boolean).map<number>(id => parseInt(id, 10))
-    const result = await this.boardService.findByIds(idArray)
-    return result.map(board => omit(board, 'forGroups'))
+  @ApiPipeNumbers('ids', 'param')
+  async findByIds (@Param('ids', ParsePipedIntPipe) ids: number[]): Promise<BoardModel[]> {
+    const result = await this.boardService.findByIds(ids)
+    return result.map(board => boardWithoutGroups(board))
+  }
+
+  @Get('stat/:ids')
+  @ApiPipeNumbers('ids', 'param')
+  async getDynamicData (@Param('ids', ParsePipedIntPipe) ids: number[]): Promise<Array<BoardDynamicDataDto>> {
+    return this.boardService.getDynamicData(ids)
   }
 }

@@ -11,6 +11,19 @@ import { abortedRequestPromise } from './utils'
 
 const MAX_REFRESH_TOKEN_TRY_COUNT = 2
 
+const dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{3})?Z$/;
+
+const shiftTime = 1000 * (parseInt(process.env.SHIFT_TIME as any, 10))
+
+const jsonReviver = (key: string, value: any) => {
+  if (typeof value === "string" && dateFormat.test(value)) {
+    const t = (new Date(value)).getTime() + (shiftTime)
+    return new Date(t)
+  }
+
+  return value;
+}
+
 export class ApiService implements IApiService {
   private readonly baseApiUrl = '/api'
 
@@ -126,7 +139,9 @@ export class ApiService implements IApiService {
     let promise: Promise<any>
 
     if (parseAsJson) {
-      promise = KY(endpoint, options).json<T>()
+      promise = KY(endpoint, options)
+        .text()
+        .then(text => JSON.parse(text, jsonReviver) as T)
 
       if (reformat) {
         promise = promise.then(data => {

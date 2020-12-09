@@ -8,19 +8,29 @@ export class TopicModel implements ITopic {
   id!: number
 
   @ApiProperty()
-  isSticky: boolean = false
-
-  @ApiProperty()
   url!: string
 
   @ApiProperty()
-  subject?: string
+  subject!: string
 
   @ApiProperty()
-  linksId!: {
-    board: number
+  flags!: {
+    isLocked: boolean
+    isSticky: boolean
+    isApproved: boolean
+    isStickyFirstPost: boolean
   }
 
   @ApiProperty()
-  board?: BoardModel
+  linksId!: {
+    poll?: number
+    board: number
+    firstMessage: number
+    lastMessage: number
+  }
+
+  @ApiProperty()
+  counters?: {
+    messages: number
+  }
 }

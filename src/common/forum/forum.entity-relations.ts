@@ -1,4 +1,4 @@
-import { IBoard, ICategory, ITopic, IUser } from './forum.interfaces'
+import { IBoard, ICategory, IMessage, ITopic, IUser } from './forum.interfaces'
 import webpack from 'webpack'
 
 
@@ -22,4 +22,45 @@ export type MessageRelationsSingle = {
   [MessageRelations.user]?: IUser,
   [MessageRelations.category]?: ICategory,
 }
-export const MessageAllRelations = [MessageRelations.board, MessageRelations.topic, MessageRelations.user]
+export const MessageAllRelations = Object.values(MessageRelations)
+
+
+
+export enum TopicRelations {
+  board = 'board',
+  category = 'category',
+  lastMessage = 'lastMessage',
+}
+
+export type TopicRelationsArray = Array<TopicRelations>
+export type TopicRelationsRecord = {
+  [TopicRelations.board]?: Record<number, IBoard>,
+  [TopicRelations.category]?: Record<number, ICategory>,
+  [TopicRelations.lastMessage]?: Record<number, IMessage>,
+}
+export type TopicRelationsSingle = {
+  [TopicRelations.board]?: IBoard,
+  [TopicRelations.category]?: ICategory,
+  [TopicRelations.lastMessage]?: IMessage,
+}
+export const TopicAllRelations = Object.values(TopicRelations)
+
+
+export enum BoardRelations {
+  category = 'category',
+  lastTopic = 'lastTopic',
+  lastMessage = 'lastMessage',
+}
+
+export type BoardRelationsArray = Array<BoardRelations>
+export type BoardRelationsRecord = {
+  [BoardRelations.category]?: Record<number, ICategory>,
+  [BoardRelations.lastTopic]?: Record<number, ITopic>,
+  [BoardRelations.lastMessage]?: Record<number, IMessage>,
+}
+export type BoardRelationsSingle = {
+  [BoardRelations.category]?: ICategory,
+  [BoardRelations.lastTopic]?: ITopic,
+  [BoardRelations.lastMessage]?: IMessage,
+}
+export const BoarAllRelations = Object.values(BoardRelations)

@@ -1,3 +1,5 @@
+import { isArray, isMap, isSet } from '../type-guards'
+
 
 export const arraysDiff = <A extends any, B extends any>(arrayA: A[], arrayB: B[]): Array<A | B> => {
   return (arrayA as any[])
@@ -17,7 +19,25 @@ export const concatArrays = <I>(...arrays: I[][]): I[] => {
   return result
 }
 
-export const uniqueArray = <I>(array: I[]): I[] => {
-  const set = new Set(array)
-  return [...(set.values())]
+export const uniqueArray = <I>(values: (I[] | Map<any, I> | Set<I>)): I[] => {
+  if (isMap(values)) {
+    const set = new Set([...values.values()])
+    return [...(set.values())]
+  }
+  if (isSet(values)) {
+    return [...(values.values())]
+  }
+  if (isArray(values)) {
+    const set = new Set(values)
+    return [...(set.values())]
+  }
+  return []
+}
+
+export const mapToRecord = <K extends keyof any, V>(map: Map<K, V>): Record<K, V> => {
+  return Object.fromEntries([...map.entries()]) as any
+}
+
+export const recordToMap = <K extends keyof any, V>(record: Record<K, V>): Map<K, V> => {
+  return new Map(Object.entries(record)) as any
 }

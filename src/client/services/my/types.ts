@@ -1,6 +1,6 @@
 import { User } from '../../../common/forum/models/user'
-import { LoginRequest } from '../types'
 import { IProfileResponse } from '../../../common/responses/forum.responses'
+import { LoginRequest } from '../api.requests'
 
 
 export interface IAuthService {
@@ -33,4 +33,5 @@ export interface ApiSendConfig<T> {
   refreshTokenIsAccessError?: boolean,
   reformat?: (data: T) => void,
   cancelable?: boolean,
+  parseDates?: boolean,
 }

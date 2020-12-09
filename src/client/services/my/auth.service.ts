@@ -1,6 +1,6 @@
 import { IAuthService, IProfileService } from './types'
 import { inject } from '../../ioc/ioc.decoratos'
-import { IApiService, LoginRequest } from '../types'
+import { IApiService} from '../types'
 import { makeAutoObservable } from 'mobx'
 import { User } from '../../../common/forum/models/user'
 import { ILoginResponse, IRefreshTokenResponse } from '../../../common/responses/auth.responses'
@@ -8,6 +8,7 @@ import { store } from '../../store'
 import { container } from '../../ioc/ioc.container'
 import { ApiServiceSymbol, ProfileServiceSymbol } from '../ioc.symbols'
 import { createUserModel } from '../../../common/forum/fabrics/create-user.fabric'
+import { LoginRequest } from '../api.requests'
 
 
 export class AuthService implements IAuthService {

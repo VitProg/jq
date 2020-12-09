@@ -1,13 +1,30 @@
-import { Injectable } from '@nestjs/common'
-import { IBoard, IUser } from '../../../../../common/forum/forum.interfaces'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
+import { IBoard, IMessage, ITopic, IUser } from '../../../../../common/forum/forum.interfaces'
 import { ForumCacheService } from '../forum-cache/forum-cache.service'
 import { getUserGroups } from '../../../../../common/forum/utils'
+import {
+  BoardRelations,
+  BoardRelationsArray,
+  BoardRelationsRecord
+} from '../../../../../common/forum/forum.entity-relations'
+import { uniqueArray } from '../../../../../common/utils/array'
+import { MessageService } from '../message/message.service'
+import { CategoryService } from '../category/category.service'
+import { BoardDynamicDataDto } from '../../dto/board-dynamic-data.dto'
+import { InjectRepository } from '@nestjs/typeorm'
+import { BoardEntity } from '../../../../entities'
+import { Repository } from 'typeorm'
+import { TopicService } from '../topic/topic.service'
 
 
 @Injectable()
 export class BoardService {
   constructor (
-    private readonly cacheService: ForumCacheService
+    private readonly cacheService: ForumCacheService,
+    @Inject(forwardRef(() => MessageService)) private readonly messageService: MessageService,
+    @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
+    @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
+    @InjectRepository(BoardEntity) private readonly boardRepository: Repository<BoardEntity>,
   ) {
   }
 
@@ -22,12 +39,16 @@ export class BoardService {
     const boardArray = [...boardMap.values()]
     return boardArray
       .filter(board => board.linksId.parent === parentId)
-      .filter(board => forGroups.length && board.forGroups ? forGroups.some(g => board.forGroups!.includes(g)) : true)
+      .filter(board =>
+        forGroups.length && board.settings.forGroups ?
+          forGroups.some(g => board.settings.forGroups!.includes(g)) :
+          true
+      )
   }
 
 
-  async findOne (id: string): Promise<IBoard | undefined> {
-    return (await this.cacheService.getBoardMap()).get(+id)
+  async findOne (id: number): Promise<IBoard | undefined> {
+    return (await this.cacheService.getBoardMap()).get(id)
   }
 
 
@@ -50,4 +71,54 @@ export class BoardService {
     return Object.fromEntries(map.entries())
   }
 
+  async getRelations (
+    items: IBoard[],
+    withRelations: BoardRelationsArray = [],
+  ): Promise<BoardRelationsRecord> {
+    const relations = {} as BoardRelationsRecord
+
+    if (withRelations.includes(BoardRelations.category)) {
+      const boardIds = uniqueArray(items.map(item => item.linksId.category))
+      relations[BoardRelations.category] = await this.categoryService.findByIdsToRecord(boardIds)
+    }
+
+    if (withRelations.includes(BoardRelations.lastTopic)) {
+      //todo
+    }
+
+    if (withRelations.includes(BoardRelations.lastMessage)) {
+      //todo
+    }
+
+    if (withRelations.includes(BoardRelations.lastMessage)) {
+      //todo
+      const ids = uniqueArray<number>(items.map(item => item.id))
+      relations[BoardRelations.lastMessage] = await this.messageService.getLastMessageForBoardIds(ids)
+    }
+
+    return relations
+  }
+
+  async getDynamicData (ids: number[]): Promise<Array<BoardDynamicDataDto>> {
+    const data = await this.boardRepository.findByIds(ids)
+
+    const messageIds: number[] = data.map(item => item.idLastMsg)
+    const messageMap = await this.messageService.findByIdsToMap(messageIds)
+
+    const topicIds: number[] = Object.values(messageMap).map(item => item.linksId.topic)
+    const topicMap = await this.topicService.findByIdsToMap(topicIds)
+
+    return data.map(item => {
+      const message: IMessage | undefined = messageMap[item.idLastMsg]
+      const topic: ITopic | undefined = message ? topicMap.get(message.linksId.topic) : undefined
+
+      return {
+        id: item.idBoard,
+        lastMessage: message,
+        lastTopic: topic,
+        messages: item.numPosts,
+        topics: item.numTopics,
+      }
+    })
+  }
 }

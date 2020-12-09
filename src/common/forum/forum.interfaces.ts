@@ -9,34 +9,46 @@ export interface IUser {
   url: string
   avatar: string
   gender: Gender
-  lastLogin?: Date
-  groupIds: number[]
+  dates: {
+    lastLogin?: Date
+    registered?: Date
+  }
   statistics: {
     posts: number
-    karma: number
+    karmaPlus: number
+    karmaMinus: number
+  }
+  settings: {
+    timeOffset: number
+    permissions?: string[]
+    groupIds: number[]
+    groups?: IUserGroup[]
   }
   auth?: {
     passwordHash?: string
-    token?: string
     salt?: string
   }
-  permissions?: string[]
-  groups?: IUserGroup[]
 }
 
 export interface IMessage {
   id: number
   body: string
-  createdAt?: Date
-  updatedAt?: Date
+  dates: {
+    createdAt?: Date
+    updatedAt?: Date
+  }
+  flags: {
+    isApproved?: boolean
+  }
   linksId: {
     user: number
     topic: number
     board: number
-  },
-  user?: IUser
-  topic?: ITopic
-  board?: IBoard
+  }
+  statistics: {
+    ratePlus: number
+    rateMinus: number
+  }
 }
 
 export interface IBoard {
@@ -44,29 +56,52 @@ export interface IBoard {
   url: string
   name: string
   description: string
-  forGroups?: number[]
-  order: number
+  notice?: string
+  onlyIndexNotice?: string
+  settings: {
+    forGroups?: number[]
+    onlyIndexGroups?: number[]
+    order: number
+    level: number
+  }
   linksId: {
     parent: number
     category: number
+    lastMessage?: number
   }
-  parent?: IBoard
-  category?: ICategory
+  counters?: {
+    topics: number
+    messages: number
+  }
 }
 
 export interface ICategory {
   id: number
   name: string
-  order: number
+  settings: {
+    order: number
+  }
 }
 
 export interface ITopic {
   id: number
-  isSticky: boolean
   url: string
-  subject?: string
-  linksId: { board: number }
-  board?: IBoard
+  subject: string
+  flags: {
+    isLocked: boolean
+    isSticky: boolean
+    isApproved: boolean
+    isStickyFirstPost: boolean
+  }
+  linksId: {
+    poll?: number
+    board: number
+    firstMessage: number
+    lastMessage: number
+  }
+  counters?: {
+    messages: number
+  }
 }
 
 export interface IPermission {

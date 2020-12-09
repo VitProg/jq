@@ -2,6 +2,11 @@ import { IRouteStore, IUIStore } from '../types'
 import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/forum/forum.interfaces'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
 import { AnyObject, GetFirstArgumentType, PartialBy } from '../../../common/utils/types'
+import {
+  BoardRelationsRecord,
+  MessageRelationsRecord,
+  TopicRelationsRecord
+} from '../../../common/forum/forum.entity-relations'
 
 
 export type Hash = string
@@ -21,6 +26,7 @@ export interface IForumStore {
   getRelations <DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>>(
     dataType: DataType,
     items: Item[] | undefined,
+    relations?: Array<keyof RelationsMap<DataType>>
   ): RelationsMap<DataType>
 
   getStore<DataType extends ForumStoreType> (dataType: DataType): GetForumStore<DataType>
@@ -57,7 +63,8 @@ export type UserDataPageProps = {
 
 export type TopicDataPageProps = {
   meta: IPaginationMeta
-  topic?: number
+  type: 'board' | 'user' | 'search'
+  board?: number
   user?: number
   search?: string
 }
@@ -72,6 +79,7 @@ export type DataStore<T extends Model, DataEx extends AnyObject = {}, ItemEx ext
   statuses: Map<string, RequestStatus>
   maxStoredItems?: number
   defaultExpireIn?: number
+  name: string
 
   flush (): void
   clear (): void
@@ -98,7 +106,7 @@ export type DataStore<T extends Model, DataEx extends AnyObject = {}, ItemEx ext
 export type DataStorePagesGetMethods = DataStoreGetMethods | 'getPage'
 
 
-export type DataStorePages<T extends Model, PageProps extends { meta: IPaginationMeta }, DataEx extends AnyObject = {}, ItemEx extends AnyObject = {}> =
+export type DataStorePages<T extends Model, PageProps extends { meta: IPaginationMeta } = { meta: IPaginationMeta }, DataEx extends AnyObject = {}, ItemEx extends AnyObject = {}> =
   Omit<DataStore<T, DataEx, { hash: Hash[] } & ItemEx>, 'set' | 'setMany' | 'getStatus' | 'setStatus'> &
   {
     pages: Record<Hash, PageProps>
@@ -109,6 +117,7 @@ export type DataStorePages<T extends Model, PageProps extends { meta: IPaginatio
     set (data: DataStorePagesSetData<PageProps, T>): void
     setMany (data: DataStorePagesSetManyData<PageProps, T>): void
     setPage (data: DataStorePagesSetManyData<PageProps, T>): void
+    removePage (data: DataStorePagesRemovePageData<PageProps>): void
 
     getStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<DataStorePages<T, PageProps, DataEx, ItemEx>[M]>): RequestStatus | undefined
     setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<DataStorePages<T, PageProps, DataEx, ItemEx>[M]>, status: RequestStatus | undefined): void
@@ -124,6 +133,7 @@ export type DataStoreSetData<T extends Model> = {item: T, expireIn?: number}
 export type DataStoreSetManyData<T extends Model> = {items: T[] | Record<number, T>, expireIn?: number}
 export type DataStorePagesSetData<PageProps extends { meta: IPaginationMeta }, T extends Model> = DataStoreSetData<T> & {pageProps?: PageProps}
 export type DataStorePagesSetManyData<PageProps extends { meta: IPaginationMeta }, T extends Model> = DataStoreSetManyData<T> & {pageProps?: PageProps}
+export type DataStorePagesRemovePageData<PageProps extends { meta: IPaginationMeta }> = Omit<PageProps, 'meta'> & { page: number | '*' }
 export type DataStorePagesGetPageData<PageProps extends { meta: IPaginationMeta }> = Omit<PageProps, 'meta'> & { page: number }
 export type DataStorePagesGetPageMetaData<PageProps extends { meta: IPaginationMeta }> = Omit<PageProps, 'meta'>
 export type DataStorePagesSetPageData<PageProps extends { meta: IPaginationMeta }, T extends Model> = PageData<T, PageProps>
@@ -154,17 +164,21 @@ export type ExtractPageStoreDataEx<T> =
 
 
 export type ForumStoreType = 'message' | 'topic' | 'board' | 'category' | 'user'
+export type ForumStoreTypeEX = ForumStoreType | 'lastMessage' | 'firstMessage' | 'lastTopic'
 export type ForumPagesStoreType = Extract<ForumStoreType, 'message' | 'topic'>
 export type ForumSimpleStoreType = Extract<ForumStoreType, 'board' | 'category' | 'user'>
 export type ForumCachedStoreType = Extract<ForumStoreType, 'board' | 'category'>
 export type ForumNoPagesStoreType = Exclude<ForumStoreType, ForumPagesStoreType>
 
-export type GetForumStore<T extends ForumStoreType> = {
+export type GetForumStore<T extends ForumStoreType | ForumStoreTypeEX> = {
   message: IMessageStore
   topic: ITopicStore
   board: IBoardStore
   category: ICategoryStore
   user: IUserStore
+  lastMessage: IMessageStore
+  firstMessage: IMessageStore
+  lastTopic: ITopicStore
 }[T]
 
 export type GetForumItem<R extends ForumStoreType> = {
@@ -177,12 +191,8 @@ export type GetForumItem<R extends ForumStoreType> = {
 
 export type ForumStores = IMessageStore | ITopicStore | IBoardStore | ICategoryStore | IUserStore
 
-export type MessageRelationsMap = { user: Record<number, IUser>, topic: Record<number, ITopic>, board: Record<number, IBoard> }
-export type TopicRelationsMap = { board: Record<number, IBoard> }
-export type BoardRelationsMap = { category: Record<number, ICategory> }
-
 export type RelationsMap<T extends Model | ForumStoreType> =
-  T extends (IMessage | 'message') ? MessageRelationsMap :
-    T extends (ITopic | 'topic') ? TopicRelationsMap :
-      T extends (IBoard | 'board') ? BoardRelationsMap :
+  T extends (IMessage | 'message') ? MessageRelationsRecord :
+    T extends (ITopic | 'topic') ? TopicRelationsRecord :
+      T extends (IBoard | 'board') ? BoardRelationsRecord :
         {}

@@ -10,5 +10,7 @@ export class CategoryModel implements ICategory {
   name!: string
 
   @ApiProperty()
-  order!: number
+  settings!: {
+    order: number
+  }
 }

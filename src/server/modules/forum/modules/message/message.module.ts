@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { MessageController } from './message.controller'
 import { MessageService } from './message.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
@@ -22,11 +22,11 @@ import { TopicModule } from '../topic/topic.module'
       // Entities.PollEntity,
       // Entities.PollChoiceEntity,
       // Entities.RelatedSubjectEntity,
-      // Entities.TopicEntity,
+      Entities.TopicEntity,
     ]),
-    UserModule,
-    BoardModule,
-    TopicModule,
+    forwardRef(() => UserModule),
+    forwardRef(() => BoardModule),
+    forwardRef(() => TopicModule),
   ],
   providers: [MessageService],
   controllers: [MessageController],

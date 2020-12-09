@@ -87,6 +87,8 @@ module.exports = {
       FORUM_MESSAGE_LATEST_MAX_PAGES: '',
       FORUM_TOPIC_PAGE_SIZE: '',
       FORUM_USER_PAGE_SIZE: '',
+      LOCALE: 'en',
+      SHIFT_TIME: 0,
     }),
     new webpack.DefinePlugin({
       PRODUCTION: JSON.stringify(!isDevelopment),

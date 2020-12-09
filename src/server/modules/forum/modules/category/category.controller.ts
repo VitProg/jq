@@ -1,8 +1,19 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, Param, UseInterceptors } from '@nestjs/common'
+import {
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  UseInterceptors
+} from '@nestjs/common'
 import { ApiQuery, ApiTags } from '@nestjs/swagger'
 import { CategoryService } from './category.service'
 import { CategoryModel } from '../../models/category.model'
-import { ApiPipeNumbersParam } from '../../../../swagger/decorators/api-pipe-numbers-param'
+import { ApiPipeNumbers } from '../../../../swagger/decorators/api-pipe-numbers'
+import { splitPipedNumbers, splitPipedStrings } from '../../../../../common/utils/string'
+import { ParsePipedIntPipe } from '../../../../pipes/parse-piped-int.pipe'
 
 
 const DEVELOPMENT = process.env.NODE_ENV !== 'production'
@@ -26,16 +37,19 @@ export class CategoryController {
   @CacheTTL(DEVELOPMENT ? 5 : 60)
   @Get(':id')
   @ApiQuery({ name: 'id', type: Number })
-  async findOne (@Param('id') id: string): Promise<CategoryModel | undefined> {
-    return this.categoryService.findOne(+id)
+  async findOne (@Param('id', ParseIntPipe) id: number): Promise<CategoryModel | undefined> {
+    const item = this.categoryService.findOne(id)
+    if (!item) {
+      throw new NotFoundException(`Category ${id} not found`)
+    }
+    return item
   }
 
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(DEVELOPMENT ? 5 : 60)
   @Get('many/:ids')
-  @ApiPipeNumbersParam('ids')
-  async findByIds (@Param('ids') ids: string): Promise<CategoryModel[]> {
-    const idArray = ids.split(/[^\d]/).filter(Boolean).map<number>(id => parseInt(id, 10))
-    return this.categoryService.findByIds(idArray)
+  @ApiPipeNumbers('ids', 'param')
+  async findByIds (@Param('ids', ParsePipedIntPipe) ids: number[]): Promise<CategoryModel[]> {
+    return this.categoryService.findByIds(ids)
   }
 }

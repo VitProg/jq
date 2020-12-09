@@ -51,14 +51,14 @@ export const RouteLink = <R extends AppRouteKeys, T extends Types = 'a', > (
 
   const route = routes[to](toProps)
 
-  const onClick = useCallback((event: React.MouseEvent) => {
+  const onClick = (event: React.MouseEvent) => {
     if ((props as any).onClick) {
       (props as any).onClick(event as any)
     }
     if (preventDefaultLinkClickBehavior(event)) {
       route.push()
     }
-  }, [to, (props as any).onClick])
+  }
 
   const children = isFunction(props.children) ? props.children(toProps) : props.children
 

@@ -1,5 +1,5 @@
 
-export type AnyObject = Record<symbol | string | number, any>
+export type AnyObject = Record<keyof any, any>
 
 export type ArrayValues<obj extends any[]> =
   obj[number];
@@ -67,3 +67,5 @@ export type ExtractRecordKey<R extends Record<any, any>> = R extends Record<infe
 
 
 export type GetFirstArgumentType<T> = T extends (arg1: infer T, ...args: any[]) => any ? T : never
+
+export type UnpackPromise<T> = T extends Promise<infer A> ? A : T

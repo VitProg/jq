@@ -13,10 +13,15 @@ export class MessageModel implements IMessage {
   body!: string
 
   @ApiProperty()
-  createdAt?: Date
+  dates!: {
+    createdAt?: Date
+    updatedAt?: Date
+  }
 
   @ApiProperty()
-  updatedAt?: Date
+  flags!: {
+    isApproved?: boolean
+  }
 
   @ApiProperty()
   linksId!: {
@@ -26,11 +31,8 @@ export class MessageModel implements IMessage {
   }
 
   @ApiProperty()
-  user?: UserModel
-
-  @ApiProperty()
-  topic?: TopicModel
-
-  @ApiProperty()
-  board?: BoardModel
+  statistics!: {
+    ratePlus: number,
+    rateMinus: number,
+  }
 }

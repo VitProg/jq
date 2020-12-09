@@ -19,6 +19,18 @@ export const isMap = <K extends keyof any = keyof any, V extends any = any>(val:
   return val instanceof Map
 }
 
+export const isSet = <V extends any = any>(val: any): val is Set<V> => {
+  return val instanceof Set
+}
+
 export const isNumber = (val: any): val is number => {
   return typeof val === 'number' && !isNaN(val) && isFinite(val)
 }
+
+export const isString = (val: any): val is string => {
+  return typeof val === 'string'
+}
+
+export const isUndefined = (val: any): val is undefined => typeof val === 'undefined'
+export const isNull = (val: any): val is null => val === null
+export const isNone = (val: any): val is null | undefined => isUndefined(val) || isNull(val)

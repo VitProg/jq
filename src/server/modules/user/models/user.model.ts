@@ -1,7 +1,7 @@
 import { Gender } from '../../../../common/forum/forum.constants'
 import { ApiProperty } from '@nestjs/swagger'
 import { UserGroupDto } from '../../forum/dto/user-group.dto'
-import { IUser } from '../../../../common/forum/forum.interfaces'
+import { IUser, IUserGroup } from '../../../../common/forum/forum.interfaces'
 
 
 export class UserModel implements IUser {
@@ -27,30 +27,23 @@ export class UserModel implements IUser {
   gender!: Gender
 
   @ApiProperty()
-  statistics!: {
-    posts: number
-    karma: number
+  dates!: {
+    lastLogin?: Date
+    registered?: Date
   }
 
   @ApiProperty()
-  groupIds!: number[]
+  statistics!: {
+    posts: number
+    karmaPlus: number
+    karmaMinus: number
+  }
 
   @ApiProperty()
-  lastLogin?: Date
-
-  // @ApiProperty({ type: String, required: false })
-  // get name () {
-  //   return super.name
-  // }
-  //
-  // @ApiProperty({ type: String, required: false })
-  // get slug () {
-  //   return super.name
-  // }
-
-  @ApiProperty()
-  permissions?: string[]
-
-  @ApiProperty()
-  groups?: UserGroupDto[]
+  settings!: {
+    timeOffset: number
+    permissions?: string[]
+    groupIds: number[]
+    groups?: IUserGroup[]
+  }
 }

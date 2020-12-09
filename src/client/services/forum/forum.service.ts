@@ -1,15 +1,13 @@
-import { IForumService, IMessagePrepareService, IMessageService } from './types'
+import { IForumService, IMessagePrepareService, IMessageService, ITopicPrepareService } from './types'
 import { inject } from '../../ioc/ioc.decoratos'
 import {
   BoardPrepareServiceSymbol,
   CategoryPrepareServiceSymbol,
   MessagePrepareServiceSymbol,
-  MessageServiceSymbol
+  MessageServiceSymbol, TopicPrepareServiceSymbol
 } from '../ioc.symbols'
 import { store } from '../../store'
 import { makeAutoObservable, reaction } from 'mobx'
-import { mute } from '../../../common/utils/promise'
-import { isRoute } from '../../routing/utils'
 import { BoardPrepareService } from './board/board-prepare.service'
 import { CategoryPrepareService } from './category/category-prepare.service'
 
@@ -17,6 +15,7 @@ import { CategoryPrepareService } from './category/category-prepare.service'
 export class ForumService implements IForumService {
   @inject(MessageServiceSymbol) messageService!: IMessageService
   @inject(MessagePrepareServiceSymbol) messagePrepareService!: IMessagePrepareService
+  @inject(TopicPrepareServiceSymbol) topicPrepareService!: ITopicPrepareService
   @inject(BoardPrepareServiceSymbol) boardPrepareService!: BoardPrepareService
   @inject(CategoryPrepareServiceSymbol) categoryPrepareService!: CategoryPrepareService
 
@@ -24,14 +23,14 @@ export class ForumService implements IForumService {
 
   prepare (): Promise<void> {
     if (!this.preparing) {
-      this.preparing = true;
+      this.preparing = true
       return Promise.all([
         this.categoryPrepareService.prepareAll(),
         this.boardPrepareService.prepareAll(),
       ]).then(() => {
         return
       }).finally(() => {
-        this.preparing = false;
+        this.preparing = false
       })
     }
     return Promise.resolve()
@@ -66,16 +65,10 @@ export class ForumService implements IForumService {
 
         const route = store.routeStore.noModalRoute ?? store.routeStore.current
 
-        if (isRoute(route, 'lastMessages')) {
-          const page = route.params.page ?? 1
-          mute(this.messagePrepareService.prepareLatest({ page }))
-          if (page + 1 < store.configStore.forumMessageLatestMaxPages) {
-            mute(this.messagePrepareService.prepareLatest({ page: page + 1 }))
-          }
-          // if (page - 1 > 0) {
-          //   mute(this.messagePrepareService.prepareLatest({ page: page - 1 }))
-          // }
-        }
+        let processed = false
+
+        if (!processed) processed = this.messagePrepareService.processRoute(route)
+        if (!processed) processed = this.topicPrepareService.processRoute(route)
 
       }, {
         fireImmediately: true

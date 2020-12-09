@@ -1,9 +1,25 @@
-import { BoardEntity, CategoryEntity, MemberEntity, MemberGroupEntity, MessageEntity, PermissionEntity, TopicEntity } from '../../../entities'
-import { IBoard, ICategory, IMessage, IPermission, ITopic, IUser, IUserGroup } from '../../../../common/forum/forum.interfaces'
+import {
+  BoardEntity,
+  CategoryEntity,
+  MemberEntity,
+  MemberGroupEntity,
+  MessageEntity,
+  PermissionEntity,
+  TopicEntity
+} from '../../../entities'
+import {
+  IBoard,
+  ICategory,
+  IMessage,
+  IPermission,
+  ITopic,
+  IUser,
+  IUserGroup
+} from '../../../../common/forum/forum.interfaces'
 import { timestampToDate, toGender } from './transform'
 import { MemberDisplayNameField, MemberEmailField, MemberLoginField } from '../constants'
-import { isNumber } from '../../../../common/type-guards'
 import { WithFields } from '../../user/types'
+import slug from 'slug'
 
 
 function entityListToMap<E, O extends { id: number }> (
@@ -37,17 +53,26 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
 
   const user: IUser = {
     id: member.idMember,
+    //email
     login: member[MemberLoginField],
     displayName: member[MemberDisplayNameField],
-    url: member.urlName,
+    // url: member.urlName ?? slug((member[MemberDisplayNameField] ?? member[MemberLoginField]).substr(0, 80)),
+    url: slug((member[MemberDisplayNameField] ?? member[MemberLoginField]).substr(0, 80)),
     avatar: member.avatar,
     gender: toGender(member.gender),
-    lastLogin: member.lastLogin ? new Date(member.lastLogin * 1000) : undefined,
-    groupIds: [...groupIds.values()],
+    dates: {
+      lastLogin: member.lastLogin ? new Date(member.lastLogin * 1000) : undefined,
+      registered: new Date(member.dateRegistered * 1000)
+    },
     statistics: {
       posts: member.posts,
-      karma: member.karma,
-    }
+      karmaPlus: member.karmaGood,
+      karmaMinus: member.karmaBad,
+    },
+    settings: {
+      groupIds: [...groupIds.values()],
+      timeOffset: member.timeOffset,
+    },
   }
 
   if (withFields.includes('auth')) {
@@ -71,47 +96,79 @@ export const toUserMap = (memberEntityList: MemberEntity[], withFields: WithFiel
 export function toMessage (message: MessageEntity): IMessage {
   return {
     id: message.idMsg,
+    body: message.body,
+    dates: {
+      createdAt: timestampToDate(message.posterTime),
+      updatedAt: timestampToDate(message.modifiedTime),
+    },
+    flags: {
+      isApproved: !!message.approved,
+    },
     linksId: {
       user: message.idMember,
       topic: message.idTopic,
       board: message.idBoard,
     },
-    body: message.body,
-    createdAt: timestampToDate(message.posterTime),
-    updatedAt: timestampToDate(message.modifiedTime),
+    statistics: {
+      ratePlus: message.nRateGood,
+      rateMinus: message.nRateBad,
+    },
   }
 }
 
 export const toMessageMap = (messageEntityList: MessageEntity[]) => entityListToMap(messageEntityList, toMessage)
 
 
-export function toTopic (topic: TopicEntity & { subject?: string }): ITopic {
+export function toTopic (topic: TopicEntity & { subject: string }): ITopic {
   return {
     id: topic.idTopic,
-    // subject: topic.subject,
-    url: topic.url,
-    isSticky: topic.isSticky === 1,
+    // url: topic.url ?? slug(topic.subject.substr(0, 80)),
+    url: slug(topic.subject.substr(0, 80)),
     subject: topic.subject ?? `topic-${topic.idTopic}`,
+    flags: {
+      isLocked: !!topic.locked,
+      isSticky: !!topic.isSticky,
+      isApproved: !!topic.approved,
+      isStickyFirstPost: !!topic.isStickyFirstPost,
+    },
     linksId: {
       board: topic.idBoard,
+      poll: topic.idPoll > 0 ? topic.idPoll : undefined,
+      firstMessage: topic.idFirstMsg,
+      lastMessage: topic.idLastMsg,
     },
+    counters: {
+      messages: topic.numReplies,
+    }
   }
 }
 
-export const toTopicMap = (topicEntityList: TopicEntity[]) => entityListToMap(topicEntityList, toTopic)
+export const toTopicMap = (topicEntityList: Array<TopicEntity & { subject: string }>) => entityListToMap(topicEntityList, toTopic)
 
 
 export function toBoard (board: BoardEntity): IBoard {
   return {
     id: board.idBoard,
+    // url: board.url ?? slug(board.name.substr(0, 80)),
+    url: slug(board.name.substr(0, 80)),
     name: board.name,
     description: board.description,
-    url: board.url,
-    forGroups: board.memberGroups.split(',').map(g => parseInt(g, 10)),
-    order: board.boardOrder,
+    notice: board.noticeDescription ? board.noticeDescription : undefined,
+    onlyIndexNotice: board.isOnlyIndexMessage ? board.isOnlyIndexMessage : undefined,
+    settings: {
+      forGroups: board.memberGroups.split(',').map(g => parseInt(g, 10)),
+      onlyIndexGroups: board.memberGroupsOnlyIndex.split(',').map(g => parseInt(g, 10)),
+      order: board.boardOrder,
+      level: board.childLevel,
+    },
     linksId: {
       parent: board.idParent,
       category: board.idCat,
+      lastMessage: board.idLastMsg,
+    },
+    counters: {
+      messages: board.numPosts,
+      topics: board.numTopics,
     },
   }
 }
@@ -123,7 +180,9 @@ export function toCategory (category: CategoryEntity): ICategory {
   return {
     id: category.idCat,
     name: category.name,
-    order: category.catOrder,
+    settings: {
+      order: category.catOrder,
+    }
   }
 }
 

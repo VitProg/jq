@@ -1,24 +1,42 @@
-import { IUser as IUser } from '../forum.interfaces'
+import { IUser as IUser, IUserGroup } from '../forum.interfaces'
 import { Gender } from '../forum.constants'
 import slug from 'slug'
 
 
 export class User implements IUser {
-  id!: number
+  id: number = 0
   email?: string
-  login!: string
-  displayName!: string
-  url!: string
-  avatar!: string
-  gender!: Gender
-  statistics!: {
+  login: string = ''
+  displayName: string = ''
+  url: string = ''
+  avatar: string = ''
+  gender: Gender = Gender.Unknown
+  dates: {
+    lastLogin?: Date
+    registered?: Date
+  } = {}
+  statistics: {
     posts: number
-    karma: number
+    karmaPlus: number
+    karmaMinus: number
+  } = {
+    karmaMinus: 0,
+    karmaPlus: 0,
+    posts: 0,
   }
-  // permissions?: string[]
-  // groups?: IUserGroup[]
-  groupIds!: number[]
-  lastLogin?: Date
+  settings: {
+    timeOffset: number
+    permissions?: string[]
+    groupIds: number[]
+    groups?: IUserGroup[]
+  } = {
+    timeOffset: 0,
+    groupIds: [-1, 0],
+  }
+  auth?: {
+    passwordHash?: string
+    salt?: string
+  }
 
   get name () {
     return this.displayName ?? this.login

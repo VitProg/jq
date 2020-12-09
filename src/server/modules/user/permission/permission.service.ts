@@ -20,7 +20,7 @@ export class PermissionService {
 
   async getByUser (user: IUser) {
     const permissionMap = await this.forumCacheService.getPermissionByGroupMap()
-    const groupIds = [-1, 0, ...user.groupIds]
+    const groupIds = [-1, 0, ...user.settings.groupIds]
     const groups: string[] = []
     for (const groupId of groupIds) {
       groups.push(...(permissionMap.get(groupId) ?? []))
@@ -38,7 +38,7 @@ export class PermissionService {
    */
   async fillForUsers<IN extends Map<number, IUser> | Record<number, IUser> | IUser[]>(users: IN): Promise<IN> {
     for (let user of walkByAny(users)) {
-      user.permissions = await this.getByUser(user)
+      user.settings.permissions = await this.getByUser(user)
     }
 
     return users

@@ -1,7 +1,7 @@
 import { defineRoute, param } from 'type-route'
-import { userSerializer } from './routing/serializers/user.serializer'
+import { slugWithIdSerializer } from './routing/serializers/slug-with-id.serializer'
 
-const resolve = (...route: string[]) => route.length > 0 ? `/${route.join('/')}` : ''
+const resolve = (...route: string[]) => route.length > 0 ? `/${route.join('/')}`.replace('//', '/') : ''
 
 
 export const definedRoutes = {
@@ -13,16 +13,30 @@ export const definedRoutes = {
     {
       page: param.path.optional.number,
     },
-    p => resolve('last-messages', p.page)
+    p => resolve('/last-messages', p.page)
   ),
   user: defineRoute(
     {
-      user: param.path.ofType(userSerializer),
+      user: param.path.ofType(slugWithIdSerializer),
     },
-    p => resolve('user', p.user)
+    p => resolve('/user', p.user)
   ),
   profile: defineRoute('/profile'),
   settings: defineRoute('/settings'),
+  boardTopicList: defineRoute(
+    {
+      board: param.path.ofType(slugWithIdSerializer),
+      page: param.path.optional.number,
+    },
+    p => resolve('/board', p.board, p.page),
+  ),
+  topicMessageList: defineRoute(
+    {
+      topic: param.path.ofType(slugWithIdSerializer),
+      page: param.path.optional.number,
+    },
+    p => resolve('/topic', p.topic, p.page),
+  ),
 }
 
 export const modalRoutes: Array<keyof typeof definedRoutes> = [

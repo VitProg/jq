@@ -1,6 +1,6 @@
 import {
   DataStorePagesGetMethods,
-  DataStorePagesGetPageData, DataStorePagesGetPageMetaData,
+  DataStorePagesGetPageData, DataStorePagesGetPageMetaData, DataStorePagesRemovePageData,
   DataStorePagesSetData,
   DataStorePagesSetManyData,
   DataStorePagesSetPageData,
@@ -17,7 +17,7 @@ import {
   dataStoreFlush,
   dataStoreGet, dataStoreGetAll,
   dataStoreGetMany, dataStoreGetStatus,
-  dataStorePagerGetPage, dataStorePagerGetPageMeta,
+  dataStorePagerGetPage, dataStorePagerGetPageMeta, dataStorePagesRemovePage,
   dataStorePagesSet,
   dataStorePagesSetMany, dataStoreSetStatus
 } from './utils'
@@ -91,6 +91,10 @@ export class TopicStore implements ITopicStore {
 
   setPage (data: DataStorePagesSetPageData<PageProps, Item>): void {
     this.setMany(data)
+  }
+
+  removePage (data: DataStorePagesRemovePageData<PageProps>): void {
+    dataStorePagesRemovePage(this, data)
   }
 
   getStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>): RequestStatus | undefined {

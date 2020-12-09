@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { AttachmentEntity, MemberEntity } from '../../entities'
+import { AttachmentEntity, MemberEntity, TopicEntity } from '../../entities'
 import { FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
 import { MemberEmailField, MemberIdField, MemberLoginField } from '../forum/constants'
 import { toUser, toUserMap } from '../forum/utils/mapper'
 import { IPaginationOptions } from 'nestjs-typeorm-paginate'
 import { IActiveUsersResponse } from '../../../common/responses/forum.responses'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { ITopic, IUser } from '../../../common/forum/forum.interfaces'
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral'
 import { PermissionService } from './permission/permission.service'
 import { WithFields } from './types'
 import { UserGroupService } from './user-group/user-group.service'
 import { AnyObject } from '../../../common/utils/types'
+import { paginateRawAndEntities } from '../../common/paginate/paginate-raw-and-entities'
 
 
 @Injectable()
@@ -31,7 +32,7 @@ export class UserService {
       .leftJoin(AttachmentEntity, 'a', `a.id_member = ${MemberEntity.name}.id_member AND a.attachment_type = 1 AND a.approved = 1`)
   }
 
-  private async rawToItems (data: { entities: MemberEntity[], raw: AnyObject[] }, withFields: WithFields) {
+  private async rawToItems (data: { entities: MemberEntity[], raw: any[] }, withFields: WithFields) {
     let items = data.entities
       .map((value: any, index: number) => ({
         ...value,
@@ -50,12 +51,12 @@ export class UserService {
     return items
   }
 
-  private async rawToMap (data: { entities: MemberEntity[], raw: AnyObject[] }, withFields: WithFields) {
+  private async rawToMap (item: { entities: MemberEntity[], raw: any[] }, withFields: WithFields) {
     let map = toUserMap(
-      data.entities
+      item.entities
         .map((value: any, index: number) => ({
           ...value,
-          avatar: data.raw[index]?.member_avatar,
+          avatar: item.raw[index]?.member_avatar,
         }))
     )
 
@@ -136,7 +137,6 @@ export class UserService {
 
 
   async getActiveUsers (options: IPaginationOptions, withFields: WithFields = []): Promise<IActiveUsersResponse> {
-    // todo переделать когда зальется тот ПР https://github.com/nestjsx/nestjs-typeorm-paginate/pull/375
     const query = this.query()
       .where({
         isSpammer: 0,
@@ -146,24 +146,14 @@ export class UserService {
         posts: 'DESC',
         last_login: 'DESC'
       })
-      .limit(options.limit)
-      .offset((options.page - 1) * options.limit)
 
-    const data = await query.getRawAndEntities()
-    const totalItems = await query.getCount()
+    const mapper = (entities: MemberEntity[], raw: any[]) => this.rawToItems({entities, raw}, withFields)
 
-    const items = await this.rawToItems(data, withFields)
-
-    return {
-      items,
-      meta: {
-        totalPages: Math.ceil(totalItems / options.limit),
-        currentPage: options.page,
-        itemsPerPage: options.limit,
-        itemCount: items.length,
-        totalItems,
-      }
-    }
+    return paginateRawAndEntities(
+      query,
+      options,
+      (entities, raw) => this.rawToItems({entities, raw}, withFields),
+    )
   }
 
 

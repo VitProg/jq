@@ -1,21 +1,23 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, NotFoundException, Query, UseInterceptors } from '@nestjs/common'
+import { Controller, Get, NotFoundException, Param, ParseIntPipe, Query } from '@nestjs/common'
 import { ApiQuery, ApiTags } from '@nestjs/swagger'
-import { MessageAllRelations } from '../../../../../common/forum/forum.entity-relations'
+import { MessageAllRelations, MessageRelationsArray } from '../../../../../common/forum/forum.entity-relations'
 import { between } from '../../../../../common/utils/number'
-import { stringToParams } from '../../utils/relations'
 import { MessageService } from './message.service'
-import { LatestMessageResponse } from '../../responses/latest-message.response'
+import { MessageManyResponse } from '../responses/message-many.response'
 import { ApiQueryPagination } from '../../../../swagger/decorators/api-query-pagination'
 import { ConfigService } from '@nestjs/config'
 import { WithUser } from '../../../auth/decorators/with-user'
 import { User } from '../../../auth/decorators/user'
 import { IUser } from '../../../../../common/forum/forum.interfaces'
 import { BoardService } from '../board/board.service'
-import { getUserGroups } from '../../../../../common/forum/utils'
-import { getUserFromContext } from '../../../auth/utils'
+import { ApiPipeStrings } from '../../../../swagger/decorators/api-pipe-strings'
+import { ParsePipedStringPipe } from '../../../../pipes/parse-piped-string.pipe'
+import { ParseIntOptionalPipe } from '../../../../pipes/parse-int-optional.pipe'
+import { ApiPipeNumbers } from '../../../../swagger/decorators/api-pipe-numbers'
+import { ParsePipedIntPipe } from '../../../../pipes/parse-piped-int.pipe'
+import { MessageModel } from '../../models/message.model'
 
 
-const ITEMS_ON_PAGE = 50
 const MAX_ITEMS_ON_PAGE = 200
 const MIN_ITEMS_ON_PAGE = 5
 
@@ -23,6 +25,9 @@ const MIN_ITEMS_ON_PAGE = 5
 @ApiTags('message')
 @Controller('message')
 export class MessageController {
+  readonly pageSize = parseInt(this.configService.get('FORUM_MESSAGE_PAGE_SIZE', '10'), 10)
+  readonly latestMaxPages = parseInt(this.configService.get('FORUM_MESSAGE_LATEST_MAX_PAGES', '10'), 10)
+
   constructor (
     private readonly messageService: MessageService,
     private readonly boardService: BoardService,
@@ -32,46 +37,98 @@ export class MessageController {
 
 
   @WithUser()
-  // @UseInterceptors(CacheInterceptor)
-  // @CacheTTL(function(ctx) {
-  //   return getUserFromContext(ctx) ? 10 : -1
-  // })
   @Get('latest')
   @ApiQueryPagination()
-  @ApiQuery({
+  @ApiPipeStrings({
     name: 'relations',
-    type: String,
-    description: `List of relations <i>${[...MessageAllRelations.values()].join(', ')}</i> (comma separator)`,
-    examples: {
-      'with Users': { value: 'user' },
-      'with Board': { value: 'board' },
-      'with Topic': { value: 'topic' },
-      'with Board and Topic': { value: 'topic,board' },
-      'ALL': { value: 'user,board,topic' },
-    },
-    // enumName: 'MessageAllRelations',
+    where: 'query',
+    enum: MessageAllRelations,
+    enumName: 'MessageAllRelations',
     required: false,
   })
   async latest (
     @User() user?: IUser,
-    @Query('page') page = 1,
-    @Query('pageSize') pageSize = ITEMS_ON_PAGE,
-    @Query('relations') relations?: string
-  ): Promise<LatestMessageResponse> {
-    if (page > parseInt(this.configService.get('FORUM_MESSAGE_PAGE_SIZE', '10'), 10)) {
-      throw new NotFoundException()
+    @Query('page', ParseIntOptionalPipe) page = 1,
+    @Query('pageSize', ParseIntOptionalPipe) pageSize = this.pageSize,
+    @Query('relations', ParsePipedStringPipe) withRelations: MessageRelationsArray = [],
+  ): Promise<MessageManyResponse> {
+    if (page > this.latestMaxPages) {
+      throw new NotFoundException('Maximum number of pages - 10')
     }
 
     const boardIds = await this.boardService.availableBoardIdsForUser(user)
 
-    return this.messageService.getLastMessages(
-      {
+    const result = await this.messageService.findAll({
+      pagination: {
         limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
         page,
       },
-      stringToParams(relations ?? '', MessageAllRelations),
       boardIds,
-    )
+      sort: 'DESC',
+    })
+    result.meta.totalPages = Math.min(this.latestMaxPages, result.meta.totalPages)
+
+    result.relations = await this.messageService.getRelations(result.items, withRelations)
+
+    return result
+  }
+
+
+  @WithUser()
+  @Get('topic/:topicId')
+  @ApiQueryPagination()
+  @ApiPipeStrings({
+    name: 'relations',
+    where: 'query',
+    enum: MessageAllRelations,
+    enumName: 'MessageAllRelations',
+    required: false,
+  })
+  async findByTopic (
+    @Param('topicId', ParseIntPipe) topicId: number,
+    @Query('page', ParseIntOptionalPipe) page = 1,
+    @Query('pageSize', ParseIntOptionalPipe) pageSize = this.pageSize,
+    @Query('relations', ParsePipedStringPipe) withRelations: MessageRelationsArray = [],
+    @User() user?: IUser,
+  ): Promise<MessageManyResponse> {
+    const boardIds = await this.boardService.availableBoardIdsForUser(user)
+
+    const result = await this.messageService.findAll({
+      pagination: {
+        limit: between(pageSize, MIN_ITEMS_ON_PAGE, MAX_ITEMS_ON_PAGE),
+        page,
+      },
+      topicId,
+      boardIds,
+    })
+
+    result.relations = await this.messageService.getRelations(result.items, withRelations)
+
+    return result
+  }
+
+  @WithUser()
+  @Get(':id')
+  @ApiQuery({ name: 'id', type: Number })
+  async findById (
+    @Param('id', ParseIntPipe) id: number,
+    @User() user?: IUser,
+  ): Promise<MessageModel | undefined> {
+    const boardIds = await this.boardService.availableBoardIdsForUser(user)
+    const result = await this.messageService.findById(id)
+    return result && boardIds.includes(result.linksId.board) ? result : undefined
+  }
+
+  @WithUser()
+  @Get('many/:ids')
+  @ApiPipeNumbers('ids', 'param')
+  async findByIds (
+    @Param('ids', ParsePipedIntPipe) ids: number[],
+    @User() user?: IUser,
+  ): Promise<MessageModel[]> {
+    const boardIds = await this.boardService.availableBoardIdsForUser(user)
+    const result = await this.messageService.findByIds(ids)
+    return result.filter(item => boardIds.includes(item.linksId.board))
   }
 
 
