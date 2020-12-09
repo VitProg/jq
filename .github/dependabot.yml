@@ -11,7 +11,7 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "bot"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 30
     pull-request-branch-name:
       separator: "-"
     reviewers:
@@ -24,7 +24,7 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "bot-docker"
-    open-pull-requests-limit: 4
+    open-pull-requests-limit: 20
     pull-request-branch-name:
       separator: "-"
     reviewers:
