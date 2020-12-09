@@ -53,7 +53,7 @@
     "dayjs": "^1.9.7",
     "dotenv": "^8.2.0",
     "geoip-lite": "^1.4.2",
-    "ky": "^0.25.0",
+    "ky": "^0.25.1",
     "ky-universal": "^0.8.2",
     "mobx": "^6.0.4",
     "mobx-react-lite": "^3.1.6",
