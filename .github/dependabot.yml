@@ -8,24 +8,29 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "tuesday"
     commit-message:
       prefix: "bot"
-    open-pull-requests-limit: 30
+    open-pull-requests-limit: 10
     pull-request-branch-name:
       separator: "-"
     reviewers:
       - "vitprog"
-
-
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "bot-docker"
-    open-pull-requests-limit: 20
-    pull-request-branch-name:
-      separator: "-"
-    reviewers:
-      - "vitprog"
+    labels:
+      - "npm"
+      - "dependencies"
+      -
+#
+#  - package-ecosystem: "docker"
+#    directory: "/"
+#    schedule:
+#      interval: "monthly"
+#      day: "tuesday"
+#    commit-message:
+#      prefix: "bot-docker"
+#    open-pull-requests-limit: 20
+#    pull-request-branch-name:
+#      separator: "-"
+#    reviewers:
+#      - "vitprog"
