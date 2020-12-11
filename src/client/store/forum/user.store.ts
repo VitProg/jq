@@ -11,7 +11,7 @@ import {
   IForumStore,
   IUserStore, RequestStatus
 } from './types'
-import { action, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import {
   dataStoreClear,
   dataStoreFlush,
@@ -23,6 +23,12 @@ import {
 } from './utils'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
 import { GetFirstArgumentType } from '../../../common/utils/types'
+import { IUser } from '../../../common/forum/forum.interfaces'
+import { computedFn } from 'mobx-utils'
+import { container } from '../../ioc/ioc.container'
+import { UserPrepareService } from '../../services/forum/user/user-prepare.service'
+import { UserPrepareServiceSymbol } from '../../services/ioc.symbols'
+import { mute } from '../../../common/utils/promise'
 
 
 type Store = UserStore
@@ -44,6 +50,8 @@ export class UserStore implements IUserStore {
   @observable.deep readonly items: Map<number, DataItem> = new Map()
   @observable.deep pages: Record<Hash, PageProps> = {}
   @observable statuses: Map<string, RequestStatus> = new Map<string, RequestStatus>()
+  @observable.shallow prepareByNameItems: string[] = []
+  @observable.shallow triedPrepareByNameItems: string[] = []
 
   @action
   flush (): void {
@@ -103,5 +111,46 @@ export class UserStore implements IUserStore {
 
   setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): void {
     dataStoreSetStatus(this, type, props, status)
+  }
+
+  ///
+
+  getByName = computedFn(function getNyName (this: Store, name: string): IUser | undefined {
+    const filteredUsers: IUser[] = []
+
+    for (const [, {item}] of this.items) {
+      if (item.displayName === name || item.login === name) {
+        filteredUsers.push(item)
+      }
+    }
+
+    const user = filteredUsers.pop()
+
+    if (!user) {
+      if (!this.prepareByNameItems.includes(name) && !this.triedPrepareByNameItems.includes(name)) {
+        runInAction(() => {
+          this.triedPrepareByNameItems = [
+            ...this.triedPrepareByNameItems,
+            name,
+          ]
+          this.prepareByNameItems = [
+            ...this.prepareByNameItems,
+            name,
+          ]
+        })
+      }
+    }
+
+    return user
+  })
+
+  @action.bound
+  clearPrepareByNameItems() {
+    this.prepareByNameItems = []
+  }
+
+  @computed
+  get hasPrepareByNameItems() {
+    return this.prepareByNameItems.length > 0
   }
 }

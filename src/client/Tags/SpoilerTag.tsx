@@ -1,26 +1,6 @@
-import React, { FC, useState } from 'react'
 import { Tag } from 'bbcode-to-react'
+import { Spoiler } from '../components/ui-kit/spoiler/Spoiler'
 
-interface Props {
-  title?: string
-  components: React.ReactNode[]
-}
-const Spoiler: FC<Props> = (props) => {
-  const [open, setOpen] = useState(false)
-
-  const title = props.title ?? 'Спойлер...'
-
-  const onClick = () => {
-    setOpen(!open)
-  }
-
-  return (
-    <div>
-      <div onClick={onClick}>{open ? '[-]' : '[+]'} {title}</div>
-      {open && props.components}
-    </div>
-  )
-}
 
 export class SpoilerTag extends Tag {
 

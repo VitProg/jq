@@ -19,7 +19,7 @@ import {
   Hash,
   MessageDataPageProps,
   Model,
-  RelationsMap,
+  RelationsRecord, RelationsSingle,
   RequestStatus
 } from './types'
 import { omit } from '../../../common/utils/object'
@@ -27,8 +27,10 @@ import { runInAction } from 'mobx'
 import { AnyObject } from '../../../common/utils/types'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
 import {
-  BoardRelationsRecord,
-  MessageRelationsRecord,
+  AllRelationsMap,
+  BoarAllRelations,
+  BoardRelationsRecord, MessageAllRelations,
+  MessageRelationsRecord, TopicAllRelations,
   TopicRelationsRecord
 } from '../../../common/forum/forum.entity-relations'
 
@@ -44,30 +46,18 @@ export const isDataStorePages = <T extends ForumPagesStoreType | undefined> (val
   return isDataStore(val, type as any) && 'pages' in val
 }
 
-export const getBlankRelationsMap = <DataType extends ForumStoreType> (dataType: DataType): RelationsMap<DataType> => {
-  if (dataType === 'message') {
-    return ({
-      user: {},
-      topic: {},
-      board: {},
-    } as MessageRelationsRecord) as RelationsMap<DataType>
-  }
+export const getBlankRelationsRecord = <DataType extends ForumStoreType> (dataType: DataType): RelationsRecord<DataType> => {
+  const res: any = {}
+  const allRelations = AllRelationsMap[dataType] ?? []
+  allRelations.forEach((i: string) => res[i] = {})
+  return res
+}
 
-  if (dataType === 'topic') {
-    return ({
-      board: {},
-      category: {},
-      lastMessage: {}
-    } as TopicRelationsRecord) as RelationsMap<DataType>
-  }
-
-  if (dataType === 'board') {
-    return ({
-      category: {},
-    } as BoardRelationsRecord) as RelationsMap<DataType>
-  }
-
-  return {} as RelationsMap<DataType>
+export const getBlankRelationsItem = <DataType extends ForumStoreType> (dataType: DataType): RelationsSingle<DataType> => {
+  const res: any = {}
+  const allRelations = AllRelationsMap[dataType] ?? []
+  allRelations.forEach((i: string) => res[i] = undefined)
+  return res
 }
 
 export const dataStoreFlush = (store: DataStore<any> | DataStorePages<any, any>) => {

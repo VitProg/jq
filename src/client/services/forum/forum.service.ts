@@ -4,12 +4,13 @@ import {
   BoardPrepareServiceSymbol,
   CategoryPrepareServiceSymbol,
   MessagePrepareServiceSymbol,
-  MessageServiceSymbol, TopicPrepareServiceSymbol
+  MessageServiceSymbol, TopicPrepareServiceSymbol, UserPrepareServiceSymbol
 } from '../ioc.symbols'
 import { store } from '../../store'
 import { makeAutoObservable, reaction } from 'mobx'
 import { BoardPrepareService } from './board/board-prepare.service'
 import { CategoryPrepareService } from './category/category-prepare.service'
+import { UserPrepareService } from './user/user-prepare.service'
 
 
 export class ForumService implements IForumService {
@@ -18,6 +19,7 @@ export class ForumService implements IForumService {
   @inject(TopicPrepareServiceSymbol) topicPrepareService!: ITopicPrepareService
   @inject(BoardPrepareServiceSymbol) boardPrepareService!: BoardPrepareService
   @inject(CategoryPrepareServiceSymbol) categoryPrepareService!: CategoryPrepareService
+  @inject(UserPrepareServiceSymbol) userPrepareService!: UserPrepareService
 
   private preparing = false
 
@@ -65,10 +67,10 @@ export class ForumService implements IForumService {
 
         const route = store.routeStore.noModalRoute ?? store.routeStore.current
 
-        let processed = false
-
-        if (!processed) processed = this.messagePrepareService.processRoute(route)
-        if (!processed) processed = this.topicPrepareService.processRoute(route)
+        this.messagePrepareService.processRoute(route)
+        this.topicPrepareService.processRoute(route)
+        this.boardPrepareService.processRoute(route)
+        this.userPrepareService.processRoute(route)
 
       }, {
         fireImmediately: true

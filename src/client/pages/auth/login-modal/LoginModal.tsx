@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { Button, Grid, Link, Typography } from '@material-ui/core'
 import { AccountCircleOutlined, VpnKeyOutlined } from '@material-ui/icons'
 import { observer } from 'mobx-react-lite'
@@ -11,8 +11,8 @@ import { store } from '../../../store'
 import { IAuthService } from '../../../services/my/types'
 import { AuthServiceSymbol } from '../../../services/ioc.symbols'
 import { useStyles } from './styles'
-import { Modal } from '../../../components/Modal/Modal'
-import { RouteLink } from '../../../components/Route/RouteLink'
+import { Modal } from '../../../components/modal/Modal'
+import { RouteLink } from '../../../components/route/RouteLink'
 import { ModalProps } from '../../../components/types'
 import { TextField } from '../../../components/ui-kit/text-field/TextField'
 import { PasswordInput } from '../../../components/ui-kit/password-input/PasswordInput'
@@ -51,7 +51,7 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
     try {
       user = await authService.login(data)
       if (store.routeStore.saved) {
-        store.routeStore.replaceSaved()
+        store.routeStore.saved.replace()
       }
       props.onClose()
     } catch {

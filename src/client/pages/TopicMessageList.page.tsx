@@ -1,13 +1,13 @@
-import React, { FC } from 'react'
-import { useStore } from '../hooks/use-store'
-import { MessageList } from '../components/Message/MessageList'
+import { FC } from 'react'
+import { MessageList } from '../components/message/message-list/MessageList'
 import { observer } from 'mobx-react-lite'
-import { Container, Typography } from '@material-ui/core'
+import { Container } from '@material-ui/core'
 import { routes } from '../routing'
 import { store } from '../store'
 import { usePage } from '../hooks/use-page'
 import { uesRoutePagination } from '../hooks/use-route-pagination'
-import { MessageRelations } from '../../common/forum/forum.entity-relations'
+import { usePageMetadata } from '../hooks/use-page-metadata'
+import { IBoard, ITopic } from '../../common/forum/forum.interfaces'
 
 
 interface Props {
@@ -16,55 +16,44 @@ interface Props {
 }
 
 export const TopicMessageListPage: FC<Props> = observer(function TopicMessageListPage (props: Props) {
-  const { uiStore, forumStore } = useStore()
+  const [page] = usePage(props.page)
 
-  const [page] = usePage(props)
+  const topic: ITopic | undefined = store.forumStore.topicStore.get(props.topic.id)
+  const board: IBoard | undefined = topic && store.forumStore.boardStore.get(topic.linksId.board)
 
-  const topic = forumStore.topicStore.get(props.topic.id)
-
-  store.seoStore.setTitle(topic ? topic.subject : '')
-  if (page > 1) {
-    store.seoStore.addTitle(`Страница: ${page}`)
-  }
-
-  const pageData = forumStore.messageStore.getPage({
+  const pageData = store.forumStore.messageStore.getPage({
     page,
     type: 'topic',
     topic: props.topic.id
   })
 
-  const pageMeta = forumStore.messageStore.getPageMeta({
+  const pageMeta = store.forumStore.messageStore.getPageMeta({
     type: 'topic',
     topic: props.topic.id
   })
-
-  const relationData = forumStore.getRelations(
-    'message',
-    pageData?.items,
-    [MessageRelations.user],
-  )
-
-  console.log('pageData', pageData)
-  console.log('pageMeta', pageMeta)
-  console.log('relationData', relationData)
 
   const pagination = uesRoutePagination(
     p => routes.topicMessageList({ topic: props.topic, page: p.page }),
     page,
     pageData?.meta,
     pageMeta,
-    uiStore.loading
+    store.uiStore.loading
   )
+
+  usePageMetadata({
+    title: topic?.subject,
+    pagination,
+    routes: [
+      !!board && [board.name, routes.boardTopicList({ board: board })],
+      !!topic && [topic.subject, routes.topicMessageList({ topic: topic })],
+    ],
+  })
 
   return (
     <Container>
-      {topic && <>
-        <Typography variant="h6" component="h1">{topic.subject}</Typography>
-      </>}
-
       {pagination.component}
       <MessageList
-        messages={uiStore.loading ? undefined : pageData?.items}
+        messages={store.uiStore.loading ? undefined : pageData?.items}
       />
       {pagination.component}
     </Container>

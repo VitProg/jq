@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import { IconButton, InputAdornment, InputProps, TextField } from '@material-ui/core'
 import { TextFieldProps } from '@material-ui/core/TextField/TextField'
 import { SvgIconComponent, Visibility, VisibilityOff, VpnKeyOutlined } from '@material-ui/icons'
@@ -56,13 +56,14 @@ export const PasswordInput: FC<Props> = (props) => {
     ),
   }), [StartIcon, onStartIconClick, withShowPassword, passwordShowed])
 
+  const hasError = !!(errors && errors[props.name as any])
 
   return control ?
     (
       <Controller
         as={TextField}
         control={control}
-        error={errors && errors[props.name as any]}
+        error={hasError}
         helperText={errors ? errors[props.name as any]?.message : props.helperText}
         defaultValue=''
         autoComplete="current-password"

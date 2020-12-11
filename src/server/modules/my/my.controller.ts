@@ -21,7 +21,7 @@ export class MyController {
   async index (@Req() request: Request & { user: IUser }): Promise<ProfileResponse | undefined> {
     const userId = request.user.id
 
-    const user = await this.userService.getById(userId, ['email', 'permissions', 'groups'])
+    const user = await this.userService.findById(userId, ['email', 'permissions', 'groups'])
 
     return createUserModel(user)
   }

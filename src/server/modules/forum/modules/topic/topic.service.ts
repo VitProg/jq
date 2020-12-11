@@ -18,6 +18,7 @@ import { BoardService } from '../board/board.service'
 import { CategoryService } from '../category/category.service'
 import { uniqueArray } from '../../../../../common/utils/array'
 import { MessageService } from '../message/message.service'
+import { UserService } from '../../../user/user.service'
 
 
 @Injectable()
@@ -27,6 +28,7 @@ export class TopicService {
     @Inject(forwardRef(() => BoardService)) private readonly boardService: BoardService,
     @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
     @Inject(forwardRef(() => MessageService)) private readonly messageService: MessageService,
+    @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
   ) {
   }
 
@@ -167,9 +169,18 @@ export class TopicService {
       }
     }
 
-    if (withRelations.includes(TopicRelations.lastMessage)) {
+    if (withRelations.includes(TopicRelations.lastMessage) || withRelations.includes(TopicRelations.lastUser)) {
       const topicIds = uniqueArray<number>(topics.map(topic => topic.id))
       relations[TopicRelations.lastMessage] = await this.messageService.getLastMessageForTopicIds(topicIds)
+    }
+
+    if (withRelations.includes(TopicRelations.lastUser) && relations[TopicRelations.lastMessage]) {
+      const userIds = uniqueArray<number>(Object.values(relations[TopicRelations.lastMessage]!).map(message => message.linksId.user))
+      relations[TopicRelations.lastUser] = await this.userService.findByIdsToRecord(userIds)
+
+      if (!withRelations.includes(TopicRelations.lastMessage)) {
+        delete relations[TopicRelations.lastMessage]
+      }
     }
 
     return relations

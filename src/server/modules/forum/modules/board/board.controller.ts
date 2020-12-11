@@ -1,5 +1,5 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common'
-import { ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common'
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BoardService } from './board.service'
 import { BoardModel } from '../../models/board.model'
 import { ApiPipeNumbers } from '../../../../swagger/decorators/api-pipe-numbers'
@@ -16,6 +16,7 @@ import { ParsePipedIntPipe } from '../../../../pipes/parse-piped-int.pipe'
 import { ParseIntOptionalPipe } from '../../../../pipes/parse-int-optional.pipe'
 import { ApiPipeStrings } from '../../../../swagger/decorators/api-pipe-strings'
 import { BoardDynamicDataDto } from '../../dto/board-dynamic-data.dto'
+import { GetDynamicDataTdo } from './dto/get-dynamic-data.tdo'
 
 
 const DEVELOPMENT = process.env.NODE_ENV !== 'production'
@@ -75,9 +76,16 @@ export class BoardController {
     return result.map(board => boardWithoutGroups(board))
   }
 
-  @Get('stat/:ids')
+  @Get('stat')
   @ApiPipeNumbers('ids', 'param')
   async getDynamicData (@Param('ids', ParsePipedIntPipe) ids: number[]): Promise<Array<BoardDynamicDataDto>> {
     return this.boardService.getDynamicData(ids)
+  }
+
+  // todo улучшить ответ, связанные даные можно отдавать отдельно, так не будет дублей, а в основной записе массива отдавать только ID
+  @Post('stat')
+  @ApiBody({ type: GetDynamicDataTdo })
+  async getDynamicDataPost (@Body() dto: GetDynamicDataTdo): Promise<Array<BoardDynamicDataDto>> {
+    return this.boardService.getDynamicData(dto.ids, !!dto.withUser)
   }
 }

@@ -4,7 +4,7 @@ import { authModalStyles } from '../constants'
 
 export const useStyles = makeStyles((theme: Theme) => ({
   modalPaper: {
-    ...authModalStyles,
+    ...authModalStyles(theme),
   },
   avatar: {
     margin: theme.spacing(1),

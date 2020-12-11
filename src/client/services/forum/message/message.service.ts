@@ -6,7 +6,6 @@ import { IForumMessageManyResponse } from '../../../../common/responses/forum.re
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { MessageByTopicRequest, MessageByUserRequest, MessageLatestRequest } from '../../api.requests'
 import { MessageRelations, MessageRelationsArray } from '../../../../common/forum/forum.entity-relations'
-import { serializeUrlSlugId } from '../../../../common/forum/utils'
 import { IMessage } from '../../../../common/forum/forum.interfaces'
 import { uniqueArray } from '../../../../common/utils/array'
 
@@ -104,7 +103,6 @@ export class MessageService implements IMessageService {
       return [] as IMessage[]
     }
   }
-
 
 
 }

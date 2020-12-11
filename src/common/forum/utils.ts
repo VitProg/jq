@@ -1,4 +1,5 @@
 import { IUser } from './forum.interfaces'
+import slug from 'slug'
 
 
 export const getUserGroups = (user?: IUser): number[] => {
@@ -10,6 +11,19 @@ export const getUserGroups = (user?: IUser): number[] => {
   }
 
   return groups
+}
+
+export const getUserName = (user?: IUser): string => user ? (user.displayName ?? user.login) : 'Гость'
+export const getUserSlug = (user?: IUser): string => {
+  if (!user) {
+    return ''
+  }
+  if (user.url) {
+    return user.url
+  }
+  return slug(getUserName(user), {
+    lower: true,
+  })
 }
 
 

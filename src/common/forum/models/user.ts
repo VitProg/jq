@@ -1,6 +1,7 @@
 import { IUser as IUser, IUserGroup } from '../forum.interfaces'
 import { Gender } from '../forum.constants'
 import slug from 'slug'
+import { getUserName, getUserSlug } from '../utils'
 
 
 export class User implements IUser {
@@ -39,15 +40,10 @@ export class User implements IUser {
   }
 
   get name () {
-    return this.displayName ?? this.login
+    return getUserName(this)
   }
 
   get slug () {
-    if (this.url) {
-      return this.url
-    }
-    return slug(this.displayName, {
-      lower: true,
-    })
+    return getUserSlug(this)
   }
 }

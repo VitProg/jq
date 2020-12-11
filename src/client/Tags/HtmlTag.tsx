@@ -1,5 +1,4 @@
 import { Tag } from 'bbcode-to-react'
-import React from 'react'
 
 
 export class HtmlTag extends Tag {

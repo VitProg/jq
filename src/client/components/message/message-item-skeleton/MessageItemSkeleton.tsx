@@ -1,13 +1,13 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { createStyles, ListItem, ListItemAvatar, ListItemText, makeStyles, Theme, Typography } from '@material-ui/core'
-import { User } from '../../../common/forum/models/user'
+import { User } from '../../../../common/forum/models/user'
 import parser from 'bbcode-to-react'
 import { Skeleton } from '@material-ui/lab'
 
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    messageBody: {
+    body: {
       whiteSpace: 'pre-line'
     }
   })
@@ -37,7 +37,7 @@ export const MessageItemSkeleton: FC<Props> = ({messageHeight = 100}) => {
         secondary={
           <Skeleton variant='rect' width='100%' height={messageHeight}/>
         }
-        secondaryTypographyProps={{ component: 'div', className: classes.messageBody }}
+        secondaryTypographyProps={{ component: 'div', className: classes.body }}
       />
     </ListItem>
   )

@@ -1,5 +1,5 @@
 import { IUser } from '../../../common/forum/forum.interfaces'
-import Omit = jest.Omit
+
 
 export interface JwtStrategyValidatePayload {
   sub: number

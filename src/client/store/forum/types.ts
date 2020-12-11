@@ -3,9 +3,9 @@ import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/foru
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
 import { AnyObject, GetFirstArgumentType, PartialBy } from '../../../common/utils/types'
 import {
-  BoardRelationsRecord,
-  MessageRelationsRecord,
-  TopicRelationsRecord
+  BoardRelationsRecord, BoardRelationsSingle,
+  MessageRelationsRecord, MessageRelationsSingle,
+  TopicRelationsRecord, TopicRelationsSingle
 } from '../../../common/forum/forum.entity-relations'
 
 
@@ -23,11 +23,15 @@ export interface IForumStore {
   readonly categoryStore: ICategoryStore
   readonly userStore: IUserStore
 
-  getRelations <DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>>(
+  getRelationsForList <DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>>(
     dataType: DataType,
     items: Item[] | undefined,
-    relations?: Array<keyof RelationsMap<DataType>>
-  ): RelationsMap<DataType>
+  ): RelationsRecord<DataType>
+
+  getRelationsForItem <DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>>(
+    dataType: DataType,
+    item: Item | undefined
+  ): RelationsSingle<DataType>
 
   getStore<DataType extends ForumStoreType> (dataType: DataType): GetForumStore<DataType>
 
@@ -47,6 +51,11 @@ export interface ICategoryStore extends DataStore<ICategory> {
 }
 
 export interface IUserStore extends DataStorePages<IUser, UserDataPageProps> {
+  readonly prepareByNameItems: ReadonlyArray<string>
+  readonly triedPrepareByNameItems: ReadonlyArray<string>
+  readonly hasPrepareByNameItems: boolean
+  clearPrepareByNameItems(): void
+  getByName (name: string): IUser | undefined
 }
 
 export type MessageDataPageProps = {
@@ -164,7 +173,7 @@ export type ExtractPageStoreDataEx<T> =
 
 
 export type ForumStoreType = 'message' | 'topic' | 'board' | 'category' | 'user'
-export type ForumStoreTypeEX = ForumStoreType | 'lastMessage' | 'firstMessage' | 'lastTopic'
+export type ForumStoreTypeEX = ForumStoreType | 'lastMessage' | 'firstMessage' | 'lastTopic' | 'lastUser'
 export type ForumPagesStoreType = Extract<ForumStoreType, 'message' | 'topic'>
 export type ForumSimpleStoreType = Extract<ForumStoreType, 'board' | 'category' | 'user'>
 export type ForumCachedStoreType = Extract<ForumStoreType, 'board' | 'category'>
@@ -179,6 +188,7 @@ export type GetForumStore<T extends ForumStoreType | ForumStoreTypeEX> = {
   lastMessage: IMessageStore
   firstMessage: IMessageStore
   lastTopic: ITopicStore
+  lastUser: IUserStore
 }[T]
 
 export type GetForumItem<R extends ForumStoreType> = {
@@ -191,8 +201,14 @@ export type GetForumItem<R extends ForumStoreType> = {
 
 export type ForumStores = IMessageStore | ITopicStore | IBoardStore | ICategoryStore | IUserStore
 
-export type RelationsMap<T extends Model | ForumStoreType> =
+export type RelationsRecord<T extends Model | ForumStoreType> =
   T extends (IMessage | 'message') ? MessageRelationsRecord :
     T extends (ITopic | 'topic') ? TopicRelationsRecord :
       T extends (IBoard | 'board') ? BoardRelationsRecord :
+        {}
+
+export type RelationsSingle<T extends Model | ForumStoreType> =
+  T extends (IMessage | 'message') ? MessageRelationsSingle :
+    T extends (ITopic | 'topic') ? TopicRelationsSingle :
+      T extends (IBoard | 'board') ? BoardRelationsSingle :
         {}

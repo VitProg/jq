@@ -7,12 +7,12 @@ import {
   ForumServiceSymbol,
   MessagePrepareServiceSymbol,
   MessageServiceSymbol,
-  ProfileServiceSymbol, TopicPrepareServiceSymbol, TopicServiceSymbol
+  ProfileServiceSymbol, TopicPrepareServiceSymbol, TopicServiceSymbol, UserPrepareServiceSymbol, UserServiceSymbol
 } from '../services/ioc.symbols'
 import { AuthService } from '../services/my/auth.service'
 import { IAuthService, IProfileService } from '../services/my/types'
 import { ProfileService } from '../services/my/profile.service'
-import {
+import type {
   IForumService,
   IMessagePrepareService,
   IMessageService,
@@ -28,6 +28,8 @@ import { BoardPrepareService } from '../services/forum/board/board-prepare.servi
 import { BoardService } from '../services/forum/board/board.service'
 import { TopicPrepareService } from '../services/forum/topic/topic-prepare.service'
 import { TopicService } from '../services/forum/topic/topic.service'
+import { UserService } from '../services/forum/user/user.service'
+import { UserPrepareService } from '../services/forum/user/user-prepare.service'
 
 container.bind<IApiService>(ApiServiceSymbol).to(ApiService)
 container.bind<IAuthService>(AuthServiceSymbol).to(AuthService)
@@ -46,6 +48,9 @@ container.bind<BoardPrepareService>(BoardPrepareServiceSymbol).to(BoardPrepareSe
 
 container.bind<CategoryService>(CategoryServiceSymbol).to(CategoryService)
 container.bind<CategoryPrepareService>(CategoryPrepareServiceSymbol).to(CategoryPrepareService)
+
+container.bind<UserService>(UserServiceSymbol).to(UserService)
+container.bind<UserPrepareService>(UserPrepareServiceSymbol).to(UserPrepareService)
 
 
 

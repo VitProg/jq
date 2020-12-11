@@ -15,6 +15,12 @@ export const definedRoutes = {
     },
     p => resolve('/last-messages', p.page)
   ),
+  users: defineRoute(
+    {
+      page: param.path.optional.number,
+    },
+    p => resolve('/users', p.page)
+  ),
   user: defineRoute(
     {
       user: param.path.ofType(slugWithIdSerializer),

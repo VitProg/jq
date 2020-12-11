@@ -1,6 +1,5 @@
-import React, { FC } from 'react'
-import { useStore } from '../hooks/use-store'
-import { MessageList } from '../components/Message/MessageList'
+import { FC } from 'react'
+import { MessageList } from '../components/message/message-list/MessageList'
 import { observer } from 'mobx-react-lite'
 import { Container } from '@material-ui/core'
 import { routes } from '../routing'
@@ -14,42 +13,45 @@ interface Props {
 }
 
 export const LastMessageListPage: FC<Props> = observer(function LastMessageListPage (props: Props) {
-  const { uiStore, forumStore } = useStore()
-
-  const [page] = usePage(props)
+  const [page] = usePage(props.page)
 
   store.seoStore.setTitle('Последние сообщения')
-  if (page > 1) {
-    store.seoStore.addTitle(`Страница: ${page}`)
-  }
+  store.uiStore.setPageTitle('Последние сообщения')
+  store.breadcrumbsStore.set({route: 'lastMessages', label: 'Последние сообщения'})
 
-  /// todo
-  const pageData = forumStore.messageStore.getPage({
+  const pageData = store.forumStore.messageStore.getPage({
     page,
     type: 'latest',
   })
 
-  const pageMeta = forumStore.messageStore.getPageMeta({
+  const pageMeta = store.forumStore.messageStore.getPageMeta({
     type: 'latest',
   })
-
-  const relationData = forumStore.getRelations('message', pageData?.items)
-  /// ----
 
   const pagination = uesRoutePagination(
     p => routes.lastMessages({ page: p.page }),
     page,
     pageData?.meta,
     pageMeta,
-    uiStore.loading
+    store.uiStore.loading
   )
+
+  if (pagination.currentPage) {
+    store.seoStore.addTitle(`Страница: ${pagination.currentPage}`)
+    store.breadcrumbsStore.add(pagination.totalPages ?
+      `${page} из ${pagination.totalPages}` :
+      pagination.currentPage.toString()
+    )
+  }
 
   return (
     <Container>
       {pagination.component}
       <MessageList
-        messages={uiStore.loading ? undefined : pageData?.items}
-        relations={relationData}
+        messages={store.uiStore.loading ? undefined : pageData?.items}
+        itemProps={{
+          breadcrumb: true,
+        }}
       />
       {pagination.component}
     </Container>

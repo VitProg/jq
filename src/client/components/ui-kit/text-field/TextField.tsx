@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import { IconButton, InputAdornment, InputProps, TextField as MuiTextField } from '@material-ui/core'
 import { TextFieldProps } from '@material-ui/core/TextField/TextField'
 import { SvgIconComponent } from '@material-ui/icons'
@@ -45,12 +45,14 @@ export const TextField: FC<Props> = (props) => {
     ),
   }), [StartIcon, EndIcon, onStartIconClick, onEndIconClick])
 
+  const hasError = !!(errors && errors[props.name as any])
+
   return control ?
     (
       <Controller
         as={MuiTextField}
         control={control}
-        error={errors && errors[props.name as any]}
+        error={hasError}
         helperText={errors ? errors[props.name as any]?.message : props.helperText}
         defaultValue=''
         {...inputProps}

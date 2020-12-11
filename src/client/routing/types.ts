@@ -11,7 +11,7 @@ export type AppRouteKeys = keyof typeof routes
 
 export interface IfRouteParams<N extends keyof typeof routes> {
   name: N,
-  route: StoredRoute | undefined,
+  route: AppRoute | undefined,
   render: (route: Route<(typeof routes)[N]>) => ReactElement,
   guard?: (route: Route<(typeof routes)[N]>) => (undefined | boolean | Route<(typeof routes)>)
   saveRedirect?: boolean

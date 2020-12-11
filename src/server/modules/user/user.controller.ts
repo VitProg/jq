@@ -1,15 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common'
-import { ApiQuery, ApiTags } from '@nestjs/swagger'
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common'
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger'
 import { WithFields } from './types'
 import { between } from '../../../common/utils/number'
 import { UserService } from './user.service'
-import { splitPipedStrings } from '../../../common/utils/string'
 import { ParseIntOptionalPipe } from '../../pipes/parse-int-optional.pipe'
 import { ConfigService } from '@nestjs/config'
 import { ApiQueryPagination } from '../../swagger/decorators/api-query-pagination'
 import { ApiPipeStrings } from '../../swagger/decorators/api-pipe-strings'
-import { MessageAllRelations } from '../../../common/forum/forum.entity-relations'
 import { ParsePipedStringPipe } from '../../pipes/parse-piped-string.pipe'
+import { User } from '../auth/decorators/user'
+import { UserManyResponse } from '../forum/modules/responses/user-many.response'
+import { WithUser } from '../auth/decorators/with-user'
+import { ApiPipeNumbers } from '../../swagger/decorators/api-pipe-numbers'
+import { ParsePipedIntPipe } from '../../pipes/parse-piped-int.pipe'
+import { UserModel } from './models/user.model'
+import { FindByNameDto } from './dto/find-by-name.dto'
 
 
 const MAX_ITEMS_ON_PAGE = 200
@@ -35,8 +40,11 @@ export class UserController {
     required: false,
   })
   async activeUsers (
-    @Query('page', new ParseIntOptionalPipe({min: 1})) page = 1,
-    @Query('pageSize', new ParseIntOptionalPipe({min: MIN_ITEMS_ON_PAGE, max: MAX_ITEMS_ON_PAGE})) pageSize = this.pageSize,
+    @Query('page', new ParseIntOptionalPipe({ min: 1 })) page = 1,
+    @Query('pageSize', new ParseIntOptionalPipe({
+      min: MIN_ITEMS_ON_PAGE,
+      max: MAX_ITEMS_ON_PAGE
+    })) pageSize = this.pageSize,
     @Query('with', ParsePipedStringPipe) withFields: WithFields = ['groups']
   ) {
     console.log('withFields', withFields)
@@ -45,5 +53,48 @@ export class UserController {
       page,
     }, withFields)
   }
+
+  @Get('')
+  @ApiQueryPagination()
+  async findAll (
+    @Query('page', new ParseIntOptionalPipe({ min: 1 })) page = 1,
+    @Query('pageSize', new ParseIntOptionalPipe({ min: 5 })) pageSize = this.pageSize,
+    @User() user?: UserModel,
+  ): Promise<UserManyResponse> {
+    return this.userService.paginate({
+      pagination: { page, limit: pageSize },
+    })
+  }
+
+  @WithUser()
+  @Post('by-name')
+  @ApiBody({ type: FindByNameDto })
+  async findByName (
+    @Body() dto: FindByNameDto,
+    @User() user?: UserModel
+  ): Promise<UserModel[]> {
+    return this.userService.findByName(dto.name)
+  }
+
+  @WithUser()
+  @Get(':id')
+  @ApiParam({ name: 'id', type: Number })
+  async findById (
+    @Param('id', ParseIntPipe) id: number,
+    @User() user?: UserModel
+  ): Promise<UserModel | undefined> {
+    return this.userService.findById(id)
+  }
+
+  @WithUser()
+  @Get('many/:ids')
+  @ApiPipeNumbers('ids', 'param')
+  async findByIds (
+    @Param('ids', ParsePipedIntPipe) ids: number[],
+    @User() user?: UserModel,
+  ): Promise<UserModel[]> {
+    return this.userService.findByIds(ids)
+  }
+
 
 }

@@ -11,16 +11,17 @@ import {
   ITopicStore,
   IUserStore,
   Model,
-  RelationsMap
+  RelationsRecord, RelationsSingle
 } from './types'
 import { IRouteStore, IUIStore } from '../types'
-import { getBlankRelationsMap } from './utils'
+import { getBlankRelationsItem, getBlankRelationsRecord } from './utils'
 import { BoardStore } from './board.store'
 import { CategoryStore } from './category.store'
 import { TopicStore } from './topic.store'
 import { UserStore } from './user.store'
 import { makeObservable } from 'mobx'
 import { MessageStore } from './message.store'
+import { isObject } from '../../../common/type-guards'
 
 
 export class ForumStore implements IForumStore {
@@ -43,37 +44,59 @@ export class ForumStore implements IForumStore {
     makeObservable(this, {})
   }
 
-  getRelations<DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>> (
+  getRelationsForList<DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>> (
     dataType: DataType,
     items: Item[] | undefined,
-  ): RelationsMap<DataType> {
-    const relations = getBlankRelationsMap(dataType)
+  ): RelationsRecord<DataType> {
+    const relations = getBlankRelationsRecord(dataType)
 
     // todo check it
     if (items) {
       for (const item of items as Model[]) {
-        this.fillRelations(relations, item.linksId, dataType)
+        this.fillRelations(true, relations, item.linksId, dataType)
       }
     }
     return relations
   }
 
-  private fillRelations = (
-    relations: RelationsMap<any>,
+  getRelationsForItem<DataType extends ForumStoreType, Item extends ExtractItem<GetForumStore<DataType>>> (
+    dataType: DataType,
+    item: Item | undefined,
+  ): RelationsSingle<DataType> {
+    const relations = getBlankRelationsItem(dataType)
+
+    // todo check it
+    if (item && 'linksId' in item) {
+      this.fillRelations(false, relations, (item as any).linksId, dataType)
+    }
+    return relations
+  }
+
+  private fillRelations<
+    M extends true | false,
+    R extends (M extends true ? RelationsRecord<any> : RelationsSingle<any>),
+  > (
+    many: M,
+    relations: R,
     linksId: Partial<Record<ForumStoreType, number>> | undefined,
     currentType: ForumStoreType
-  ) => {
+  ) {
     if (!linksId) {
       return
     }
 
+    //todo foll relations from other relation
     for (const [dt, id] of Object.entries(linksId)) {
       if (id) {
-        if (!(dt in relations)) {
+        if (many && !(dt in relations)) {
           (relations as any)[dt] = {}
         }
 
-        if (!(id in (relations as any)[dt])) {
+        const check = many ?
+          !(id in (relations as any)[dt]) :
+          !(relations as any)[dt]
+
+        if (check) {
           const dataType = (dt === 'parent' ? currentType : dt) as ForumStoreType
           const store = this.getStore(dataType)
           if (!store) {
@@ -81,9 +104,13 @@ export class ForumStore implements IForumStore {
           } else {
             const item = store.get(id) as Model
             if (item) {
-              (relations as any)[dt][id] = item
+              if (many) {
+                (relations as any)[dt][id] = item
+              } else {
+                (relations as any)[dt] = item
+              }
 
-              this.fillRelations(relations, item.linksId, dataType)
+              this.fillRelations(many, relations, item.linksId, dataType)
             }
           }
         }
@@ -95,9 +122,11 @@ export class ForumStore implements IForumStore {
     switch (dataType) {
       case 'firstMessage':
       case 'lastMessage':
-        return this.messageStore as GetForumStore<DataType>
+        return this.messageStore as any
       case 'lastTopic':
-        return this.topicStore as GetForumStore<DataType>
+        return this.topicStore as any
+      case 'lastUser':
+        return this.userStore as any
     }
     return (this as any)[dataType + 'Store']
   }

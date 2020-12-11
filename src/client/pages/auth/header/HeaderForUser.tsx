@@ -1,9 +1,9 @@
-import React, { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useState, MouseEvent } from 'react'
 import { observer } from 'mobx-react-lite'
-import { UserAvatar } from '../../../components/User/UserAvatar'
+import { UserAvatar } from '../../../components/user/UserAvatar'
 import { Menu, MenuItem } from '@material-ui/core'
 import { User } from '../../../../common/forum/models/user'
-import { RouteLink } from '../../../components/Route/RouteLink'
+import { RouteLink } from '../../../components/route/RouteLink'
 import { useInjection } from '../../../ioc/ioc.react'
 import { AuthServiceSymbol } from '../../../services/ioc.symbols'
 import { IAuthService } from '../../../services/my/types'
@@ -22,7 +22,7 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
   const authService = useInjection<IAuthService>(AuthServiceSymbol)
 
   const handleAvatarClick = useCallback(
-    (event: React.MouseEvent<HTMLElement>) => {
+    (event: MouseEvent<HTMLElement>) => {
       if (menuOpened) {
         setMenuOpened(null)
       } else {

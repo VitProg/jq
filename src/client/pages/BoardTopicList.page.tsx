@@ -1,13 +1,13 @@
-import React, { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { observer } from 'mobx-react-lite'
-import { useStore } from '../hooks/use-store'
 import { Container, List, ListItem, ListItemText, Typography } from '@material-ui/core'
-import { RouteLink } from '../components/Route/RouteLink'
+import { RouteLink } from '../components/route/RouteLink'
 import { routes } from '../routing'
 import { uesRoutePagination } from '../hooks/use-route-pagination'
 import { ITopic } from '../../common/forum/forum.interfaces'
 import { usePage } from '../hooks/use-page'
 import { store } from '../store'
+import { usePageMetadata } from '../hooks/use-page-metadata'
 
 
 interface Props {
@@ -16,46 +16,40 @@ interface Props {
 }
 
 export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props: Props) {
-  const { uiStore, forumStore } = useStore()
+  const [page] = usePage(props.page)
 
-  const [page] = usePage(props)
+  const board = store.forumStore.boardStore.get(props.board.id)
 
-  const board = forumStore.boardStore.get(props.board.id)
-
-  store.seoStore.setTitle(board ? board.name : '')
-  if (page > 1) {
-    store.seoStore.addTitle(`Страница: ${page}`)
-  }
-
-  const pageData = forumStore.topicStore.getPage({
+  const pageData = store.forumStore.topicStore.getPage({
     page,
     type: 'board',
     board: props.board.id,
   })
 
-  const pageMeta = forumStore.topicStore.getPageMeta({
+  const pageMeta = store.forumStore.topicStore.getPageMeta({
     type: 'board',
     board: props.board.id,
   })
-
-  const relationData = forumStore.getRelations('topic', pageData?.items)
-
-  console.log('relationData', relationData)
 
   const pagination = uesRoutePagination(
     p => routes.boardTopicList({ board: props.board, page: p.page }),
     page,
     pageData?.meta,
     pageMeta,
-    uiStore.loading
+    store.uiStore.loading
   )
+
+  usePageMetadata({
+    title: board?.name,
+    pagination,
+  })
 
   const has = !!pageData?.items?.length
 
   return (
     <Container>
       {board && <>
-        <Typography variant="h5" component="h1">{board.name}</Typography>
+        {/*<Typography variant="h5" component="h1">{board.name}</Typography>*/}
         {board.description && <Typography variant="subtitle1" component="div">{board.description}</Typography>}
       </>}
 

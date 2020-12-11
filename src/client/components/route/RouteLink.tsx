@@ -1,4 +1,4 @@
-import React, { DOMAttributes, HTMLAttributes, ReactElement, ReactNode, useCallback } from 'react'
+import { DOMAttributes, HTMLAttributes, ReactElement, ReactNode, useCallback } from 'react'
 import { preventDefaultLinkClickBehavior } from 'type-route'
 
 import { Button, Link, MenuItem } from '@material-ui/core'
@@ -13,8 +13,7 @@ const a = document.createElement('a')
 
 type Types = typeof Button | typeof Link | typeof MenuItem | 'a'
 
-type IfDefinedProps<Check, True, False = never> = Check extends AnyObject ? True : False
-
+type IfDefinedProps<Check, True, False = never> = Check extends undefined ? False : True
 
 type GenerateProps<R extends AppRouteKeys,
   T extends Types = 'a'> =
@@ -35,7 +34,7 @@ type GenerateProps<R extends AppRouteKeys,
   (
     T extends OverridableComponent<infer F> ? Omit<F['props'], 'component'> & DOMAttributes<F> : (
       T extends 'a' ? HTMLAttributes<HTMLAnchorElement> : {
-        onClick?: (event: React.MouseEvent) => void
+        onClick?: (event: MouseEvent) => void
       })
     )
 
@@ -51,7 +50,7 @@ export const RouteLink = <R extends AppRouteKeys, T extends Types = 'a', > (
 
   const route = routes[to](toProps)
 
-  const onClick = (event: React.MouseEvent) => {
+  const onClick = (event: MouseEvent) => {
     if ((props as any).onClick) {
       (props as any).onClick(event as any)
     }

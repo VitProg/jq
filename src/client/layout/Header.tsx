@@ -1,34 +1,37 @@
-import React, { FC } from 'react'
-import { AppBar, Button, Link, Toolbar, Typography } from '@material-ui/core'
+import { FC } from 'react'
+import { AppBar, Box, Button, Container, Link, Toolbar, Typography } from '@material-ui/core'
 import { observer } from 'mobx-react-lite'
-import { useStore } from '../hooks/use-store'
 import { HeaderForUser } from '../pages/auth/header/HeaderForUser'
 import { HeaderForGuest } from '../pages/auth/header/HeaderForGuest'
-import { RouteLink } from '../components/Route/RouteLink'
+import { RouteLink } from '../components/route/RouteLink'
+import { store } from '../store'
+import { useHeaderStyles } from './styles'
+import { HideOnScroll } from '../components/utils/HideOnScroll'
 
 
-export const Header: FC = observer(function Header(props) {
+export const Header: FC = observer(function Header (props) {
+  const classes = useHeaderStyles()
 
-  const { myStore } = useStore()
   return (
-    <header>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6">
-            <RouteLink to={'index'} component={Link} color="inherit">JQ Forum React</RouteLink>
-          </Typography>
-          <nav>
-            <RouteLink to={'lastMessages'} component={Link} color="inherit">Сообщения</RouteLink>
-          </nav>
-          {/*<Button variant="outlined" color="primary" component={Link} to="/messages">*/}
-          {/*  Last messages*/}
-          {/*</Button>*/}
-          {myStore.user ?
-            <HeaderForUser user={myStore.user}/> :
-            <HeaderForGuest/>
-          }
-        </Toolbar>
-      </AppBar>
+    <header className={classes.container}>
+      <HideOnScroll>
+        <AppBar position="fixed">
+          <Container maxWidth="md" component={Toolbar} className={classes.toolbar}>
+            <Typography variant="h6" className={classes.title}>
+              <RouteLink to={'index'} component={Link} color="inherit">JQ Forum React</RouteLink>
+            </Typography>
+            <nav className={`${classes.menu} ${classes.grow}`}>
+              <RouteLink to={'lastMessages'} component={Button} color="inherit">Сообщения</RouteLink>
+            </nav>
+            <Box className={classes.userArea}>
+              {store.myStore.user ?
+                <HeaderForUser user={store.myStore.user}/> :
+                <HeaderForGuest/>
+              }
+            </Box>
+          </Container>
+        </AppBar>
+      </HideOnScroll>
     </header>
   )
 })

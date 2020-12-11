@@ -101,7 +101,7 @@ export class TopicController {
 
   @WithUser()
   @Get(':id')
-  @ApiQuery({ name: 'id', type: Number })
+  @ApiParam({ name: 'id', type: Number })
   async findById (
     @Param('id', ParseIntPipe) id: number,
     @User() user?: IUser

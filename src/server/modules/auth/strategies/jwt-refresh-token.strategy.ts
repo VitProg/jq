@@ -46,7 +46,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException('refresh - fingerprint not valid');
     }
 
-    const user = await this.userService.getById(userId)
+    const user = await this.userService.findById(userId)
 
     if (!user) {
       throw new UnauthorizedException('refresh - user not found');

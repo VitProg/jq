@@ -1,5 +1,5 @@
 import { Backdrop, Fade, IconButton, Modal as MUIModal } from '@material-ui/core'
-import React, { FC, useMemo } from 'react'
+import { FC, FormHTMLAttributes, ReactNode, useMemo } from 'react'
 import { StyleProps, useModalStyles } from './styles'
 import { omit } from '../../../common/utils/object'
 import { ModalProps as MainModalProps } from '../types'
@@ -9,10 +9,10 @@ import { joinClassNames, joinClassNamesMass } from '../ui-kit/utils'
 
 
 export type ModalProps = Partial<StyleProps> & MainModalProps & {
-  header?: (() => React.ReactNode) | React.ReactNode
-  content?: (() => React.ReactNode) | React.ReactNode
-  footer?: (() => React.ReactNode) | React.ReactNode
-  form?: React.FormHTMLAttributes<HTMLFormElement>
+  header?: (() => ReactNode) | ReactNode
+  content?: (() => ReactNode) | ReactNode
+  footer?: (() => ReactNode) | ReactNode
+  form?: FormHTMLAttributes<HTMLFormElement>
   classNames?: {
     modal?: string
     paper?: string

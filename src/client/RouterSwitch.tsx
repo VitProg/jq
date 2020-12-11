@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { IndexPage } from './pages/Index.page'
 import { LastMessageListPage } from './pages/LastMessageList.page'
 import { LoginModal } from './pages/auth/login-modal/LoginModal'
@@ -17,16 +17,14 @@ import { TopicMessageListPage } from './pages/TopicMessageList.page'
 
 
 export const RouterSwitch: FC = observer(function RouterSwitch () {
-  console.log('!!!', toJS(store.routeStore.current))
-
   const onModalClose = (rs: IRouteStore) => {
-    if (rs.noModalRoute?.href) {
-      routerSession.replace(rs.noModalRoute.href)
+    if (rs.noModalRoute) {
+      rs.noModalRoute.push()
     } else {
       if (rs.last) {
-        rs.back()
+        rs.last.push()
       } else {
-        rs.replace(routes.index())
+        routes.index().push()
       }
     }
   }

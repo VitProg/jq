@@ -1,6 +1,5 @@
-import { IBoard, ICategory } from '../../../../common/forum/forum.interfaces'
+import { IBoard } from '../../../../common/forum/forum.interfaces'
 import { ApiProperty } from '@nestjs/swagger'
-import { CategoryModel } from './category.model'
 
 
 export class BoardModel implements IBoard {

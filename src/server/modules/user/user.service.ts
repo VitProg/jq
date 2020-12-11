@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { AttachmentEntity, MemberEntity, TopicEntity } from '../../entities'
-import { FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
+import { AttachmentEntity, MemberEntity } from '../../entities'
+import { Equal, FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
 import { MemberEmailField, MemberIdField, MemberLoginField } from '../forum/constants'
 import { toUser, toUserMap } from '../forum/utils/mapper'
 import { IPaginationOptions } from 'nestjs-typeorm-paginate'
-import { IActiveUsersResponse } from '../../../common/responses/forum.responses'
-import { ITopic, IUser } from '../../../common/forum/forum.interfaces'
+import { IActiveUsersResponse, IForumUserManyResponse } from '../../../common/responses/forum.responses'
+import { IUser } from '../../../common/forum/forum.interfaces'
 import { ObjectLiteral } from 'typeorm/common/ObjectLiteral'
 import { PermissionService } from './permission/permission.service'
 import { WithFields } from './types'
 import { UserGroupService } from './user-group/user-group.service'
-import { AnyObject } from '../../../common/utils/types'
 import { paginateRawAndEntities } from '../../common/paginate/paginate-raw-and-entities'
 
+const DEFAULT_WITH_FIELDS: WithFields = []
 
 @Injectable()
 export class UserService {
@@ -32,7 +32,7 @@ export class UserService {
       .leftJoin(AttachmentEntity, 'a', `a.id_member = ${MemberEntity.name}.id_member AND a.attachment_type = 1 AND a.approved = 1`)
   }
 
-  private async rawToItems (data: { entities: MemberEntity[], raw: any[] }, withFields: WithFields) {
+  private async rawToArray (data: { entities: MemberEntity[], raw: any[] }, withFields: WithFields): Promise<IUser[]> {
     let items = data.entities
       .map((value: any, index: number) => ({
         ...value,
@@ -72,41 +72,55 @@ export class UserService {
   }
 
 
-  async findByIdsToMap (ids: number[] | Set<number>, withFields: WithFields = []): Promise<Map<number, IUser>> {
+  async findByIdsToMap (ids: number[] | Set<number>, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<Map<number, IUser>> {
     const idSet = new Set(ids)
-    const data = await this.query()
-      .whereInIds([...idSet])
-      .getRawAndEntities()
+    if (idSet.size === 0) {
+      return new Map()
+    }
+
+    const query = this.query()
+
+    if (idSet.size === 1) {
+      const [id, ..._] = [...idSet.values()]
+      query.where({
+        idMember: Equal(id)
+      })
+    } else {
+      query.whereInIds([...idSet])
+    }
+
+    const data = await query.getRawAndEntities()
+
     return await this.rawToMap(data, withFields)
   }
 
-  async findByIds (ids: number[] | Set<number>, withFields: WithFields = []): Promise<IUser[]> {
+  async findByIds (ids: number[] | Set<number>, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<IUser[]> {
     return [...(await this.findByIdsToMap(ids, withFields)).values()]
   }
 
-  async findByIdsToRecord (ids: number[] | Set<number>, withFields: WithFields = []): Promise<Record<number, IUser>> {
+  async findByIdsToRecord (ids: number[] | Set<number>, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<Record<number, IUser>> {
     const map = await this.findByIdsToMap(ids, withFields)
     return Object.fromEntries(map.entries())
   }
 
-  async getByLogin (login: string, withFields: WithFields = []) {
-    return this.getByLoginOrEmail({ login }, withFields)
+  async fundByLogin (login: string, withFields: WithFields = DEFAULT_WITH_FIELDS) {
+    return this.findByLoginOrEmail({ login }, withFields)
   }
 
-  async getByEmail (email: string, withFields: WithFields = []) {
-    return this.getByLoginOrEmail({ email }, withFields)
+  async findByEmail (email: string, withFields: WithFields = DEFAULT_WITH_FIELDS) {
+    return this.findByLoginOrEmail({ email }, withFields)
   }
 
-  async getById (id: number, withFields: WithFields = ['email', 'auth']): Promise<IUser | undefined> {
+  async findById (id: number, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<IUser | undefined> {
     const data = await this.query()
       .where({ [MemberIdField]: id })
       .getRawAndEntities()
 
-    const items = await this.rawToItems(data, withFields)
+    const items = await this.rawToArray(data, withFields)
     return items?.[0]
   }
 
-  async getByLoginOrEmail (config: { login?: string, email?: string }, withFields: WithFields = ['email', 'auth']) {
+  async findByLoginOrEmail (config: { login?: string, email?: string }, withFields: WithFields = ['email', 'auth']) {
     const login = config.login?.trim()
     const email = config.email?.trim()
 
@@ -131,12 +145,20 @@ export class UserService {
       // .getRawOne()
       .getRawAndEntities()
 
-    const items = await this.rawToItems(data, withFields)
+    const items = await this.rawToArray(data, withFields)
     return items?.[0]
   }
 
+  async findByName (name: string, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<IUser[]> {
+    const data = await this.query()
+      .orWhere(`${MemberEntity.name}.memberName = :name`, { name })
+      .orWhere(`${MemberEntity.name}.real_name = :name`, { name })
+      .getRawAndEntities()
 
-  async getActiveUsers (options: IPaginationOptions, withFields: WithFields = []): Promise<IActiveUsersResponse> {
+    return this.rawToArray(data, withFields)
+  }
+
+  async getActiveUsers (options: IPaginationOptions, withFields: WithFields = DEFAULT_WITH_FIELDS): Promise<IActiveUsersResponse> {
     const query = this.query()
       .where({
         isSpammer: 0,
@@ -147,17 +169,17 @@ export class UserService {
         last_login: 'DESC'
       })
 
-    const mapper = (entities: MemberEntity[], raw: any[]) => this.rawToItems({entities, raw}, withFields)
+    const mapper = (entities: MemberEntity[], raw: any[]) => this.rawToArray({ entities, raw }, withFields)
 
     return paginateRawAndEntities(
       query,
       options,
-      (entities, raw) => this.rawToItems({entities, raw}, withFields),
+      (entities, raw) => this.rawToArray({ entities, raw }, withFields),
     )
   }
 
 
-  getUserByRefreshToken (refreshToken: string, fingerprintLight: Promise<string>, userId: number) {
+  findByRefreshToken (refreshToken: string, fingerprintLight: Promise<string>, userId: number) {
     return Promise.resolve(undefined)
   }
 
@@ -170,5 +192,19 @@ export class UserService {
         lastLogin: () => 'unix_timestamp()',
       }
     )).affected ?? 0) > 0
+  }
+
+  async paginate (
+    options: {
+      pagination: IPaginationOptions,
+    }
+  ): Promise<IForumUserManyResponse> {
+    const query = this.query()
+
+    return await paginateRawAndEntities(
+      query,
+      options.pagination,
+      (entities, raw) => this.rawToArray({ entities, raw }, DEFAULT_WITH_FIELDS)
+    )
   }
 }

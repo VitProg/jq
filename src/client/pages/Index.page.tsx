@@ -1,5 +1,5 @@
-import React, { FC } from 'react'
-import { RouteLink } from '../components/Route/RouteLink'
+import { FC } from 'react'
+import { RouteLink } from '../components/route/RouteLink'
 import { store } from '../store'
 
 export const IndexPage: FC = () => {
@@ -11,7 +11,7 @@ export const IndexPage: FC = () => {
       [[IndexPage]]
       <ul>
         <li><RouteLink to={'profile'}>Профиль</RouteLink></li>
-        <li><RouteLink to={'lastMessages'}>Последние сообщения [1]</RouteLink></li>
+        <li><RouteLink to={'lastMessages'} route={{}}>Последние сообщения [1]</RouteLink></li>
         <li><RouteLink to={'lastMessages'} route={{page: 2}}>{p => `Последние сообщения [${p.page}]`}</RouteLink></li>
         <li><RouteLink to={'lastMessages'} route={{page: 10}}>Последние сообщения [10]</RouteLink></li>
       </ul>

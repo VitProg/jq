@@ -1,13 +1,13 @@
-import React, { useContext } from 'react';
+import { createContext, FC, useContext } from 'react'
 import { Container } from '@owja/ioc';
 
-const IocContext = React.createContext<{ container: Container | null }>({ container: null });
+const IocContext = createContext<{ container: Container | null }>({ container: null });
 
 type Props = {
   container: Container;
 };
 
-export const IocProvider: React.FC<Props> = (props) => {
+export const IocProvider: FC<Props> = (props) => {
   return (
     <IocContext.Provider value={{ container: props.container }}>
       {props.children}

@@ -18,7 +18,7 @@ dayjs.tz.setDefault(Intl.DateTimeFormat().resolvedOptions().timeZone)
 export {dayjs}
 
 
-export const fromNowDate = (date: Date, dateFormat?: string): string => {
+export const fromNowDate = (date: Date | dayjs.Dayjs, dateFormat?: string): string => {
   const d = dayjs(date)
   const diff = Math.abs(d.diff(new Date(), 'month'))
 

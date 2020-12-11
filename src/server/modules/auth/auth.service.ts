@@ -31,9 +31,7 @@ export class AuthService {
     const login = username.includes('@') ? undefined : username
     const email = username.includes('@') ? username : undefined
 
-
-
-    const user = await this.userService.getByLoginOrEmail({ login, email })
+    const user = await this.userService.findByLoginOrEmail({ login, email })
     console.log({login, email, password, user})
     if (!user || !user.auth?.passwordHash) {
       return undefined

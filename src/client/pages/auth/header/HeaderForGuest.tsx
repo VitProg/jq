@@ -1,6 +1,6 @@
-import React, { FC, useState } from 'react'
+import { FC, useState } from 'react'
 import { observer } from 'mobx-react-lite'
-import { RouteLink } from '../../../components/Route/RouteLink'
+import { RouteLink } from '../../../components/route/RouteLink'
 import { Button } from '@material-ui/core'
 
 

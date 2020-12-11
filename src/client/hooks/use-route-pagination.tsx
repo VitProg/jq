@@ -1,8 +1,8 @@
 import { PaginationRenderItemParams } from '@material-ui/lab'
 import { AppRoute } from '../routing/types'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
-import React, { useMemo } from 'react'
-import { RoutePagination } from '../components/Route/RoutePagination'
+import { useMemo } from 'react'
+import { RoutePagination } from '../components/route/RoutePagination'
 
 
 export const uesRoutePagination = (

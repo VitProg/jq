@@ -1,5 +1,5 @@
 import { Tag } from 'bbcode-to-react'
-import React from 'react'
+import { UserMention } from '../components/user/UserMention'
 
 
 export class UserTag extends Tag {
@@ -7,7 +7,7 @@ export class UserTag extends Tag {
     const user = this.getContent(true)
     //todo
     return (
-      <a href='#touser'>{user}</a>
+      <UserMention user={user}/>
     );
   }
 }

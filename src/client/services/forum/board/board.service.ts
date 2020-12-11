@@ -2,7 +2,7 @@ import { inject } from '../../../ioc/ioc.decoratos'
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { IApiService } from '../../types'
 import { IBoard } from '../../../../common/forum/forum.interfaces'
-import { IForumBoardManyResponse } from '../../../../common/responses/forum.responses'
+import { IForumBoardDynamicData, IForumBoardManyResponse } from '../../../../common/responses/forum.responses'
 
 
 export class BoardService {
@@ -16,6 +16,17 @@ export class BoardService {
     return result ?? {
       items: [],
     }
+  }
+
+  async getStat(ids: number[]): Promise<IForumBoardDynamicData[]> {
+    const result = await this.api
+      .post<IForumBoardDynamicData[]>(
+        `board/stat`,
+        {
+          json: { ids, withUser: true, },
+        },
+      )
+    return result ?? []
   }
 
 }

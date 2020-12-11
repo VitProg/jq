@@ -6,6 +6,7 @@ import * as Entities from '../../../../entities'
 import { BoardModule } from '../board/board.module'
 import { CategoryModule } from '../category/category.module'
 import { MessageModule } from '../message/message.module'
+import { UserModule } from '../../../user/user.module'
 
 
 @Module({
@@ -18,6 +19,7 @@ import { MessageModule } from '../message/message.module'
     forwardRef(() => BoardModule),
     forwardRef(() => CategoryModule),
     forwardRef(() => MessageModule),
+    forwardRef(() => UserModule),
   ],
   providers: [TopicService],
   exports: [TopicService],

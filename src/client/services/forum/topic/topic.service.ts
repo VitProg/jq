@@ -12,7 +12,7 @@ import { uniqueArray } from '../../../../common/utils/array'
 
 const LATEST_MAX_PAGES = 10
 const DEFAULT_LATEST_PAGE_SIZE = 20
-const DEFAULT_WITH_RELATIONS: TopicRelationsArray = [TopicRelations.board, TopicRelations.category, TopicRelations.lastMessage]
+const DEFAULT_WITH_RELATIONS: TopicRelationsArray = [TopicRelations.board, TopicRelations.category, TopicRelations.lastMessage, TopicRelations.lastUser]
 
 
 export class TopicService implements ITopicService {

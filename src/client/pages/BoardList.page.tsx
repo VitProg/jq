@@ -1,31 +1,27 @@
-import React, { FC } from 'react'
+import { FC, ReactElement } from 'react'
 import { observer } from 'mobx-react-lite'
-import { useStore } from '../hooks/use-store'
-import { Container, List, ListItem, ListItemText } from '@material-ui/core'
-import { RouteLink } from '../components/Route/RouteLink'
-import { pick } from '../../common/utils/object'
+import { Container, List, ListItem, ListItemText, Typography } from '@material-ui/core'
+import { RouteLink } from '../components/route/RouteLink'
+import { store } from '../store'
+import { IBoard, ICategory } from '../../common/forum/forum.interfaces'
+import { usePageMetadata } from '../hooks/use-page-metadata'
+import { BoardList } from '../components/board/board-list/BoardList'
 
 
 interface Props {
 }
 
 export const BoardListPage: FC<Props> = observer(function BoardListPage (props: Props) {
-  const { uiStore, forumStore } = useStore()
 
-  const boards = forumStore.boardStore.getAll(false)
+  usePageMetadata({
+    pageTitle: 'Разделы форума',
+    setSeoTitle: false,
+    setBreadcrumbs: false,
+  })
 
   return (
     <Container>
-      <List>
-        {boards.map(board => (
-          <ListItem key={board.id}>
-            <ListItemText
-              primary={<RouteLink to={'boardTopicList'} route={{board}}>{board.name}</RouteLink>}
-              secondary={board.description}
-            />
-          </ListItem>
-        ))}
-      </List>
+      <BoardList/>
     </Container>
   )
 })

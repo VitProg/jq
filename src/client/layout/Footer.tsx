@@ -1,11 +1,14 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
+import { Container } from '@material-ui/core'
 
 
 export const Footer: FC = (props) => {
 
   return (
     <footer>
-      FOOTER
+      <Container maxWidth="md">
+        FOOTER
+      </Container>
     </footer>
   )
 }

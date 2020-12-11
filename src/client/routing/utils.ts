@@ -38,7 +38,8 @@ export const ifRoute = <N extends keyof typeof routes>({name, route, render, gua
         if (!!saveRedirect) {
           store.routeStore.setSaved(route)
         }
-        store.routeStore.replace(guardCheck)
+        route.replace()
+        // store.routeStore.replace(guardCheck)
         return null
       }
     }

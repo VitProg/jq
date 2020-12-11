@@ -27,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(request: Request, payload: JwtStrategyValidatePayload) {
     const fingerprintLight = await this.secureService.generateFingerprintLight(request);
 
-    const user = await this.userService.getById(payload.sub)
+    const user = await this.userService.findById(payload.sub)
 
     if (await this.tokenService.verifyJwtToken(payload, fingerprintLight, user)) {
       return user

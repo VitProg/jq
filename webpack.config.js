@@ -3,7 +3,9 @@ const webpack = require('webpack');
 const CopyPlugin = require("copy-webpack-plugin");
 const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const ReactRefreshTypeScript = require('react-refresh-typescript').default;
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
+const IgnoreNotFoundExportPlugin = require('./webpack-plugins');
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
@@ -25,19 +27,22 @@ module.exports = {
         exclude: /node_modules/,
         options: {
           configFile: 'tsconfig.client.json',
-          getCustomTransformers: () => (
-            isDevelopment
-              ? {
-                // before: [ReactRefreshTypeScript()]
-              }
-              : {}
-          ),
+          compilerOptions: {
+            sourceMap: isDevelopment,
+          },
+          transpileOnly: true,
+          experimentalWatchApi: true,
         }
       }
     ]
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
+    // alias: {
+    //   '@client' : './src/client',
+    //   '@common' : './src/common',
+    //   '@server' : './src/server',
+    // }
   },
   output: {
     filename: 'bundle.js',
@@ -57,6 +62,8 @@ module.exports = {
         { from: "./src/client/index.html", to: "index.html" },
       ],
     }),
+    new ForkTsCheckerWebpackPlugin(),
+    new IgnoreNotFoundExportPlugin(),
     isDevelopment && new webpack.HotModuleReplacementPlugin(),
     isDevelopment && new ReactRefreshPlugin({
       overlay: {

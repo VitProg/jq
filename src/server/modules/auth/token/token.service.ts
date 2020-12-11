@@ -3,7 +3,6 @@ import { REDIS_CLIENT } from '../../../di.symbols'
 import { RedisClient } from '../../../types'
 import { ConfigService } from '@nestjs/config'
 import { isArray } from '../../../../common/type-guards'
-import Omit = jest.Omit
 import { convertSimpleExpiresToSeconds } from '../../../common/date'
 import { IUser } from '../../../../common/forum/forum.interfaces'
 import { JwtStrategyValidatePayload } from '../types'

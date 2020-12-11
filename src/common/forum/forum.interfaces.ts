@@ -67,7 +67,9 @@ export interface IBoard {
   linksId: {
     parent: number
     category: number
+    lastTopic?: number
     lastMessage?: number
+    lastUser?: number
   }
   counters?: {
     topics: number

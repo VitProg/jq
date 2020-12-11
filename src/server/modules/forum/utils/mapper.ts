@@ -51,13 +51,16 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
     groupIds.add(addGroup)
   }
 
+  const login = member[MemberLoginField]
+  const displayName = member[MemberDisplayNameField].split('&amp;').join('&')
+
   const user: IUser = {
     id: member.idMember,
     //email
-    login: member[MemberLoginField],
-    displayName: member[MemberDisplayNameField],
+    login,
+    displayName,
     // url: member.urlName ?? slug((member[MemberDisplayNameField] ?? member[MemberLoginField]).substr(0, 80)),
-    url: slug((member[MemberDisplayNameField] ?? member[MemberLoginField]).substr(0, 80)),
+    url: slug(displayName ?? login).substr(0, 80),
     avatar: member.avatar,
     gender: toGender(member.gender),
     dates: {

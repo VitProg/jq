@@ -19,7 +19,8 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "strict": true,
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "baseUrl": "./src"
   },
   "exclude": [
     "node_modules",

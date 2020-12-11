@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { BoardEntity } from '../../../../entities'
 import { Repository } from 'typeorm'
 import { TopicService } from '../topic/topic.service'
+import { UserService } from '../../../user/user.service'
 
 
 @Injectable()
@@ -23,6 +24,7 @@ export class BoardService {
     private readonly cacheService: ForumCacheService,
     @Inject(forwardRef(() => MessageService)) private readonly messageService: MessageService,
     @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
+    @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
     @Inject(forwardRef(() => CategoryService)) private readonly categoryService: CategoryService,
     @InjectRepository(BoardEntity) private readonly boardRepository: Repository<BoardEntity>,
   ) {
@@ -99,7 +101,7 @@ export class BoardService {
     return relations
   }
 
-  async getDynamicData (ids: number[]): Promise<Array<BoardDynamicDataDto>> {
+  async getDynamicData (ids: number[], withUser = false): Promise<Array<BoardDynamicDataDto>> {
     const data = await this.boardRepository.findByIds(ids)
 
     const messageIds: number[] = data.map(item => item.idLastMsg)
@@ -108,14 +110,19 @@ export class BoardService {
     const topicIds: number[] = Object.values(messageMap).map(item => item.linksId.topic)
     const topicMap = await this.topicService.findByIdsToMap(topicIds)
 
+    const userIds: number[] = withUser ? Object.values(messageMap).map(message => message.linksId.user) : []
+    const userMap = withUser ? await this.userService.findByIdsToRecord(userIds) : {}
+
     return data.map(item => {
       const message: IMessage | undefined = messageMap[item.idLastMsg]
       const topic: ITopic | undefined = message ? topicMap.get(message.linksId.topic) : undefined
+      const user: IUser | undefined = message ? userMap[message.linksId.user] : undefined
 
       return {
         id: item.idBoard,
         lastMessage: message,
         lastTopic: topic,
+        lastUser: user,
         messages: item.numPosts,
         topics: item.numTopics,
       }

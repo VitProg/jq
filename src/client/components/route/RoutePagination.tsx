@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { PaginationProps } from '@material-ui/lab/Pagination/Pagination'
 import { Pagination, PaginationItem, PaginationRenderItemParams } from '@material-ui/lab'
 import { AppRoute } from '../../routing/types'
@@ -31,6 +31,8 @@ export const RoutePagination: FC<Props> = (props) => {
 
   return (
     <Pagination
+      shape='rounded'
+      size='small'
       {...paginationProps}
       renderItem={renderItem}
     />
