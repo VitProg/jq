@@ -159,10 +159,11 @@ export function toBoard (board: BoardEntity): IBoard {
     notice: board.noticeDescription ? board.noticeDescription : undefined,
     onlyIndexNotice: board.isOnlyIndexMessage ? board.isOnlyIndexMessage : undefined,
     settings: {
-      forGroups: board.memberGroups.split(',').map(g => parseInt(g, 10)),
+      forGroups: [1, ...board.memberGroups.split(',').map(g => parseInt(g, 10))].sort(),
       onlyIndexGroups: board.memberGroupsOnlyIndex.split(',').map(g => parseInt(g, 10)),
       order: board.boardOrder,
       level: board.childLevel,
+      hidden: !!board.hidden,
     },
     linksId: {
       parent: board.idParent,

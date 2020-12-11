@@ -7,8 +7,9 @@ export const useStyles = makeStyles((theme: Theme) =>
 
     },
     body: {
-      whiteSpace: 'pre-line',
+      // whiteSpace: 'pre-line',
       wordBreak: 'break-word',
+      color: theme.palette.grey['A400'],
 
       '& img, & iframe, & object, & table': {
         maxWidth: '100%',

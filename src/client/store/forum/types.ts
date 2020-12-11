@@ -7,6 +7,7 @@ import {
   MessageRelationsRecord, MessageRelationsSingle,
   TopicRelationsRecord, TopicRelationsSingle
 } from '../../../common/forum/forum.entity-relations'
+import { dataStoreGetAll } from './utils'
 
 
 export type Hash = string
@@ -45,6 +46,10 @@ export interface ITopicStore extends DataStorePages<ITopic, TopicDataPageProps> 
 }
 
 export interface IBoardStore extends DataStore<IBoard> {
+  getAll <AsRecord extends true | false = false>(
+    asRecord: AsRecord,
+    parentId?: number,
+  ): AsRecord extends true ? Record<number, IBoard> : IBoard[]
 }
 
 export interface ICategoryStore extends DataStore<ICategory> {

@@ -14,7 +14,7 @@ interface Props {
 
 export const BoardList: FC<Props> = observer(function BoardList (props) {
   const {
-    boards = store.forumStore.boardStore.getAll(false),
+    boards = store.forumStore.boardStore.getAll(false, 0),
     categories: showCategories = true,
   } = props
 

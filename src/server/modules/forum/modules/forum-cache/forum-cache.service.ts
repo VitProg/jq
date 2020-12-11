@@ -10,10 +10,10 @@ import { RedisClient } from '../../../../types'
 import { isArray, isMap } from '../../../../../common/type-guards'
 
 
-const BOARDS_KEY = 'cache.boards'
-const CATEGORIES_KEY = 'cache.categories'
-const USER_GROUPS_KEY = 'cache.groups'
-const PERMISSIONS_KEY = 'cache.permissions'
+const BOARDS_KEY = 'cache.boards.'
+const CATEGORIES_KEY = 'cache.categories.'
+const USER_GROUPS_KEY = 'cache.groups.'
+const PERMISSIONS_KEY = 'cache.permissions.'
 
 const EXPIRED = 3600 // 1 hour
 const EXPIRED_LOCAL = 300 // 5 min
@@ -115,9 +115,9 @@ export class ForumCacheService {
     } else {
       console.log(' - boards from DB', forceFromDb)
       const entityList = await this.boardRepository.find({
-        where: {
-          hidden: 0
-        },
+        // where: {
+        //   hidden: 0
+        // },
         order: {
           boardOrder: 'ASC'
         }

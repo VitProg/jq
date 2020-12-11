@@ -27,6 +27,7 @@ export class BoardModel implements IBoard {
     onlyIndexGroups?: number[]
     order: number
     level: number
+    hidden: boolean
   }
 
   @ApiProperty()

@@ -92,8 +92,25 @@ export class BoardStore implements IBoardStore {
 
   getAll <AsRecord extends true | false = false>(
     asRecord: AsRecord,
+    parentId?: number,
   ): AsRecord extends true ? Record<number, Item> : Item[] {
-    return dataStoreGetAll(this, asRecord)
+    if (typeof parentId !== 'undefined') {
+      const data: Item[] = dataStoreGetAll(this, false)
+
+      const result: any = asRecord ? {} : []
+      for (const item of data) {
+        if (parentId === item.linksId.parent) {
+          if (asRecord) {
+            result[item.id] = item
+          } else {
+            result.push(item)
+          }
+        }
+      }
+      return result
+    } else {
+      return dataStoreGetAll(this, asRecord)
+    }
   }
 
   getStatus <M extends DataStoreGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>): RequestStatus | undefined {

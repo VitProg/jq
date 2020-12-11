@@ -2,6 +2,7 @@ import { Tag } from 'bbcode-to-react'
 
 
 export class YoutubeTag extends Tag {
+  static tag = 'youtube'
 
   toReact() {
     // using this.getContent(true) to get it's inner raw text.

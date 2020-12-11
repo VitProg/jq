@@ -63,6 +63,7 @@ export interface IBoard {
     onlyIndexGroups?: number[]
     order: number
     level: number
+    hidden: boolean
   }
   linksId: {
     parent: number

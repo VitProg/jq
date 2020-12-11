@@ -39,13 +39,14 @@ export class BoardService {
   async findAll (parentId: number = 0, forGroups: number[] = [-1] /**todo**/): Promise<IBoard[]> {
     const boardMap = await this.cacheService.getBoardMap()
     const boardArray = [...boardMap.values()]
+
     return boardArray
-      .filter(board => board.linksId.parent === parentId)
-      .filter(board =>
-        forGroups.length && board.settings.forGroups ?
-          forGroups.some(g => board.settings.forGroups!.includes(g)) :
-          true
-      )
+      // .filter(board => board.linksId.parent === parentId)
+      // .filter(board =>
+      //   forGroups.length && board.settings.forGroups ?
+      //     forGroups.some(g => board.settings.forGroups!.includes(g)) :
+      //     true
+      // )
   }
 
 
