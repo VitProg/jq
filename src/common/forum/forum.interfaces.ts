@@ -1,4 +1,4 @@
-import { Gender } from './forum.constants'
+import { Gender, UserLevel } from './forum.constants'
 
 
 export interface IUser {
@@ -9,6 +9,7 @@ export interface IUser {
   url: string
   avatar: string
   gender: Gender
+  level: UserLevel
   dates: {
     lastLogin?: Date
     registered?: Date

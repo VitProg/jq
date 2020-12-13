@@ -1,4 +1,4 @@
-import { RedisService } from 'nestjs-redis'
+import * as Redis from 'ioredis'
 
 
-export type RedisClient = ReturnType<RedisService['getClient']>
+export type RedisClient = Redis.Redis

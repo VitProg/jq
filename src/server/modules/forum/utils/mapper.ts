@@ -20,6 +20,8 @@ import { timestampToDate, toGender } from './transform'
 import { MemberDisplayNameField, MemberEmailField, MemberLoginField } from '../constants'
 import { WithFields } from '../../user/types'
 import slug from 'slug'
+import { getUserLevelByUser, getUserLevelsByGroups } from '../../../../common/forum/utils'
+import { UserLevel } from '../../../../common/forum/forum.constants'
 
 
 function entityListToMap<E, O extends { id: number }> (
@@ -50,6 +52,7 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
   for (const addGroup of addGroups) {
     groupIds.add(addGroup)
   }
+  const groups = [...groupIds.values()]
 
   const login = member[MemberLoginField]
   const displayName = member[MemberDisplayNameField].split('&amp;').join('&')
@@ -73,9 +76,10 @@ export function toUser (member: MemberEntity, withFields: WithFields = []): IUse
       karmaMinus: member.karmaBad,
     },
     settings: {
-      groupIds: [...groupIds.values()],
+      groupIds: groups,
       timeOffset: member.timeOffset,
     },
+    level: getUserLevelsByGroups(groups).pop() ?? UserLevel.level1,
   }
 
   if (withFields.includes('auth')) {
@@ -123,11 +127,12 @@ export const toMessageMap = (messageEntityList: MessageEntity[]) => entityListTo
 
 
 export function toTopic (topic: TopicEntity & { subject: string }): ITopic {
+  const subject = topic.subject ?? `topic-${topic.idTopic}`
   return {
     id: topic.idTopic,
     // url: topic.url ?? slug(topic.subject.substr(0, 80)),
-    url: slug(topic.subject.substr(0, 80)),
-    subject: topic.subject ?? `topic-${topic.idTopic}`,
+    url: slug(subject.substr(0, 80)),
+    subject: subject ?? `topic-${topic.idTopic}`,
     flags: {
       isLocked: !!topic.locked,
       isSticky: !!topic.isSticky,

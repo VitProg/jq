@@ -2,23 +2,8 @@ import { IConfigStore } from './types'
 import { store } from './index'
 import { IUser } from '../../common/forum/forum.interfaces'
 import { makeAutoObservable } from 'mobx'
+import { intValue, stringValue } from '../../common/utils/env'
 
-
-const intValue = (envValue: any, defaultValue: number): number => {
-  if (envValue && (envValue + '').length > 0) {
-    const int = parseInt(envValue, 10)
-    return int > 0 && !isNaN(int) && !isFinite(int) ? int : defaultValue
-  }
-  return defaultValue
-}
-
-const stringValue = <S extends string | undefined> (envValue: any, defaultValue?: S): S extends string ? string : string | undefined => {
-  if (envValue && (envValue + '').length > 0) {
-    const str = (envValue + '').trim()
-    return str && str.length > 0 ? str : defaultValue as any
-  }
-  return defaultValue as any
-}
 
 export class ConfigStore implements IConfigStore {
   readonly isDevelopment: boolean

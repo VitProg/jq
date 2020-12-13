@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 
 const isTsNode = process.env.RUN_MODE === 'ts-node'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+const hideLog = (process.env.TYPEORM_HIDE_LOG) === '1'
 
 dotenv.config({
   path: '.env'
@@ -29,8 +30,8 @@ module.exports = [
       migrationsDir: "src/server/migration",
       entitiesDir: "src/server/entities"
     },
-    logging: isDevelopment ? 'all' : false,
-    logger: isDevelopment ? 'advanced-console' : undefined,
-    maxQueryExecutionTime: isDevelopment ? 250 : 1000,
+    logging: isDevelopment && !hideLog ? 'all' : false,
+    logger: isDevelopment && !hideLog ? 'advanced-console' : undefined,
+    maxQueryExecutionTime: isDevelopment && !hideLog ? 250 : 1000,
   }
 ]

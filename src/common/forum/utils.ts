@@ -1,5 +1,6 @@
 import { IUser } from './forum.interfaces'
 import slug from 'slug'
+import { UserLevel, userLevelsGroupIds } from './forum.constants'
 
 
 export const getUserGroups = (user?: IUser): number[] => {
@@ -51,4 +52,41 @@ export const deserializeUrlSlugId = (raw: string | undefined): {id: number, url:
     }
   }
   return undefined
+}
+
+
+export const getUserLevelByUser = (user?: IUser) => {
+  if (!user) {
+    return UserLevel.guest
+  }
+
+  const levels: UserLevel[] = []
+
+  for (const entry of Object.entries(userLevelsGroupIds)) {
+    const [level, groupIds] = entry as [UserLevel, number[]]
+    const check = groupIds.length > 0 && user.settings.groupIds.some(g => groupIds.includes(g))
+    if (check) {
+      levels.push(level)
+    }
+  }
+
+  return levels.pop()
+}
+
+export const getUserLevelsByGroups = (groups?: number[]): UserLevel[] => {
+  if (!groups || groups.length <= 0) {
+    return [UserLevel.guest]
+  }
+
+  const levels: UserLevel[] = []
+
+  for (const entry of Object.entries(userLevelsGroupIds)) {
+    const [level, groupIds] = entry as [UserLevel, number[]]
+    const check = groupIds.length > 0 && groups.some(g => groupIds.includes(g))
+    if (check) {
+      levels.push(level)
+    }
+  }
+
+  return levels
 }
