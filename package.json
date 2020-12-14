@@ -71,7 +71,7 @@
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "react-hook-form": "^6.12.2",
+    "react-hook-form": "^6.13.0",
     "react-transition-group": "^4.4.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
