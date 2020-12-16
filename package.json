@@ -53,7 +53,7 @@
     "cancelable-promise": "^3.2.0",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
-    "commander": "^6.2.0",
+    "commander": "^6.2.1",
     "cookie-parser": "^1.4.5",
     "date-fns": "^2.16.1",
     "dayjs": "^1.9.7",
