@@ -1,4 +1,4 @@
-import { IBoard, ICategory, IMessage, ITopic, IUser } from './forum.interfaces'
+import { IBoard, ICategory, IMessage, ITopic, IUser } from './forum.base.interfaces'
 import webpack from 'webpack'
 import { ForumStoreType } from '../../client/store/forum/types'
 

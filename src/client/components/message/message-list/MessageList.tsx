@@ -1,14 +1,14 @@
 import { FC } from 'react'
 import { Box } from '@material-ui/core'
-import { IMessage } from '../../../../common/forum/forum.interfaces'
 import { MessageItem, MessageItemProps } from '../message-item/MessageItem'
 import { observer } from 'mobx-react-lite'
 import { MessageItemSkeleton } from '../message-item-skeleton/MessageItemSkeleton'
 import { store } from '../../../store'
+import { IMessageEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 interface Props {
-  messages?: IMessage[]
+  messages?: IMessageEx[]
   // relations?: MessageRelationsRecord
   itemProps?: Omit<MessageItemProps, 'message' | 'user'>
 }

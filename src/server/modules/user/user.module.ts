@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service'
+import { UserDbService } from './user-db.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { PermissionService } from './permission/permission.service';
 import { UserGroupService } from './user-group/user-group.service';
 import * as Entities from '../../entities'
-import { ForumCacheModule } from '../forum/modules/forum-cache/forum-cache.module'
+import { ForumCacheModule } from '../forum/forum-cache/forum-cache.module'
 import { UserController } from './user.controller';
+import { UserRedisService } from './user-redis.service';
+import { UserService } from './user.service';
 
 @Module({
   imports: [
@@ -17,12 +19,16 @@ import { UserController } from './user.controller';
     ForumCacheModule,
   ],
   providers: [
-    UserService,
+    UserDbService,
     PermissionService,
     UserGroupService,
+    UserRedisService,
+    UserService,
   ],
   exports: [
     UserService,
+    UserDbService,
+    UserRedisService,
   ],
   controllers: [UserController]
 })

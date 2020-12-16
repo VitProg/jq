@@ -22,7 +22,8 @@ export default (): IConfiguration => {
       db: parseInt(process.env.REDIS_DB ?? '1', 10),
       password: process.env.REDIS_PASSWORD ?? '',
       keyPrefix: process.env.REDIS_PREFIX ?? 'jq_',
-    }
+    },
+    loggingRedis: !!(process.env.REDIS_LOGGING ?? 0)
   }
   // console.log(config)
   return config

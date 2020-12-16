@@ -51,11 +51,14 @@ export class ForumService implements IForumService {
 
     reaction(
       () => [
-        store.routeStore.current,
         store.routeStore.noModalRoute,
         store.myStore.isAuth,
       ],
-      async () => {
+      async (current: any[], last: any[]) => {
+        if (current?.[0]?.href === last?.[0]?.href && current[1] === last[1]) {
+          return
+        }
+
         const auth = store.myStore.isAuth
         if (lastIsAuth !== undefined && auth !== lastIsAuth) {
           //clear all cache

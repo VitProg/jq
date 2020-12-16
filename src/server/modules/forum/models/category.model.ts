@@ -1,4 +1,4 @@
-import { IBoard, ICategory } from '../../../../common/forum/forum.interfaces'
+import { IBoard, ICategory } from '../../../../common/forum/forum.base.interfaces'
 import { ApiProperty } from '@nestjs/swagger'
 
 

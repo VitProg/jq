@@ -7,6 +7,8 @@ import { CliService } from './cli.service'
 import { BoardEntity, CategoryEntity, MemberGroupEntity, PermissionEntity } from '../../entities'
 import { ToRedisModule } from './to-redis/to-redis.module';
 import { GlobalModule } from '../../global.module'
+import { ForumModule } from '../forum/forum.module'
+import { UserModule } from '../user/user.module'
 
 
 @Module({
@@ -19,6 +21,8 @@ import { GlobalModule } from '../../global.module'
     GlobalModule,
     TypeOrmModule.forRoot(),
     ToRedisModule,
+    ForumModule,
+    UserModule,
   ],
   providers: [CliService],
   exports: [CliService],

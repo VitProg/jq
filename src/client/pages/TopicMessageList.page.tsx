@@ -7,7 +7,8 @@ import { store } from '../store'
 import { usePage } from '../hooks/use-page'
 import { uesRoutePagination } from '../hooks/use-route-pagination'
 import { usePageMetadata } from '../hooks/use-page-metadata'
-import { IBoard, ITopic } from '../../common/forum/forum.interfaces'
+import { IBoard, ITopic } from '../../common/forum/forum.base.interfaces'
+import { IBoardEx } from '../../common/forum/forum.ex.interfaces'
 
 
 interface Props {
@@ -18,8 +19,8 @@ interface Props {
 export const TopicMessageListPage: FC<Props> = observer(function TopicMessageListPage (props: Props) {
   const [page] = usePage(props.page)
 
-  const topic: ITopic | undefined = store.forumStore.topicStore.get(props.topic.id)
-  const board: IBoard | undefined = topic && store.forumStore.boardStore.get(topic.linksId.board)
+  const topic = store.forumStore.topicStore.get(props.topic.id)
+  const board = topic && store.forumStore.boardStore.get(topic?.boardId)
 
   const pageData = store.forumStore.messageStore.getPage({
     page,

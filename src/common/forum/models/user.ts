@@ -1,5 +1,5 @@
-import { IUser as IUser, IUserGroup } from '../forum.interfaces'
-import { Gender } from '../forum.constants'
+import { IUser as IUser, IUserGroup } from '../forum.base.interfaces'
+import { Gender, UserLevel } from '../forum.constants'
 import slug from 'slug'
 import { getUserName, getUserSlug } from '../utils'
 
@@ -12,6 +12,7 @@ export class User implements IUser {
   url: string = ''
   avatar: string = ''
   gender: Gender = Gender.Unknown
+  level: UserLevel = UserLevel.level1
   dates: {
     lastLogin?: Date
     registered?: Date
@@ -37,6 +38,11 @@ export class User implements IUser {
   auth?: {
     passwordHash?: string
     salt?: string
+  }
+  flags: {
+    isActivated: boolean
+  } = {
+    isActivated: false
   }
 
   get name () {

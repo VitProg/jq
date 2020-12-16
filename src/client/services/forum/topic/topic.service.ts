@@ -6,8 +6,9 @@ import { IForumMessageManyResponse, IForumTopicManyResponse } from '../../../../
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { MessageByUserRequest, TopicByBoardRequest, TopicByUserRequest, TopicLatestRequest } from '../../api.requests'
 import { TopicRelations, TopicRelationsArray } from '../../../../common/forum/forum.entity-relations'
-import { IMessage, ITopic } from '../../../../common/forum/forum.interfaces'
+import { IMessage, ITopic } from '../../../../common/forum/forum.base.interfaces'
 import { uniqueArray } from '../../../../common/utils/array'
+import { ITopicEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 const LATEST_MAX_PAGES = 10
@@ -25,7 +26,7 @@ export class TopicService implements ITopicService {
   latest (request: TopicLatestRequest) {
     const searchParams: typeof request = {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...request
     }
 
@@ -45,9 +46,9 @@ export class TopicService implements ITopicService {
   byBoard (request: TopicByBoardRequest) {
     const { board, ...forRequest } = request
 
-    const searchParams = {
+    const searchParams: typeof forRequest = {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...forRequest
     }
 
@@ -62,9 +63,9 @@ export class TopicService implements ITopicService {
   byUser (request: TopicByUserRequest) {
     const { user, ...forRequest } = request
 
-    const searchParams = {
+    const searchParams: typeof forRequest = {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...forRequest
     }
 
@@ -80,15 +81,15 @@ export class TopicService implements ITopicService {
   async byId (id: number) {
     try {
       return await this.api
-        .get<ITopic | undefined>(`topic/${id}`)
+        .get<ITopicEx | undefined>(`topic/${id}`)
     } catch {
       return undefined
     }
   }
 
-  async byIds (ids: number[]) {
+  async byIds (ids: number[]): Promise<ITopicEx[]> {
     if (ids.length === 0) {
-      return [] as ITopic[]
+      return []
     }
 
     if (ids.length === 1) {
@@ -98,10 +99,10 @@ export class TopicService implements ITopicService {
 
     try {
       const items = await this.api
-        .get<ITopic[]>(`topic/many/${uniqueArray(ids).join('|')}`)
+        .get<ITopicEx[]>(`topic/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {
-      return [] as ITopic[]
+      return []
     }
   }
 

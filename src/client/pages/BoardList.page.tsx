@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite'
 import { Container, List, ListItem, ListItemText, Typography } from '@material-ui/core'
 import { RouteLink } from '../components/route/RouteLink'
 import { store } from '../store'
-import { IBoard, ICategory } from '../../common/forum/forum.interfaces'
+import { IBoard, ICategory } from '../../common/forum/forum.base.interfaces'
 import { usePageMetadata } from '../hooks/use-page-metadata'
 import { BoardList } from '../components/board/board-list/BoardList'
 

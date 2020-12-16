@@ -2,9 +2,10 @@ import { User } from '../../common/forum/models/user'
 import { AppRoute, AppRouteKeys, ExtractRouteProps } from '../routing/types'
 import { Theme } from '@material-ui/core'
 import { IForumStore } from './forum/types'
-import { IUser } from '../../common/forum/forum.interfaces'
+import { IUser } from '../../common/forum/forum.base.interfaces'
 import { ReactNode } from 'react'
 import { uesRoutePagination } from '../hooks/use-route-pagination'
+import { IUserEx } from '../../common/forum/forum.ex.interfaces'
 
 
 export interface IRootStore {
@@ -43,7 +44,7 @@ export interface IConfigStore {
   readonly forumTopicPageSize: number
   readonly forumUserPageSize: number
 
-  getUserAvatarUrl (user: IUser): string | undefined
+  getAvatarUrl (avatar?: string): string | undefined
 }
 
 export interface IUIStore {

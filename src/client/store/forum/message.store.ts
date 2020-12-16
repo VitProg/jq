@@ -38,7 +38,7 @@ export class MessageStore implements IMessageStore {
   }
 
   readonly name = 'message' as const
-  readonly defaultExpireIn: number = 1 * 60 // 1 minutes
+  readonly defaultExpireIn: number = 60 // 60 seconds
   readonly maxStoredItems: number = 500
 
   @observable.deep readonly items: Map<number, DataItem> = new Map()

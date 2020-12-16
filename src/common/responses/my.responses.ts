@@ -1,2 +1,2 @@
-import { IUser } from '../forum/forum.interfaces'
+import { IUser } from '../forum/forum.base.interfaces'
 

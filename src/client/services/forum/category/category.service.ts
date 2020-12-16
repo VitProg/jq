@@ -1,7 +1,7 @@
 import { inject } from '../../../ioc/ioc.decoratos'
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { IApiService } from '../../types'
-import { ICategory } from '../../../../common/forum/forum.interfaces'
+import { ICategory } from '../../../../common/forum/forum.base.interfaces'
 
 
 export class CategoryService {

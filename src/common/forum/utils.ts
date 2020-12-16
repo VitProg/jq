@@ -1,6 +1,9 @@
-import { IUser } from './forum.interfaces'
+import { IUser } from './forum.base.interfaces'
 import slug from 'slug'
 import { UserLevel, userLevelsGroupIds } from './forum.constants'
+import { IUserEx } from './forum.ex.interfaces'
+import { isObject } from '../type-guards'
+import { resetCleanupScheduleForTests } from 'mobx-react-lite/dist/utils/reactionCleanupTracking'
 
 
 export const getUserGroups = (user?: IUser): number[] => {
@@ -14,17 +17,29 @@ export const getUserGroups = (user?: IUser): number[] => {
   return groups
 }
 
-export const getUserName = (user?: IUser): string => user ? (user.displayName ?? user.login) : 'Гость'
-export const getUserSlug = (user?: IUser): string => {
+export const getUserName = (user?: IUser | { name: string }, guestIfEmpty = true): string => {
+  if (!user) {
+    return guestIfEmpty ? 'Гость' : ''
+  }
+  if (isIUser(user)) {
+    return user.displayName ?? user.login
+  }
+  return user.name
+}
+
+export const getUserSlug = (user?: IUser | { url: string }): string => {
   if (!user) {
     return ''
   }
   if (user.url) {
     return user.url
   }
-  return slug(getUserName(user), {
-    lower: true,
-  })
+  if (isIUser(user)) {
+    return slug(getUserName(user), {
+      lower: true,
+    })
+  }
+  return user.url
 }
 
 
@@ -55,23 +70,6 @@ export const deserializeUrlSlugId = (raw: string | undefined): {id: number, url:
 }
 
 
-export const getUserLevelByUser = (user?: IUser) => {
-  if (!user) {
-    return UserLevel.guest
-  }
-
-  const levels: UserLevel[] = []
-
-  for (const entry of Object.entries(userLevelsGroupIds)) {
-    const [level, groupIds] = entry as [UserLevel, number[]]
-    const check = groupIds.length > 0 && user.settings.groupIds.some(g => groupIds.includes(g))
-    if (check) {
-      levels.push(level)
-    }
-  }
-
-  return levels.pop()
-}
 
 export const getUserLevelsByGroups = (groups?: number[]): UserLevel[] => {
   if (!groups || groups.length <= 0) {
@@ -83,10 +81,56 @@ export const getUserLevelsByGroups = (groups?: number[]): UserLevel[] => {
   for (const entry of Object.entries(userLevelsGroupIds)) {
     const [level, groupIds] = entry as [UserLevel, number[]]
     const check = groupIds.length > 0 && groups.some(g => groupIds.includes(g))
-    if (check) {
+    if (check && !levels.includes(level)) {
       levels.push(level)
     }
   }
 
   return levels
 }
+
+// todo optimize
+export const getUserLevel = (user?: IUser | IUserEx): UserLevel => {
+  if (!user) {
+    return UserLevel.guest
+  }
+  if ((user as IUser)?.level) {
+    return (user as IUser)?.level
+  }
+  if ((user as IUser)?.settings?.groupIds) {
+    getUserLevelByGroups((user as IUser)?.settings.groupIds)
+  }
+  if ((user as IUserEx).settings.level) {
+    return (user as IUserEx).settings.level
+  }
+  if ((user as IUserEx).settings.groups) {
+    return getUserLevelByGroups((user as IUserEx).settings.groups)
+  }
+  return UserLevel.guest
+}
+
+export const getUserLevelByGroups = (groups?: number[]): UserLevel => getUserLevelsByGroups(groups)?.pop() ?? UserLevel.guest
+
+
+export const checkUserLevelAccessByGroups = (to: UserLevel, groups?: number[]): boolean => {
+  if (!groups || !groups.length) {
+    return to === UserLevel.guest
+  }
+
+  for (const entry of Object.entries(userLevelsGroupIds)) {
+    const [level, groupIds] = entry as [UserLevel, number[]]
+    const check = groupIds.length > 0 && groups.some(g => groupIds.includes(g))
+    if (check && level === to) {
+      return true
+    }
+  }
+
+  return false
+}
+
+
+export const isIUser = (val: any): val is IUser =>
+  isObject(val) &&
+  'displayName' in val &&
+  'login' in val &&
+  'settings' in val

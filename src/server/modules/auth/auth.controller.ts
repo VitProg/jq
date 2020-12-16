@@ -1,5 +1,5 @@
 import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { AuthService } from './auth.service'
 import { Request, Response } from 'express'

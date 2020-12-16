@@ -1,5 +1,5 @@
 import { IRouteStore, IUIStore } from '../types'
-import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/forum/forum.interfaces'
+import { IBoard, ICategory, IMessage, ITopic, IUser } from '../../../common/forum/forum.base.interfaces'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
 import { AnyObject, GetFirstArgumentType, PartialBy } from '../../../common/utils/types'
 import {
@@ -7,7 +7,7 @@ import {
   MessageRelationsRecord, MessageRelationsSingle,
   TopicRelationsRecord, TopicRelationsSingle
 } from '../../../common/forum/forum.entity-relations'
-import { dataStoreGetAll } from './utils'
+import { IBoardEx, IMessageEx, ITopicEx, IUserEx } from '../../../common/forum/forum.ex.interfaces'
 
 
 export type Hash = string
@@ -39,28 +39,28 @@ export interface IForumStore {
   clearAll(): void
 }
 
-export interface IMessageStore extends DataStorePages<IMessage, MessageDataPageProps> {
+export interface IMessageStore extends DataStorePages<IMessageEx, MessageDataPageProps> {
 }
 
-export interface ITopicStore extends DataStorePages<ITopic, TopicDataPageProps> {
+export interface ITopicStore extends DataStorePages<ITopicEx, TopicDataPageProps> {
 }
 
-export interface IBoardStore extends DataStore<IBoard> {
+export interface IBoardStore extends DataStore<IBoardEx> {
   getAll <AsRecord extends true | false = false>(
     asRecord: AsRecord,
     parentId?: number,
-  ): AsRecord extends true ? Record<number, IBoard> : IBoard[]
+  ): AsRecord extends true ? Record<number, IBoardEx> : IBoardEx[]
 }
 
 export interface ICategoryStore extends DataStore<ICategory> {
 }
 
-export interface IUserStore extends DataStorePages<IUser, UserDataPageProps> {
+export interface IUserStore extends DataStorePages<IUserEx, UserDataPageProps> {
   readonly prepareByNameItems: ReadonlyArray<string>
   readonly triedPrepareByNameItems: ReadonlyArray<string>
   readonly hasPrepareByNameItems: boolean
   clearPrepareByNameItems(): void
-  getByName (name: string): IUser | undefined
+  getByName (name: string): IUserEx | undefined
 }
 
 export type MessageDataPageProps = {
@@ -171,7 +171,7 @@ export type ExtractPageStoreDataEx<T> =
   T extends IMessage ? MessageDataPageProps :
   T extends 'message' ? MessageDataPageProps :
   T extends IMessageStore ? MessageDataPageProps :
-      T extends ITopic ? TopicDataPageProps :
+      T extends ITopicEx ? TopicDataPageProps :
       T extends 'topic' ? TopicDataPageProps :
       T extends ITopicStore ? TopicDataPageProps :
           never
@@ -198,8 +198,8 @@ export type GetForumStore<T extends ForumStoreType | ForumStoreTypeEX> = {
 
 export type GetForumItem<R extends ForumStoreType> = {
   message: IMessage
-  topic: ITopic
-  board: IBoard
+  topic: ITopicEx
+  board: IBoardEx
   category: ICategory
   user: IUser
 }
@@ -208,12 +208,12 @@ export type ForumStores = IMessageStore | ITopicStore | IBoardStore | ICategoryS
 
 export type RelationsRecord<T extends Model | ForumStoreType> =
   T extends (IMessage | 'message') ? MessageRelationsRecord :
-    T extends (ITopic | 'topic') ? TopicRelationsRecord :
-      T extends (IBoard | 'board') ? BoardRelationsRecord :
+    T extends (ITopic | ITopicEx | 'topic') ? TopicRelationsRecord :
+      T extends (IBoard | IBoardEx | 'board') ? BoardRelationsRecord :
         {}
 
 export type RelationsSingle<T extends Model | ForumStoreType> =
   T extends (IMessage | 'message') ? MessageRelationsSingle :
-    T extends (ITopic | 'topic') ? TopicRelationsSingle :
-      T extends (IBoard | 'board') ? BoardRelationsSingle :
+    T extends (ITopic | ITopicEx | 'topic') ? TopicRelationsSingle :
+      T extends (IBoard | IBoardEx | 'board') ? BoardRelationsSingle :
         {}

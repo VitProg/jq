@@ -1,4 +1,4 @@
-import { IUserGroup } from '../../../../common/forum/forum.interfaces'
+import { IUserGroup } from '../../../../common/forum/forum.base.interfaces'
 import { ApiProperty } from '@nestjs/swagger'
 
 

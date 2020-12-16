@@ -2,6 +2,7 @@ export interface IConfiguration {
   mode: 'production' | 'development'
   isProd: boolean
   isDev: boolean
+  loggingRedis: boolean
   database: {
     database:  string
     entityPrefix: string

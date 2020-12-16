@@ -1,4 +1,4 @@
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 
 
 export interface JwtStrategyValidatePayload {

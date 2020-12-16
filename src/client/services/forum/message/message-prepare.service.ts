@@ -8,7 +8,7 @@ import { runInAction } from 'mobx'
 import { StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
 import { mute } from '../../../../common/utils/promise'
-import { IMessage } from '../../../../common/forum/forum.interfaces'
+import { IMessage } from '../../../../common/forum/forum.base.interfaces'
 import { container } from '../../../ioc/ioc.container'
 import { isArray } from '../../../../common/type-guards'
 
@@ -78,17 +78,6 @@ export class MessagePrepareService implements IMessagePrepareService {
             meta: data.meta,
           }
         })
-
-        if (data?.relations) {
-          for (const [type, items] of Object.entries(data.relations)) {
-            const storeForType = store.forumStore.getStore(type as ForumStoreType)
-            if (storeForType) {
-              storeForType.setMany({
-                items: items as any
-              })
-            }
-          }
-        }
 
         store.forumStore.messageStore.setStatus('getPage', pageProps, 'loaded')
       })

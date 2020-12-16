@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
-import { toUser } from '../../forum/utils/mapper'
+import { toUser } from '../../../common/utils/mapper'
 import { getUserFromContext } from '../utils'
 
 

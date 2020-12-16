@@ -3,8 +3,9 @@ import { Avatar, createStyles, makeStyles, Theme } from '@material-ui/core'
 import { RouteLink } from '../route/RouteLink'
 import { observer } from 'mobx-react-lite'
 import { store } from '../../store'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { getUserName } from '../../../common/forum/utils'
+import { IUserEx } from '../../../common/forum/forum.ex.interfaces'
 
 type Sizes = 'small' | 'normal' | 'large' | 'full'
 type SizeProps = {
@@ -13,7 +14,7 @@ type SizeProps = {
 }
 
 interface Props {
-  user?: IUser
+  user?: IUser | IUserEx
   withLink?: boolean
   onCLick?: (event: MouseEvent<HTMLElement>) => void
   size?: Sizes
@@ -52,7 +53,7 @@ export const UserAvatar: FC<Props> = observer(function UserAvatar (props) {
   const classes = useStyles(props)
 
   if (user) {
-    const avatar = store.configStore.getUserAvatarUrl(user)
+    const avatar = store.configStore.getAvatarUrl(user.avatar)
     const userName = getUserName(user)
     const latter = userName.substr(0, 1)
 

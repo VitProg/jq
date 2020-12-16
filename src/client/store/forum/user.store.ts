@@ -1,6 +1,8 @@
 import {
   DataStorePagesGetMethods,
-  DataStorePagesGetPageData, DataStorePagesGetPageMetaData, DataStorePagesRemovePageData,
+  DataStorePagesGetPageData,
+  DataStorePagesGetPageMetaData,
+  DataStorePagesRemovePageData,
   DataStorePagesSetData,
   DataStorePagesSetManyData,
   DataStorePagesSetPageData,
@@ -9,26 +11,28 @@ import {
   ExtractPageProps,
   Hash,
   IForumStore,
-  IUserStore, RequestStatus
+  IUserStore,
+  RequestStatus
 } from './types'
 import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import {
   dataStoreClear,
   dataStoreFlush,
-  dataStoreGet, dataStoreGetAll,
-  dataStoreGetMany, dataStoreGetStatus,
-  dataStorePagerGetPage, dataStorePagerGetPageMeta, dataStorePagesRemovePage,
+  dataStoreGet,
+  dataStoreGetAll,
+  dataStoreGetMany,
+  dataStoreGetStatus,
+  dataStorePagerGetPage,
+  dataStorePagerGetPageMeta,
+  dataStorePagesRemovePage,
   dataStorePagesSet,
-  dataStorePagesSetMany, dataStoreSetStatus
+  dataStorePagesSetMany,
+  dataStoreSetStatus
 } from './utils'
 import { IPaginationMeta } from 'nestjs-typeorm-paginate'
 import { GetFirstArgumentType } from '../../../common/utils/types'
-import { IUser } from '../../../common/forum/forum.interfaces'
 import { computedFn } from 'mobx-utils'
-import { container } from '../../ioc/ioc.container'
-import { UserPrepareService } from '../../services/forum/user/user-prepare.service'
-import { UserPrepareServiceSymbol } from '../../services/ioc.symbols'
-import { mute } from '../../../common/utils/promise'
+import { IUserEx } from '../../../common/forum/forum.ex.interfaces'
 
 
 type Store = UserStore
@@ -115,11 +119,11 @@ export class UserStore implements IUserStore {
 
   ///
 
-  getByName = computedFn(function getNyName (this: Store, name: string): IUser | undefined {
-    const filteredUsers: IUser[] = []
+  getByName = computedFn(function getNyName (this: Store, name: string): IUserEx | undefined {
+    const filteredUsers: IUserEx[] = []
 
     for (const [, {item}] of this.items) {
-      if (item.displayName === name || item.login === name) {
+      if (item.name === name) {
         filteredUsers.push(item)
       }
     }

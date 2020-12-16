@@ -3,7 +3,16 @@ import { Route } from 'type-route'
 import { isObject } from '../../common/type-guards'
 import { store } from '../store'
 import { modalRoutes, routes } from '.'
-import { IfRouteParams } from './types'
+import {
+  AppRoute,
+  AppRouteKeys,
+  AppRouteKeysWithoutProps,
+  AppRouteKeysWithProps,
+  ExtractRouteProps,
+  IfRouteParams, OptionalProps
+} from './types'
+import { ReactNode } from 'react'
+import { IfDefined, IfTrue, ObjectValues } from '../../common/utils/types'
 
 
 export const isModalRoute = (route: StoredRoute | string) => {
@@ -48,4 +57,34 @@ export const ifRoute = <N extends keyof typeof routes>({name, route, render, gua
   }
 
   return null
+}
+
+
+export function specifyCurrentRoute<
+  S extends true | false,
+  RN extends AppRouteKeys,
+  RP extends OptionalProps<ExtractRouteProps<RN> | undefined>
+>(
+  sign: S,
+  routeName: RN,
+  routeProps: RP,
+): void {
+  if (!sign || !store.routeStore.current) {
+    return
+  }
+
+  if (routeProps && 'page' in routeProps && (routeProps as any).page <= 1) {
+    return
+  }
+
+  try {
+    const checkedRoute = routes[routeName](routeProps as any)
+
+    if (store.routeStore.current.href !== checkedRoute.href) {
+      checkedRoute.replace()
+    }
+  } catch (e) {
+    console.warn(e)
+    debugger
+  }
 }

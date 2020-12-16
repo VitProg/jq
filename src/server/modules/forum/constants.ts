@@ -6,10 +6,10 @@ export const MemberEmailField = 'emailAddress' as const
 
 export const BoardsIgnored = [
   32, // trash
-  106, // hidden
+  // 106, // hidden
   75, // SN Archive
-  34, // for admins
-  45, // To-Do for admins
+  // 34, // for admins
+  // 45, // To-Do for admins
   35, // hidden ads
   38, // hidden ads
 ]

@@ -7,8 +7,9 @@ import { UserService } from './user.service'
 import { UserDataPageProps } from '../../../store/forum/types'
 import { store } from '../../../store'
 import { reaction, runInAction, when } from 'mobx'
-import { IUser } from '../../../../common/forum/forum.interfaces'
+import { IUser } from '../../../../common/forum/forum.base.interfaces'
 import { isArray } from '../../../../common/type-guards'
+import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 export class UserPrepareService {
@@ -32,9 +33,7 @@ export class UserPrepareService {
       () => store.forumStore.userStore.prepareByNameItems,
       () => {
         if (store.forumStore.userStore.hasPrepareByNameItems) {
-          for (const name of store.forumStore.userStore.prepareByNameItems) {
-            mute(this.prepareByName(name))
-          }
+          mute(this.prepareByNames([...store.forumStore.userStore.prepareByNameItems]))
           store.forumStore.userStore.clearPrepareByNameItems()
         }
       },
@@ -90,21 +89,25 @@ export class UserPrepareService {
     // }
   }
 
-  async prepareByName (name: string): Promise<void> {
-    const fromStore = store.forumStore.userStore.getByName(name)
+  async prepareByNames (names: readonly string[]): Promise<void> {
+    const namesToRequest: string[] = []
+    names.forEach(name => {
+      const user = store.forumStore.userStore.getByName(name)
+      if (!user) {
+        namesToRequest.push(name)
+      }
+    })
 
-    if (fromStore) {
+    if (!namesToRequest.length) {
       return
     }
 
-    const user = await this.userService.byName(name)
-    if (user) {
-      store.forumStore.userStore.set({ item: user })
-      store.forumStore.userStore.setStatus('get', user.id, 'loaded')
-    }
+    const items = await this.userService.byNames(namesToRequest)
+
+    store.forumStore.userStore.setMany({ items })
   }
 
-  async prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? IUser : IUser[]) | undefined> {
+  async prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? IUserEx : IUserEx[]) | undefined> {
     const isSingle = !isArray(id)
     const ids = (isArray(id) ? id : [id]).sort() as number[]
 

@@ -1,4 +1,4 @@
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { JwtRefreshTokenStrategyValidatePayload, JwtStrategyValidatePayload } from './types'
 import { ExecutionContext } from '@nestjs/common'
 

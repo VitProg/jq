@@ -1,7 +1,7 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { IUser } from '../../../common/forum/forum.interfaces'
-import { UserService } from '../user/user.service'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
+import { UserDbService } from '../user/user-db.service'
 import { ApiBearerAuth, ApiOkResponse, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger'
 import { ProfileResponse } from './responses/profile.response'
 import { createUserModel } from '../../../common/forum/fabrics/create-user.fabric'
@@ -11,7 +11,7 @@ import { createUserModel } from '../../../common/forum/fabrics/create-user.fabri
 @Controller('my')
 export class MyController {
   constructor (
-    private readonly userService: UserService,
+    private readonly userService: UserDbService,
   ) {
   }
 

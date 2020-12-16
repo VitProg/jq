@@ -2,8 +2,8 @@ import { inject } from '../../../ioc/ioc.decoratos'
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { IApiService } from '../../types'
 import { makeAutoObservable } from 'mobx'
-import { IUser } from '../../../../common/forum/forum.interfaces'
 import { uniqueArray } from '../../../../common/utils/array'
+import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 export class UserService {
@@ -21,7 +21,7 @@ export class UserService {
   async byId (id: number) {
     try {
       return await this.api
-        .get<IUser | undefined>(`user/${id}`)
+        .get<IUserEx | undefined>(`user/${id}`)
     } catch {
       return undefined
     }
@@ -29,7 +29,7 @@ export class UserService {
 
   async byIds (ids: number[]) {
     if (ids.length === 0) {
-      return [] as IUser[]
+      return [] as IUserEx[]
     }
 
     if (ids.length === 1) {
@@ -39,23 +39,27 @@ export class UserService {
 
     try {
       const items = await this.api
-        .get<IUser[]>(`user/many/${uniqueArray(ids).join('|')}`)
+        .get<IUserEx[]>(`user/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {
-      return [] as IUser[]
+      return [] as IUserEx[]
     }
   }
 
-  async byName (name: string): Promise<IUser | undefined> {
+  async byNames (names: string[]): Promise<IUserEx[]> {
     try {
+      if (!names || !names.length) {
+        return []
+      }
+
       const users = await this.api
-        .post<IUser[] | undefined>(`user/by-name`, {
-          json: { name }
+        .post<IUserEx[]>(`user/name`, {
+          json: { names }
         })
 
-      return users ? users.pop() : undefined
+      return users ?? []
     } catch {
-      return undefined
+      return []
     }
   }
 }

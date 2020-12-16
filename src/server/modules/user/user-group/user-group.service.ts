@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ForumCacheService } from '../../forum/modules/forum-cache/forum-cache.service'
-import { IUser, IUserGroup } from '../../../../common/forum/forum.interfaces'
+import { ForumCacheService } from '../../forum/forum-cache/forum-cache.service'
+import { IUser, IUserGroup } from '../../../../common/forum/forum.base.interfaces'
 import { walkByAny } from '../../../../common/utils/common'
 
 

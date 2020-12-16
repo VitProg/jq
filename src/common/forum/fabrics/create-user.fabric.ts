@@ -1,4 +1,4 @@
-import { IUser } from '../forum.interfaces'
+import { IUser } from '../forum.base.interfaces'
 import { User } from '../models/user'
 
 

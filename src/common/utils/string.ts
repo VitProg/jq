@@ -1,3 +1,6 @@
+import { toIntOptional } from './number'
+import { isNumber } from '../type-guards'
+
 
 export const splitPipedStrings = <RA extends Array<any>> (
   str?: string,
@@ -23,5 +26,5 @@ export const splitPipedNumbers = (ids?: string): number[] => {
   if (!ids) {
     return []
   }
-  return ids.split(/[^\d]/).filter(Boolean).map<number>(id => parseInt(id, 10))
+  return ids.split(/[^\d\-]/).map(id => toIntOptional(id)).filter(isNumber) as number[]
 }

@@ -1,7 +1,7 @@
-import { Gender } from '../../../../common/forum/forum.constants'
+import { Gender, UserLevel } from '../../../../common/forum/forum.constants'
 import { ApiProperty } from '@nestjs/swagger'
 import { UserGroupDto } from '../../forum/dto/user-group.dto'
-import { IUser, IUserGroup } from '../../../../common/forum/forum.interfaces'
+import { IUser, IUserGroup } from '../../../../common/forum/forum.base.interfaces'
 
 
 export class UserModel implements IUser {
@@ -27,6 +27,9 @@ export class UserModel implements IUser {
   gender!: Gender
 
   @ApiProperty()
+  level!: UserLevel
+
+  @ApiProperty()
   dates!: {
     lastLogin?: Date
     registered?: Date
@@ -37,6 +40,11 @@ export class UserModel implements IUser {
     posts: number
     karmaPlus: number
     karmaMinus: number
+  }
+
+  @ApiProperty()
+  flags!: {
+    isActivated: boolean
   }
 
   @ApiProperty()

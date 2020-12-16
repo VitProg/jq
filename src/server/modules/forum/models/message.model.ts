@@ -1,4 +1,4 @@
-import { IMessage } from '../../../../common/forum/forum.interfaces'
+import { IMessage } from '../../../../common/forum/forum.base.interfaces'
 import { UserModel } from '../../user/models/user.model'
 import { ApiProperty } from '@nestjs/swagger'
 import { TopicModel } from './topic.model'

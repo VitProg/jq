@@ -69,3 +69,6 @@ export type ExtractRecordKey<R extends Record<any, any>> = R extends Record<infe
 export type GetFirstArgumentType<T> = T extends (arg1: infer T, ...args: any[]) => any ? T : never
 
 export type UnpackPromise<T> = T extends Promise<infer A> ? A : T
+
+export type IfDefined<Check, True = Check, False = never> = Check extends undefined ? False : True
+export type IfTrue<Check extends true | false, True, False = never> = Check extends true ? True : False
