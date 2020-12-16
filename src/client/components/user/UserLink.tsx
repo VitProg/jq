@@ -2,12 +2,13 @@ import { FC } from 'react'
 import { makeStyles, Theme, Typography, TypographyTypeMap } from '@material-ui/core'
 import { RouteLink } from '../route/RouteLink'
 import { getUserName } from '../../../common/forum/utils'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { isString } from '../../../common/type-guards'
+import { IUserEx } from '../../../common/forum/forum.ex.interfaces'
 
 
 interface Props {
-  user?: IUser | string
+  user?: IUser | Pick<IUserEx, 'name' | 'url' | 'id'> | string
   color?: TypographyTypeMap['props']['color'] | string
 }
 

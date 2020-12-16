@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { observer } from 'mobx-react-lite'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { getUserName } from '../../../common/forum/utils'
 import { UserLink } from './UserLink'
 import { isString } from '../../../common/type-guards'

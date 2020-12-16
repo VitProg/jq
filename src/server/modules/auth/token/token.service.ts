@@ -4,14 +4,15 @@ import { RedisClient } from '../../../types'
 import { ConfigService } from '@nestjs/config'
 import { isArray } from '../../../../common/type-guards'
 import { convertSimpleExpiresToSeconds } from '../../../common/date'
-import { IUser } from '../../../../common/forum/forum.interfaces'
+import { IUser } from '../../../../common/forum/forum.base.interfaces'
 import { JwtStrategyValidatePayload } from '../types'
+import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
-const KEY_PREFIX = 'refresh-token'
-const REDIS_LAST_TIME_KEY = (userId: number, fingerprintLight: string) => `jwt-gen-last.${userId}.${fingerprintLight}`
+const KEY_PREFIX = 'auth:refresh-token'
+const REDIS_LAST_TIME_KEY = (userId: number, fingerprintLight: string) => `auth:last-time${userId}:${fingerprintLight}`
 
-const parseKeyRule = new RegExp(`/${KEY_PREFIX}.(\n+).(\w+).(\d+)/`)
+const parseKeyRule = new RegExp(`/${KEY_PREFIX}\:(\n+)\:(\w+)\:(\d+)/`)
 
 interface FullInfo {
   key: string
@@ -33,10 +34,10 @@ export class TokenService {
   }
 
   private key (userId: number, fingerprintLight: string | '*' = '*', time: number | '*' = '*') {
-    return `${KEY_PREFIX}.${userId}.${fingerprintLight}.${time}`
+    return `${KEY_PREFIX}:${userId}:${fingerprintLight}:${time}`
   }
 
-  private parseKey(key: string): ParsedInfo | undefined  {
+  private parseKey (key: string): ParsedInfo | undefined {
     const match = parseKeyRule.exec(key)
 
     if (match?.length === 3) {
@@ -90,7 +91,7 @@ export class TokenService {
           fingerprintLight: fullInfo.fingerprintLight,
           time: fullInfo.time,
           token,
-        });
+        })
       }
     }
 
@@ -205,26 +206,32 @@ export class TokenService {
     return await this.removeKeys(keys)
   }
 
-  async verifyJwtToken (tokenPayload: JwtStrategyValidatePayload, fingerprintLight: string, user?: IUser) {
+  async verifyJwtToken (tokenPayload: JwtStrategyValidatePayload, fingerprintLight: string, user?: IUserEx, failWhenNoUser = true) {
     if (fingerprintLight !== tokenPayload.fingerprintLight) {
-      throw new UnauthorizedException('jwt - fingerprint not valid');
+      throw new UnauthorizedException('jwt - fingerprint not valid')
     }
 
-    if (!user) {
-      throw new UnauthorizedException('jwt - user not found');
+    let userId = tokenPayload.sub
+
+    if (!user && failWhenNoUser) {
+      throw new UnauthorizedException('jwt - user not found')
     }
 
-    if (tokenPayload.sub !== user.id) {
-      throw new UnauthorizedException('jwt - incorrect token [id]');
+    if (user) {
+      if (tokenPayload.sub !== user.id) {
+        throw new UnauthorizedException('jwt - incorrect token [id]')
+      }
+
+      if (tokenPayload.login !== user.name) {
+        throw new UnauthorizedException('jwt - incorrect token [login]')
+      }
+
+      userId = user.id
     }
 
-    if (tokenPayload.login !== user.login) {
-      throw new UnauthorizedException('jwt - incorrect token [login]');
-    }
-
-    const lastTime = await this.getJWTLastGenerateTime(user.id, fingerprintLight)
+    const lastTime = await this.getJWTLastGenerateTime(userId, fingerprintLight)
     if (tokenPayload.lastTime.toString() !== lastTime.toString()) {
-      throw new UnauthorizedException('jwt - incorrect token [lastTime]');
+      throw new UnauthorizedException('jwt - incorrect token [lastTime]')
     }
 
     return true

@@ -1,6 +1,6 @@
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
-import { IUser } from '../../../../common/forum/forum.interfaces'
+import { IUser } from '../../../../common/forum/forum.base.interfaces'
 
 
 @Injectable()

@@ -8,10 +8,13 @@ import { NextFunction, Request, Response } from 'express'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common'
 
 
 async function bootstrap () {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
+
+  app.useGlobalPipes(new ValidationPipe());
 
   app.use(function (req: Request, res: Response, next: NextFunction) {
     res.header('x-powered-by', 'JQ NestJs Server')

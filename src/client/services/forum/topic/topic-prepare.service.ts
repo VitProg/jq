@@ -3,12 +3,12 @@ import { inject } from '../../../ioc/ioc.decoratos'
 import { IApiService } from '../../types'
 import { ApiServiceSymbol, TopicServiceSymbol } from '../../ioc.symbols'
 import { store } from '../../../store'
-import { ForumStoreType, TopicDataPageProps } from '../../../store/forum/types'
+import { TopicDataPageProps } from '../../../store/forum/types'
 import { runInAction } from 'mobx'
 import { StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
 import { mute } from '../../../../common/utils/promise'
-import { IMessage, ITopic } from '../../../../common/forum/forum.interfaces'
+import { ITopic } from '../../../../common/forum/forum.base.interfaces'
 import { isArray } from '../../../../common/type-guards'
 
 
@@ -63,16 +63,16 @@ export class TopicPrepareService implements ITopicPrepareService {
           }
         })
 
-        if (data?.relations) {
-          for (const [type, items] of Object.entries(data.relations)) {
-            const storeForType = store.forumStore.getStore(type as ForumStoreType)
-            if (storeForType) {
-              storeForType.setMany({
-                items: items as any
-              })
-            }
-          }
-        }
+        // if (data?.relations) {
+        //   for (const [type, items] of Object.entries(data.relations)) {
+        //     const storeForType = store.forumStore.getStore(type as ForumStoreType)
+        //     if (storeForType) {
+        //       storeForType.setMany({
+        //         items: items as any
+        //       })
+        //     }
+        //   }
+        // }
 
         store.forumStore.topicStore.setStatus('getPage', pageProps, 'loaded')
       })
@@ -83,8 +83,8 @@ export class TopicPrepareService implements ITopicPrepareService {
     }
   }
 
-  async prepareAndGet<N extends number | number[]>(id: N): Promise<(N extends number ? ITopic : ITopic[]) | undefined> {
-    const isSingle = !isArray(id);
+  async prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? ITopic : ITopic[]) | undefined> {
+    const isSingle = !isArray(id)
     const ids = (isArray(id) ? id : [id]).sort() as number[]
 
 
@@ -130,17 +130,18 @@ export class TopicPrepareService implements ITopicPrepareService {
           pageSize: store.configStore.forumTopicPageSize,
         })
       case 'user':
-        if (!pageProps.user) {
-          throw new Error('TopicPrepareService: user is empty')
-        }
-
-        /// todo add UserPrepareService
-
-        return this.topicService.byUser({
-          page: pageProps.page,
-          user: pageProps.user,
-          pageSize: store.configStore.forumTopicPageSize,
-        })
+      // todo
+      // if (!pageProps.user) {
+      //   throw new Error('TopicPrepareService: user is empty')
+      // }
+      //
+      // /// todo add UserPrepareService
+      //
+      // return this.topicService.byUser({
+      //   page: pageProps.page,
+      //   user: pageProps.user,
+      //   pageSize: store.configStore.forumTopicPageSize,
+      // })
     }
   }
 

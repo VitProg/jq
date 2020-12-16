@@ -6,8 +6,8 @@ import { IForumMessageManyResponse } from '../../../../common/responses/forum.re
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { MessageByTopicRequest, MessageByUserRequest, MessageLatestRequest } from '../../api.requests'
 import { MessageRelations, MessageRelationsArray } from '../../../../common/forum/forum.entity-relations'
-import { IMessage } from '../../../../common/forum/forum.interfaces'
 import { uniqueArray } from '../../../../common/utils/array'
+import { IMessageEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 const LATEST_MAX_PAGES = 10
@@ -25,7 +25,7 @@ export class MessageService implements IMessageService {
   latest (request: MessageLatestRequest) {
     const searchParams: typeof request = {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...request
     }
 
@@ -45,9 +45,9 @@ export class MessageService implements IMessageService {
   byTopic (request: MessageByTopicRequest) {
     const { topic, ...forRequest } = request
 
-    const searchParams = {
+    const searchParams: typeof forRequest= {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...forRequest
     }
 
@@ -62,9 +62,9 @@ export class MessageService implements IMessageService {
   byUser (request: MessageByUserRequest) {
     const { user, ...forRequest } = request
 
-    const searchParams = {
+    const searchParams: typeof forRequest = {
       pageSize: DEFAULT_LATEST_PAGE_SIZE,
-      relations: DEFAULT_WITH_RELATIONS,
+      // relations: DEFAULT_WITH_RELATIONS,
       ...forRequest
     }
 
@@ -79,7 +79,7 @@ export class MessageService implements IMessageService {
   async byId (id: number) {
     try {
       return await this.api
-        .get<IMessage | undefined>(`message/${id}`)
+        .get<IMessageEx | undefined>(`message/${id}`)
     } catch {
       return undefined
     }
@@ -87,7 +87,7 @@ export class MessageService implements IMessageService {
 
   async byIds (ids: number[]) {
     if (ids.length === 0) {
-      return [] as IMessage[]
+      return [] as IMessageEx[]
     }
 
     if (ids.length === 1) {
@@ -97,10 +97,10 @@ export class MessageService implements IMessageService {
 
     try {
       const items = await this.api
-        .get<IMessage[]>(`message/many/${uniqueArray(ids).join('|')}`)
+        .get<IMessageEx[]>(`message/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {
-      return [] as IMessage[]
+      return [] as IMessageEx[]
     }
   }
 

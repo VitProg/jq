@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
-import { IUser } from '../../../../common/forum/forum.interfaces'
+import { IUser } from '../../../../common/forum/forum.base.interfaces'
 import { isArray, isMap, isObject } from '../../../../common/type-guards'
 import { PermissionEntity } from '../../../entities'
 import { walkByAny } from '../../../../common/utils/common'
-import { toPermission, toPermissionByGroupsMap } from '../../forum/utils/mapper'
-import { ForumCacheService } from '../../forum/modules/forum-cache/forum-cache.service'
+import { toPermission, toPermissionByGroupsMap } from '../../../common/utils/mapper'
+import { ForumCacheService } from '../../forum/forum-cache/forum-cache.service'
 
 
 @Injectable()

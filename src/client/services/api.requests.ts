@@ -1,6 +1,4 @@
 import { MessageRelationsArray, TopicRelationsArray } from '../../common/forum/forum.entity-relations'
-import { IBoard, ITopic, IUser } from '../../common/forum/forum.interfaces'
-
 
 export interface LoginRequest {
   username: string
@@ -13,30 +11,30 @@ interface BasePagesRequest {
 }
 
 export interface MessageLatestRequest extends BasePagesRequest {
-  relations?: MessageRelationsArray
+  // relations?: MessageRelationsArray
 }
 
 export interface MessageByTopicRequest extends BasePagesRequest {
   topic: number
-  relations?: MessageRelationsArray
+  // relations?: MessageRelationsArray
 }
 
 export interface MessageByUserRequest extends BasePagesRequest {
   user: number
-  relations?: MessageRelationsArray
+  // relations?: MessageRelationsArray
 }
 
 
 export interface TopicLatestRequest extends BasePagesRequest{
-  relations?: TopicRelationsArray
+  // relations?: TopicRelationsArray
 }
 
 export interface TopicByBoardRequest extends BasePagesRequest{
   board: number,
-  relations?: TopicRelationsArray
+  // relations?: TopicRelationsArray
 }
 
 export interface TopicByUserRequest extends BasePagesRequest{
   user: number,
-  relations?: TopicRelationsArray
+  // relations?: TopicRelationsArray
 }

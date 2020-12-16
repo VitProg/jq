@@ -1,5 +1,5 @@
 import { FC, ReactNode, useMemo } from 'react'
-import { IMessage } from '../../../../common/forum/forum.interfaces'
+import { IMessage } from '../../../../common/forum/forum.base.interfaces'
 import { ListItem, ListItemAvatar, ListItemText, Typography, Breadcrumbs } from '@material-ui/core'
 import { User } from '../../../../common/forum/models/user'
 import { UserLink } from '../../user/UserLink'
@@ -11,10 +11,12 @@ import { RouteLink } from '../../route/RouteLink'
 import { useStyles } from './styles'
 import { observer } from 'mobx-react-lite'
 import { store } from '../../../store'
+import { IMessageEx } from '../../../../common/forum/forum.ex.interfaces'
+import { isObject } from '../../../../common/type-guards'
 
 
 export interface MessageItemProps {
-  message: IMessage
+  message: IMessageEx
   user?: User
   // relations?: MessageRelationsSingle
   breadcrumb?: boolean
@@ -29,38 +31,37 @@ export const MessageItem: FC<Props> = observer((props) => {
     breadcrumb = false,
   } = props
 
-  const relations = /*props.relations ?? */store.forumStore.getRelationsForItem('message', message)
+  // const relations = /*props.relations ?? */store.forumStore.getRelationsForItem('message', message)
 
-  const {
-    board,
-    topic,
-    category,
-    user
-  } = relations
+  // const {
+  //   board,
+  //   topic,
+  //   category,
+  //   user
+  // } = relations
 
   const classes = useStyles()
 
   const breadcrumbsNodes: ReactNode[] = []
 
   if (breadcrumb) {
-    if (category?.name) {
-      breadcrumbsNodes.push(category?.name)
+    if (isObject(message.board)) {
+      breadcrumbsNodes.push(message.board.category.name)
+      breadcrumbsNodes.push(<RouteLink key={message.board.id} to={'boardTopicList'} route={{ board: message.board }}>{message.board.name}</RouteLink>)
     }
-    if (board?.name) {
-      breadcrumbsNodes.push(<RouteLink key={board.id} to={'boardTopicList'} route={{ board }}>{board.name}</RouteLink>)
-    }
-    if (topic?.subject) {
-      breadcrumbsNodes.push(<RouteLink key={topic.id} to={'topicMessageList'}
-                                       route={{ topic }}>{topic.subject}</RouteLink>)
+    if (isObject(message.topic)) {
+      breadcrumbsNodes.push(<RouteLink key={message.topic.id} to={'topicMessageList'} route={{ topic: message.topic }}>{message.topic.subject}</RouteLink>)
     }
   }
 
   const body = useMemo(
-    () => parseBBCodes(message.body),
+    () => parseBBCodes(message.body ?? ''),
     [message.body],
   )
 
-  const date = message.dates.createdAt
+  const user = isObject(message.user) ? message.user : undefined
+
+  const date = message.date
 
   return (
     <ListItem alignItems={'flex-start'}>

@@ -1,4 +1,5 @@
 import { isArray, isMap, isSet } from '../type-guards'
+import { randomInt } from './number'
 
 
 export const arraysDiff = <A extends any, B extends any>(arrayA: A[], arrayB: B[]): Array<A | B> => {
@@ -41,3 +42,6 @@ export const mapToRecord = <K extends keyof any, V>(map: Map<K, V>): Record<K, V
 export const recordToMap = <K extends keyof any, V>(record: Record<K, V>): Map<K, V> => {
   return new Map(Object.entries(record)) as any
 }
+
+export const randomIndex = (arr: any[]): number => randomInt(0, arr.length - 1)
+export const randomItem = <K>(arr: K[]): K | undefined => arr.length > 0 ? arr[randomIndex(arr)] : undefined

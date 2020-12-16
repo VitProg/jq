@@ -10,7 +10,8 @@ import {
   TopicByUserRequest,
   TopicLatestRequest
 } from '../api.requests'
-import { IMessage, ITopic } from '../../../common/forum/forum.interfaces'
+import { IMessage, ITopic } from '../../../common/forum/forum.base.interfaces'
+import { IMessageEx, ITopicEx } from '../../../common/forum/forum.ex.interfaces'
 
 
 export interface IForumService {
@@ -19,9 +20,9 @@ export interface IForumService {
 
 
 export interface IMessageService {
-  byId (id: number): Promise<IMessage | undefined>
+  byId (id: number): Promise<IMessageEx | undefined>
 
-  byIds (ids: number[]): Promise<IMessage[]>
+  byIds (ids: number[]): Promise<IMessageEx[]>
 
   latest (request: MessageLatestRequest): Promise<IForumMessageManyResponse | undefined>
 
@@ -39,9 +40,9 @@ export interface IMessagePrepareService {
 }
 
 export interface ITopicService {
-  byId (id: number): Promise<ITopic | undefined>
+  byId (id: number): Promise<ITopicEx | undefined>
 
-  byIds (ids: number[]): Promise<ITopic[]>
+  byIds (ids: number[]): Promise<ITopicEx[]>
 
   latest (request: TopicLatestRequest): Promise<IForumTopicManyResponse | undefined>
 

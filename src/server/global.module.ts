@@ -3,22 +3,23 @@ import { REDIS_CLIENT } from './di.symbols'
 import { RedisModule, RedisService } from 'nestjs-redis'
 import { ConfigService } from '@nestjs/config'
 import * as redisStore from 'cache-manager-ioredis'
+import { IConfiguration } from './config/types'
+import { isPromise } from '../common/type-guards'
 
+// noinspection JSUnfilteredForInLoop
 @Global()
 @Module({
   imports: [
     RedisModule.forRootAsync({
-      useFactory: (configService: ConfigService) => configService.get('redis')!,
+      useFactory: (configService: ConfigService<IConfiguration>) => configService.get('redis')!,
       inject: [ConfigService]
     }),
 
     CacheModule.registerAsync({
-      useFactory: (configService: ConfigService) => (
+      useFactory: (configService: ConfigService<IConfiguration>) => (
         {
           store: redisStore,
-
           ...configService.get('redis'),
-
           ttl: 10,
           // max: 1000,
         }
@@ -29,8 +30,38 @@ import * as redisStore from 'cache-manager-ioredis'
   providers: [
     {
       provide: REDIS_CLIENT,
-      inject: [RedisService],
-      useFactory: (redisService: RedisService) => redisService.getClient(),
+      inject: [ConfigService, RedisService],
+      useFactory: (configService: ConfigService<IConfiguration>, redisService: RedisService) => {
+        if (configService.get('loggingRedis')) {
+          const redis: any = redisService.getClient()
+
+          for (const key in redis) {
+            if (typeof redis[key] === 'function' && ['sendCommand'].includes(key)) {
+              const orig = redis[key] as (...args: any[]) => any
+              redis[key] = function (this: any, ...args: any[]) {
+                const result = orig.apply(this, args)
+                if (isPromise(result)) {
+                  result
+                    .then(data => {
+                      console.log('REDIS Client Call async:', key, args, data)
+                      return data
+                    })
+                    .catch(data => {
+                      console.warn('REDIS Client Call async CATCH:', key, args, data)
+                      return data
+                    })
+                  return result
+                }
+                console.log('REDIS Client Call:', key, args, result)
+                return result
+              }
+            }
+          }
+          return redis
+        } else {
+          return redisService.getClient()
+        }
+      },
     },
   ],
   exports: [

@@ -1,19 +1,17 @@
-import { DOMAttributes, HTMLAttributes, ReactElement, ReactNode, useCallback } from 'react'
+import { DOMAttributes, HTMLAttributes, ReactElement, ReactNode } from 'react'
 import { preventDefaultLinkClickBehavior } from 'type-route'
 
 import { Button, Link, MenuItem } from '@material-ui/core'
 import { isFunction } from '../../../common/type-guards'
 import { OverridableComponent } from '@material-ui/core/OverridableComponent'
-import { AppRouteKeys, ExtractRouteProps } from '../../routing/types'
+import { AppRouteKeys, ExtractRouteProps} from '../../routing/types'
 import { routes } from '../../routing'
-import { AnyObject } from '../../../common/utils/types'
+import { IfDefined } from '../../../common/utils/types'
 
 
 const a = document.createElement('a')
 
 type Types = typeof Button | typeof Link | typeof MenuItem | 'a'
-
-type IfDefinedProps<Check, True, False = never> = Check extends undefined ? False : True
 
 type GenerateProps<R extends AppRouteKeys,
   T extends Types = 'a'> =
@@ -23,7 +21,7 @@ type GenerateProps<R extends AppRouteKeys,
     // pagination?: PaginationRenderItemParams
     to: R
   } &
-  IfDefinedProps<ExtractRouteProps<R>,
+  IfDefined<ExtractRouteProps<R>,
     {
       children?: ReactNode | ((p: NonNullable<ExtractRouteProps<R>>) => ReactNode)
       route: ExtractRouteProps<R>

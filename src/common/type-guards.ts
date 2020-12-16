@@ -34,3 +34,7 @@ export const isString = (val: any): val is string => {
 export const isUndefined = (val: any): val is undefined => typeof val === 'undefined'
 export const isNull = (val: any): val is null => val === null
 export const isNone = (val: any): val is null | undefined => isUndefined(val) || isNull(val)
+
+export function isPromise<T extends any = any>(value: Promise<T> | any): value is Promise<T> {
+  return isObject(value) && value instanceof Promise;
+}

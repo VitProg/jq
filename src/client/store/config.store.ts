@@ -1,8 +1,9 @@
 import { IConfigStore } from './types'
 import { store } from './index'
-import { IUser } from '../../common/forum/forum.interfaces'
+import { IUser } from '../../common/forum/forum.base.interfaces'
 import { makeAutoObservable } from 'mobx'
 import { intValue, stringValue } from '../../common/utils/env'
+import { IUserEx } from '../../common/forum/forum.ex.interfaces'
 
 
 export class ConfigStore implements IConfigStore {
@@ -35,8 +36,8 @@ export class ConfigStore implements IConfigStore {
     makeAutoObservable(this, {})
   }
 
-  getUserAvatarUrl (user: IUser): string | undefined {
-    return user.avatar ? store.configStore.forumAvatarBaseUrl + user.avatar : undefined
+  getAvatarUrl (avatar?: string ): string | undefined {
+    return avatar ? store.configStore.forumAvatarBaseUrl + avatar : undefined
   }
 
 }

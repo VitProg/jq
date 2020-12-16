@@ -52,7 +52,7 @@ export class BoardStore implements IBoardStore {
   }
 
   readonly name = 'board' as const
-  readonly defaultExpireIn: number = 60 * 60 // 1 hour
+  readonly defaultExpireIn: number = 30 // 30 sec //60 * 60 // 1 hour
   readonly maxStoredItems: number = 200
 
   @observable statuses: Map<string, RequestStatus> = new Map<string, RequestStatus>()
@@ -99,7 +99,8 @@ export class BoardStore implements IBoardStore {
 
       const result: any = asRecord ? {} : []
       for (const item of data) {
-        if (parentId === item.linksId.parent) {
+        // if (parentId === item.linksId.parent) {
+        if (parentId === item.parentId) {
           if (asRecord) {
             result[item.id] = item
           } else {

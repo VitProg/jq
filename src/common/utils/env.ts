@@ -24,6 +24,5 @@ export const intArray = (envValue: any, defaultValue: number[]): number[] => {
   return str
     .split(',')
     .map(i => parseInt(i, 10))
-    .map(i => isNumber(i) ? i : undefined)
-    .filter(Boolean) as number[]
+    .filter(isNumber) as number[]
 }

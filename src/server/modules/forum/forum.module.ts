@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-import { BoardModule } from './modules/board/board.module'
-import { TopicModule } from './modules/topic/topic.module'
-import { ForumCacheModule } from './modules/forum-cache/forum-cache.module'
-import { MessageModule } from './modules/message/message.module'
-import { CategoryModule } from './modules/category/category.module';
+import { BoardModule } from './board/board.module'
+import { TopicModule } from './topic/topic.module'
+import { ForumCacheModule } from './forum-cache/forum-cache.module'
+import { MessageModule } from './message/message.module'
+import { CategoryModule } from './category/category.module';
 
 
 

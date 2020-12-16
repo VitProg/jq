@@ -38,7 +38,7 @@ export class TopicStore implements ITopicStore {
   }
 
   readonly name = 'topic' as const
-  readonly defaultExpireIn: number = 5 * 60 // 5 minutes
+  readonly defaultExpireIn: number = 60 // 60 sec //5 * 60 // 5 minutes
   readonly maxStoredItems: number = 100
 
   @observable.deep readonly items: Map<number, DataItem> = new Map()

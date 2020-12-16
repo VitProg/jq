@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport'
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Request } from 'express'
-import { UserService } from '../../user/user.service'
+import { UserDbService } from '../../user/user-db.service'
 import { JwtRefreshTokenStrategyValidatePayload, JwtStrategyValidatePayload } from '../types'
 import { SecureService } from '../../secure/secure.service'
 import { TokenService } from '../token/token.service'
@@ -16,7 +16,7 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor (
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
+    private readonly userService: UserDbService,
     private readonly secureService: SecureService,
     private readonly tokenService: TokenService,
   ) {

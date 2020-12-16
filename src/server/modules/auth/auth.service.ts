@@ -1,9 +1,9 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { Request } from 'express'
-import { UserService } from '../user/user.service'
+import { UserDbService } from '../user/user-db.service'
 import { omit } from '../../../common/utils/object'
 import { JwtService } from '@nestjs/jwt'
-import { IUser } from '../../../common/forum/forum.interfaces'
+import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { SecureService } from '../secure/secure.service'
 import { userToJwtPayload, userToJwtRefreshPayload } from './utils'
 import { ConfigService } from '@nestjs/config'
@@ -18,7 +18,7 @@ import { CookieOptions } from 'express-serve-static-core'
 export class AuthService {
   constructor (
     private readonly configService: ConfigService,
-    private readonly userService: UserService,
+    private readonly userService: UserDbService,
     private readonly jwtService: JwtService,
     private readonly secureService: SecureService,
     private readonly tokenService: TokenService,

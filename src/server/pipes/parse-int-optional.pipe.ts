@@ -11,6 +11,11 @@ export class ParseIntOptionalPipe implements PipeTransform<string | undefined, n
 
   transform(value: any, metadata: ArgumentMetadata) {
     let result = value != '' && isNone(value) ? undefined : parseInt(value.toString(), 10)
+
+    if (result === undefined) {
+      return undefined
+    }
+
     if (isNumber(result) && !isNaN(result) && isFinite(result)) {
       result = result >>> 0
 

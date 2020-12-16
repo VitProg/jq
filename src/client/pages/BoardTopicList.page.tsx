@@ -4,10 +4,12 @@ import { Container, List, ListItem, ListItemText, Typography } from '@material-u
 import { RouteLink } from '../components/route/RouteLink'
 import { routes } from '../routing'
 import { uesRoutePagination } from '../hooks/use-route-pagination'
-import { ITopic } from '../../common/forum/forum.interfaces'
+import { ITopic } from '../../common/forum/forum.base.interfaces'
 import { usePage } from '../hooks/use-page'
 import { store } from '../store'
 import { usePageMetadata } from '../hooks/use-page-metadata'
+import { ITopicEx } from '../../common/forum/forum.ex.interfaces'
+import { specifyCurrentRoute } from '../routing/utils'
 
 
 interface Props {
@@ -19,6 +21,14 @@ export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props
   const [page] = usePage(props.page)
 
   const board = store.forumStore.boardStore.get(props.board.id)
+
+  specifyCurrentRoute(!!board, 'boardTopicList', { board, page })
+
+  // ToDo: automate this
+  const canonicRoute = board ? routes.boardTopicList({ board, page }) : undefined
+  if (canonicRoute && store.routeStore.noModalRoute?.href !== canonicRoute.href) {
+    canonicRoute.replace()
+  }
 
   const pageData = store.forumStore.topicStore.getPage({
     page,
@@ -57,11 +67,11 @@ export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props
         <>
           {pagination.component}
           <List>
-            {pageData!.items.map((topic: ITopic) => (
+            {pageData!.items.map((topic: ITopicEx) => (
               <ListItem key={topic.id}>
                 <ListItemText
                   primary={<RouteLink to={'topicMessageList'} route={{ topic }}>{topic.subject}</RouteLink>}
-                  secondary={topic.counters?.messages ? `messages: ${topic.counters?.messages}` : ''}
+                  secondary={topic.counters?.message ? `messages: ${topic.counters?.message}` : ''}
                 />
               </ListItem>
             ))}
