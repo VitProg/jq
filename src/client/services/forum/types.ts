@@ -54,7 +54,7 @@ export interface ITopicService {
 export interface ITopicPrepareService {
   processRoute (route?: StoredRoute): boolean
 
-  preparePage (request: { page: number } & Omit<TopicDataPageProps, 'meta'>): Promise<void>
+  // preparePage (request: { page: number } & Omit<TopicDataPageProps, 'meta'>): Promise<void>
 
   prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? ITopic : ITopic[]) | undefined>
 }

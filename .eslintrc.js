@@ -4,7 +4,10 @@ module.exports = {
     project: 'tsconfig.client.json',
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: [
+    '@typescript-eslint/eslint-plugin',
+    "formatjs",
+  ],
   extends: [
     'plugin:@typescript-eslint/recommended',
     // 'prettier/@typescript-eslint',
@@ -26,6 +29,21 @@ module.exports = {
         'patterns':  ["@material-ui/*/*/*", "!@material-ui/core/test-utils/*"]
       }
     ],
-    '@typescript-eslint/no-inferrable-types': 'off'
+    '@typescript-eslint/no-inferrable-types': 'off',
+
+    // formatjs/
+    "formatjs/enforce-placeholders": 'warn',
+    "formatjs/enforce-plural-rules": [
+      2,
+      {
+        "one": true,
+        "few": true,
+        "many": true,
+      }
+    ],
+    'formatjs/no-multiple-whitespaces': 'warn',
+    'formatjs/no-multiple-plurals': 'warn',
+    'formatjs/no-offset': 'err',
+    
   },
 };

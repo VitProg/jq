@@ -9,11 +9,10 @@ import {
   AppRouteKeysWithoutProps,
   AppRouteKeysWithProps,
   ExtractRouteProps,
-  IfRouteParams, OptionalProps
+  RouteSwitchProps, OptionalProps
 } from './types'
-import { ReactNode } from 'react'
-import { IfDefined, IfTrue, ObjectValues } from '../../common/utils/types'
-
+import { RouteDataTypes } from '../routes'
+import { AnyObject } from '../../common/utils/types'
 
 export const isModalRoute = (route: StoredRoute | string) => {
   const name = typeof route === 'string' ? route : route?.name
@@ -34,10 +33,14 @@ export const isRoute = <N extends keyof typeof routes = keyof typeof routes>(val
     'link' in val
 }
 
-export const ifRoute = <N extends keyof typeof routes>({name, route, render, guard, saveRedirect}: IfRouteParams<N>) => {
-  if (route && route.name === name) {
+const withPrepareData = (props: any): props is RouteSwitchProps<any> => 'prepareData' in props && typeof props.prepareData === 'function'
+
+export const routeSwitch = <N extends keyof typeof routes>(props: RouteSwitchProps<N>) => {
+  const { currentRoute, name, guard, saveRedirect, render } = props
+
+  if (currentRoute && currentRoute.name === name) {
     if (guard) {
-      const guardCheck = guard(route as any)
+      const guardCheck = guard(currentRoute as any)
 
       if (!guardCheck) {
         return null
@@ -45,15 +48,26 @@ export const ifRoute = <N extends keyof typeof routes>({name, route, render, gua
 
       if (isRoute(guardCheck)) {
         if (!!saveRedirect) {
-          store.routeStore.setSaved(route)
+          store.routeStore.setSaved(currentRoute)
         }
-        route.replace()
+        currentRoute.replace()
         // store.routeStore.replace(guardCheck)
         return null
       }
     }
+    //
+    // let preparedData: AnyObject | undefined
+    // if (withPrepareData(props)) {
+    //   preparedData = props.prepareData(route as any)
+    // }
 
-    return render(route as any)
+    const RenderResult: any = render(currentRoute as any)
+
+    if (RenderResult.$$typeof === Symbol.for('react.element')) {
+      return RenderResult
+    }
+
+    return <RenderResult key={currentRoute.href} route={currentRoute}/>
   }
 
   return null
@@ -85,6 +99,5 @@ export function specifyCurrentRoute<
     }
   } catch (e) {
     console.warn(e)
-    debugger
   }
 }

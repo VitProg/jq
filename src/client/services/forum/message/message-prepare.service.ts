@@ -1,9 +1,9 @@
 import { IMessagePrepareService, IMessageService, ITopicPrepareService } from '../types'
-import { inject } from '../../../ioc/ioc.decoratos'
+import { resolve } from '../../../ioc/ioc.utils'
 import { IApiService } from '../../types'
 import { ApiServiceSymbol, MessageServiceSymbol, TopicPrepareServiceSymbol } from '../../ioc.symbols'
 import { store } from '../../../store'
-import { ForumStoreType, MessageDataPageProps } from '../../../store/forum/types'
+import { MessageDataPageProps } from '../../../store/forum/types'
 import { runInAction } from 'mobx'
 import { StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
@@ -14,8 +14,8 @@ import { isArray } from '../../../../common/type-guards'
 
 
 export class MessagePrepareService implements IMessagePrepareService {
-  @inject(MessageServiceSymbol) messageService!: IMessageService
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly messageService = resolve<IMessageService>(MessageServiceSymbol)
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
 
   processRoute (route: StoredRoute): boolean {
     if (isRoute(route, 'lastMessages')) {
@@ -33,7 +33,7 @@ export class MessagePrepareService implements IMessagePrepareService {
       const page = route.params.page ?? 1
       const topic = route.params.topic.id
 
-      mute(this.preparePage({ type: 'topic', topic,  page }))
+      mute(this.preparePage({ type: 'topic', topic, page }))
       // mute(this.preparePage({ type: 'topic', topic,  page: page + 1 }))
 
       return true
@@ -89,8 +89,8 @@ export class MessagePrepareService implements IMessagePrepareService {
     }
   }
 
-  async prepareAndGet<N extends number | number[]>(id: N): Promise<(N extends number ? IMessage : IMessage[]) | undefined> {
-    const isSingle = !isArray(id);
+  async prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? IMessage : IMessage[]) | undefined> {
+    const isSingle = !isArray(id)
     const ids = (isArray(id) ? id : [id]).sort() as number[]
 
 
@@ -103,7 +103,7 @@ export class MessagePrepareService implements IMessagePrepareService {
     try {
       store.forumStore.messageStore.setStatus('getMany', ids, 'pending')
 
-      const items = await this.messageService.byIds(ids)
+      const items = await this.messageService().byIds(ids)
 
       if (!items) {
         store.forumStore.messageStore.setStatus('getMany', ids, undefined)
@@ -126,7 +126,7 @@ export class MessagePrepareService implements IMessagePrepareService {
   private async load (pageProps: { page: number } & Omit<MessageDataPageProps, 'meta'>) {
     switch (pageProps.type) {
       case 'latest':
-        return this.messageService.latest({
+        return this.messageService().latest({
           page: pageProps.page,
           pageSize: store.configStore.forumMessagePageSize,
         })
@@ -141,7 +141,7 @@ export class MessagePrepareService implements IMessagePrepareService {
           throw new Error('MessagePrepareService: topic not found')
         }
 
-        return this.messageService.byTopic({
+        return this.messageService().byTopic({
           page: pageProps.page,
           topic: topic.id,
           pageSize: store.configStore.forumMessagePageSize,
@@ -153,7 +153,7 @@ export class MessagePrepareService implements IMessagePrepareService {
 
         /// todo add UserPrepareService
 
-        return this.messageService.byUser({
+        return this.messageService().byUser({
           page: pageProps.page,
           user: pageProps.user,
           pageSize: store.configStore.forumMessagePageSize,

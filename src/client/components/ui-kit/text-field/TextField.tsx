@@ -3,6 +3,9 @@ import { IconButton, InputAdornment, InputProps, TextField as MuiTextField } fro
 import { TextFieldProps } from '@material-ui/core/TextField/TextField'
 import { SvgIconComponent } from '@material-ui/icons'
 import { Control, Controller, FieldErrors } from 'react-hook-form'
+import { useIntl } from 'react-intl'
+import { isString } from '../../../../common/type-guards'
+import { translateField } from '../utils'
 
 
 type Props = {
@@ -13,6 +16,7 @@ type Props = {
   onEndIconClick?: () => void,
   control?: Control
   errors?: FieldErrors
+  intlPrefix?: string
 } & TextFieldProps
 
 export const TextField: FC<Props> = (props) => {
@@ -23,8 +27,20 @@ export const TextField: FC<Props> = (props) => {
     onEndIconClick,
     control,
     errors,
+    intlPrefix,
     ...inputProps
   } = props
+
+  const intl = useIntl()
+  const translate = (type: string, key?: any) => translateField(intl, intlPrefix, type, key)
+
+  if (intlPrefix) {
+    if (isString(inputProps.label)) {
+      inputProps.label = translate('field', inputProps.label)
+    } else {
+      inputProps.label = translate('field', inputProps.name)
+    }
+  }
 
   const adornments: InputProps = useMemo(() => ({
     startAdornment: StartIcon && (
@@ -46,6 +62,7 @@ export const TextField: FC<Props> = (props) => {
   }), [StartIcon, EndIcon, onStartIconClick, onEndIconClick])
 
   const hasError = !!(errors && errors[props.name as any])
+  const helperText = errors ? translate('error', errors[props.name as any]?.message) : translate('field-help', props.helperText)
 
   return control ?
     (
@@ -53,7 +70,7 @@ export const TextField: FC<Props> = (props) => {
         as={MuiTextField}
         control={control}
         error={hasError}
-        helperText={errors ? errors[props.name as any]?.message : props.helperText}
+        helperText={helperText}
         defaultValue=''
         {...inputProps}
         InputProps={adornments}

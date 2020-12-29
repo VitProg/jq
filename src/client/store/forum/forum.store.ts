@@ -21,7 +21,6 @@ import { TopicStore } from './topic.store'
 import { UserStore } from './user.store'
 import { makeObservable } from 'mobx'
 import { MessageStore } from './message.store'
-import { isObject } from '../../../common/type-guards'
 
 
 export class ForumStore implements IForumStore {
@@ -40,6 +39,10 @@ export class ForumStore implements IForumStore {
     this.messageStore = new MessageStore(this)
     this.topicStore = new TopicStore(this)
     this.userStore = new UserStore(this)
+
+    setInterval(() => {
+      this.boardStore.flush()
+    }, 1000)
 
     makeObservable(this, {})
   }

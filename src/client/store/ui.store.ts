@@ -13,7 +13,7 @@ export class UIStore implements IUIStore {
   @observable
   loading = false
 
-  @observable
+  @observable.ref
   theme: Theme = theme
 
   @observable

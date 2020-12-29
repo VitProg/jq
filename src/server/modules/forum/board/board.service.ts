@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { BoardDbService } from './board-db.service'
 import { BoardRedisService } from './board-redis.service'
 import { UserLevel } from '../../../../common/forum/forum.constants'
 import { Sorting } from '../../../types'
 import { IBoardEx } from '../../../../common/forum/forum.ex.interfaces'
 import { toBoardEx } from '../../../common/utils/mapper-ex'
+import { TopicService } from '../topic/topic.service'
+import { MessageService } from '../message/message.service'
 
 
 interface FindAllProps {
@@ -22,10 +24,11 @@ export class BoardService {
   constructor (
     private readonly db: BoardDbService,
     private readonly redis: BoardRedisService,
+    @Inject(forwardRef(() => MessageService)) private readonly messageService: MessageService,
   ) {
   }
 
-  async findAll (props: FindAllProps,): Promise<IBoardEx[]> {
+  async findAll (props: FindAllProps): Promise<IBoardEx[]> {
     const {
       userLevel,
       orderBy = 'default',
@@ -53,6 +56,7 @@ export class BoardService {
     }
 
     const hashMap = await this.redis.getFullHashListByIds(ids, userLevel)
+    //todo
 
     for (const [id, hash] of hashMap) {
       const checkCategory = !categoryId || categoryId === hash.cat
@@ -60,7 +64,14 @@ export class BoardService {
       const checkLevel = level === undefined || level === hash.level
 
       if (checkCategory && checkParent && checkLevel) {
-        resultList.push(toBoardEx(hash, withGroups))
+        const page = hash.lt_id && hash.lm_id ?
+          (await this.messageService.getPageNumberInTopic({
+            messageId: hash.lm_id,
+            topicId: hash.lt_id,
+            userLevel,
+          })) :
+          undefined
+        resultList.push(toBoardEx(hash, withGroups, page))
       }
     }
 

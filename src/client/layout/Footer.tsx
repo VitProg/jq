@@ -6,7 +6,7 @@ export const Footer: FC = (props) => {
 
   return (
     <footer>
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         FOOTER
       </Container>
     </footer>

@@ -78,9 +78,9 @@ export const toRedisBoardStatHash = (data: Record<string, string>): RedisBoardSt
     lt_url: data.lt_url,
     lm_id: toInt(data.lm_id),
     lm_date: toInt(data.lm_date),
-    lu_id: toInt(data.lm_user_id),
-    lu_name: data.lm_user_name,
-    lu_url: data.lm_user_url,
+    lu_id: toInt(data.lu_id),
+    lu_name: data.lu_name,
+    lu_url: data.lu_url,
     nt: toInt(data.nt),
     nm: toInt(data.nm),
   }
@@ -100,11 +100,15 @@ export const getKeyTopicStatHash = (topicId: number, level: string) => `h:topic-
 export const topicKeyPrefixes = ['s:topic', 'h:topic']
 export const topicNumsKeyPrefixes = ['s:topic-num-mess:']
 
+export const PINNED_POST_FACTOR = Math.ceil(Number.MAX_SAFE_INTEGER / 2)
+
 export type RedisTopicHash = {
   id: number
   subject: string
   url: string
   approved: number
+  pinned: number
+  pinned_fm: number
   date: number
   board: number
   fm_id: number
@@ -132,6 +136,8 @@ export const toRedisTopicHash = (data: Record<string, string>): RedisTopicHash =
     subject: data.subject,
     url: data.url,
     approved: toInt(data.approved),
+    pinned: toInt(data.pinned),
+    pinned_fm: toInt(data.pinned_fm),
     date: toInt(data.date),
     board: toInt(data.board),
     fm_id: toInt(data.fm_id),
@@ -149,9 +155,9 @@ export const toRedisTopicStatHash = (data: Record<string, string>): RedisTopicSt
     id: toInt(data.id),
     lm_id: toInt(data.lm_id),
     lm_date: toInt(data.lm_date),
-    lu_id: toInt(data.lm_user_id),
-    lu_name: data.lm_user_name,
-    lu_url: data.lm_user_url,
+    lu_id: toInt(data.lu_id),
+    lu_name: data.lu_name,
+    lu_url: data.lu_url,
     nm: toInt(data.nm),
   }
 }

@@ -25,7 +25,7 @@ export interface MessageItemProps {
 type Props = MessageItemProps
 
 
-export const MessageItem: FC<Props> = observer((props) => {
+export const MessageItem: FC<Props> = observer(function MessageItem (props) {
   const {
     message,
     breadcrumb = false,

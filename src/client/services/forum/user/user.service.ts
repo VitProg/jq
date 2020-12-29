@@ -1,17 +1,17 @@
-import { inject } from '../../../ioc/ioc.decoratos'
 import { ApiServiceSymbol } from '../../ioc.symbols'
 import { IApiService } from '../../types'
 import { makeAutoObservable } from 'mobx'
 import { uniqueArray } from '../../../../common/utils/array'
 import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
+import { resolve } from '../../../ioc/ioc.utils'
 
 
 export class UserService {
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
 
-  constructor () {
-    makeAutoObservable(this)
-  }
+  // constructor () {
+  //   makeAutoObservable(this)
+  // }
 
   async page (request: any) {
     // todo
@@ -20,7 +20,7 @@ export class UserService {
 
   async byId (id: number) {
     try {
-      return await this.api
+      return await this.api()
         .get<IUserEx | undefined>(`user/${id}`)
     } catch {
       return undefined
@@ -38,7 +38,7 @@ export class UserService {
     }
 
     try {
-      const items = await this.api
+      const items = await this.api()
         .get<IUserEx[]>(`user/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {
@@ -52,7 +52,7 @@ export class UserService {
         return []
       }
 
-      const users = await this.api
+      const users = await this.api()
         .post<IUserEx[]>(`user/name`, {
           json: { names }
         })

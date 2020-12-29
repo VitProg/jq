@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from 'react'
 import { dayjs, fromNowDate } from '../../../utils/date'
-import useDate from '../../../hooks/use-date'
+import useDate from '../../../hooks/use-date.hook'
 
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   format?: string
   withoutSuffix?: boolean
   toggleable?: boolean
+  className?: string
 }
 
 export const FromNowDate: FC<Props> = (props) => {
@@ -15,7 +16,8 @@ export const FromNowDate: FC<Props> = (props) => {
     date,
     format = 'lll',
     toggleable = true,
-    withoutSuffix = false
+    withoutSuffix = false,
+    className,
   } = props
 
   if (!date) {
@@ -36,11 +38,11 @@ export const FromNowDate: FC<Props> = (props) => {
   }, [date])
 
   if (rel === formatted) {
-    return (<time dateTime={iso}>{formatted}</time>)
+    return (<time className={className} dateTime={iso}>{formatted}</time>)
   }
 
   if (!toggleable) {
-    return (<time dateTime={iso} title={formatted}>{rel}</time>)
+    return (<time className={className} dateTime={iso} title={formatted}>{rel}</time>)
   }
 
   const [showRel, setShowRel] = useState(true)
@@ -51,6 +53,7 @@ export const FromNowDate: FC<Props> = (props) => {
 
   return (
     <time
+      className={className}
       data-now={now.toISOString()}
       style={{ cursor: 'pointer' }}
       dateTime={iso}

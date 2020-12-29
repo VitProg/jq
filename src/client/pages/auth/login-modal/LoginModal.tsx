@@ -16,22 +16,27 @@ import { RouteLink } from '../../../components/route/RouteLink'
 import { ModalProps } from '../../../components/types'
 import { TextField } from '../../../components/ui-kit/text-field/TextField'
 import { PasswordInput } from '../../../components/ui-kit/password-input/PasswordInput'
+import { useIntl } from 'react-intl'
+import { useFormatMessage } from '../../../hooks/use-format-message.hook'
 
 
 const schema = z.object({
-  username: z.string().nonempty('Введите ваш логин или email'),
-  password: z.string().nonempty('Введите ваш пароль'),
+  username: z.string().nonempty('login-is-empty'),
+  password: z.string().nonempty('password-is-empty'),
   remember: z.boolean().optional(),
 })
 
 type Schema = z.infer<typeof schema>;
 
+const intlPrefix = 'LoginModal'
+
 type Props = ModalProps
 
 export const LoginModal: FC<Props> = observer(function LoginModal (props) {
-  store.seoStore.setTitle('Вход')
-
   const classes = useStyles()
+  const t = useFormatMessage()
+
+  store.seoStore.setTitle(t(`${intlPrefix}:page-title`))
 
   const {
     errors,
@@ -58,7 +63,7 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
     } finally {
       if (!user) {
         setError('username', {
-          message: 'Неверный логин и/или пароль',
+          message: 'username-or-password',
           type: 'validate',
         })
       }
@@ -76,7 +81,7 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
 
       header={
         <Typography component="h1" variant="h5">
-          Вход
+          {t(`${intlPrefix}:modal-title`)}
         </Typography>
       }
 
@@ -84,7 +89,8 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
         <>
           <TextField
             name='username'
-            label="Логин / Email"
+            intlPrefix={intlPrefix}
+            label={'login'}
             control={control}
             errors={errors}
             margin="normal"
@@ -95,7 +101,7 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
           />
           <PasswordInput
             name='password'
-            label="Пароль"
+            intlPrefix={intlPrefix}
             control={control}
             errors={errors}
             margin="normal"
@@ -116,17 +122,17 @@ export const LoginModal: FC<Props> = observer(function LoginModal (props) {
             color="primary"
             className={classes.submit}
           >
-            Войти
+            {t(`${intlPrefix}:button.submit`)}
           </Button>
           <Grid container>
             <Grid item xs>
               <RouteLink to={'forgotPassword'} component={Link} variant="body2">
-                Забыли пароль?
+                {t(`${intlPrefix}:link.forgot-password`)}
               </RouteLink>
             </Grid>
             <Grid item>
               <RouteLink to={'registration'} component={Link} variant="body2">
-                Зарегистрироваться
+                {t(`${intlPrefix}:link.registration`)}
               </RouteLink>
             </Grid>
           </Grid>

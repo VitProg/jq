@@ -1,4 +1,5 @@
-
+import { isString } from '../../../common/type-guards'
+import { IntlShape } from 'react-intl'
 
 export const joinClassNames = (...classNames: (string | undefined | null)[]) => {
   return classNames
@@ -14,3 +15,13 @@ export const joinClassNamesMass =
     }
     return result
   }
+
+
+export const translateField = (
+  intl: IntlShape,
+  prefix?: string,
+  type?: string,
+  key?: any
+) => !key || !type || !prefix || !isString(key) ?
+  key :
+  intl.formatMessage({id: `${prefix}:${type}.${key}`})

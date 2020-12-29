@@ -7,9 +7,10 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { UserModule } from '../user/user.module'
 import { SecureModule } from '../secure/secure.module'
 import { AuthController } from './auth.controller';
-import { TokenService } from './token/token.service';
+import { RefreshTokenService } from './token/refresh-token.service';
 import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh-token.strategy'
 import { HttpStrategy } from './strategies/http-strategy.service'
+import { JwtTokenService } from './token/jwt-token.service'
 
 
 @Module({
@@ -24,7 +25,8 @@ import { HttpStrategy } from './strategies/http-strategy.service'
   ],
   providers: [
     AuthService,
-    TokenService,
+    RefreshTokenService,
+    JwtTokenService,
     LocalStrategy,
     HttpStrategy,
     JwtStrategy,

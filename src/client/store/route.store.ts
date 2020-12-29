@@ -1,5 +1,5 @@
 import { IBreadcrumbsStore, IMyStore, IRouteStore, ISeoStore, IUIStore } from './types'
-import { action, computed, makeObservable, observable, reaction } from 'mobx'
+import { action, computed, makeObservable, observable, reaction, runInAction } from 'mobx'
 import { isModalRoute } from '../routing/utils'
 import { routerSession } from '../routing'
 import { AppRoute } from '../routing/types'
@@ -14,7 +14,9 @@ export class RouteStore implements IRouteStore {
   constructor () {
     makeObservable(this)
 
-    this.history = [routerSession.getInitialRoute()]
+    runInAction(() => {
+      this.history = [routerSession.getInitialRoute()]
+    })
     routerSession.listen(this.handleRouter)
   }
 

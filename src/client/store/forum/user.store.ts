@@ -68,12 +68,12 @@ export class UserStore implements IUserStore {
   }
 
   @action.bound
-  set (data: DataStorePagesSetData<PageProps, Item>): void {
-    dataStorePagesSet(this, data)
+  set (data: DataStorePagesSetData<PageProps, Item>): Item | undefined {
+    return dataStorePagesSet(this, data)
   }
 
-  setMany (data: DataStorePagesSetManyData<PageProps, Item>): void {
-    dataStorePagesSetMany(this, data)
+  setMany (data: DataStorePagesSetManyData<PageProps, Item>): Item[] {
+    return dataStorePagesSetMany(this, data)
   }
 
   get (id: number): Item | undefined {
@@ -83,7 +83,7 @@ export class UserStore implements IUserStore {
   getMany<AsRecord extends true | false = false> (
     idList: number[],
     asRecord: AsRecord,
-  ): undefined | (AsRecord extends true ? Record<number, Item> : Item[]) {
+  ): AsRecord extends true ? Record<number, Item> : Item[] {
     return dataStoreGetMany(this, idList, asRecord)
   }
 
@@ -101,8 +101,8 @@ export class UserStore implements IUserStore {
     return dataStorePagerGetPageMeta(this, data)
   }
 
-  setPage (data: DataStorePagesSetPageData<PageProps, Item>): void {
-    this.setMany(data)
+  setPage (data: DataStorePagesSetPageData<PageProps, Item>): Item[] {
+    return this.setMany(data)
   }
 
   removePage (data: DataStorePagesRemovePageData<PageProps>): void {
@@ -113,8 +113,8 @@ export class UserStore implements IUserStore {
     return dataStoreGetStatus(this, type, props)
   }
 
-  setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): void {
-    dataStoreSetStatus(this, type, props, status)
+  setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): RequestStatus | undefined {
+    return dataStoreSetStatus(this, type, props, status)
   }
 
   ///

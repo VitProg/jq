@@ -16,7 +16,8 @@ import { MyModule } from './modules/my/my.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [configuration]
+      load: [configuration],
+      cache: false,
     }),
     AuthModule,
     TypeOrmModule.forRoot(),

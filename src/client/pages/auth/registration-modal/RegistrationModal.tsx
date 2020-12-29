@@ -15,20 +15,25 @@ import { AccountCircleOutlined, AlternateEmailOutlined, VpnKeyOutlined } from '@
 import { PasswordInput } from '../../../components/ui-kit/password-input/PasswordInput'
 import { TextField } from '../../../components/ui-kit/text-field/TextField'
 import { store } from '../../../store'
+import { useFormatMessage } from '../../../hooks/use-format-message.hook'
 
 
 const schema = z.object({
-  login: z.string().nonempty('Введите ваш логин'),
-  email: z.string().nonempty('Введите ваш email'),
-  password: z.string().nonempty('Введите ваш пароль'),
+  login: z.string().nonempty('login-is-empty'),
+  email: z.string().nonempty('email-is-empty'),
+  password: z.string().nonempty('password-is-empty'),
 })
 
 type Schema = z.infer<typeof schema>;
 
 type Props = ModalProps
 
+const intlPrefix = 'RegistrationModal'
+
 export const RegistrationModal: FC<Props> = observer(function RegistrationModal (props) {
-  store.seoStore.setTitle('Регистрация')
+  const t = useFormatMessage()
+
+  store.seoStore.setTitle(t(`RegistrationModal:page-title`))
 
   const classes = useStyles()
 
@@ -59,7 +64,7 @@ export const RegistrationModal: FC<Props> = observer(function RegistrationModal 
 
       header={() => (
         <Typography component="h1" variant="h5">
-          Регистрация
+          {t('RegistrationModal:modal-title')}
         </Typography>
       )}
 
@@ -67,7 +72,7 @@ export const RegistrationModal: FC<Props> = observer(function RegistrationModal 
         <>
           <TextField
             name='login'
-            label="Логин"
+            intlPrefix={intlPrefix}
             control={control}
             errors={errors}
             margin="normal"
@@ -77,7 +82,7 @@ export const RegistrationModal: FC<Props> = observer(function RegistrationModal 
           />
           <TextField
             name='email'
-            label="Email"
+            intlPrefix={intlPrefix}
             control={control}
             errors={errors}
             margin="normal"
@@ -87,7 +92,7 @@ export const RegistrationModal: FC<Props> = observer(function RegistrationModal 
           />
           <PasswordInput
             name='password'
-            label="Пароль"
+            intlPrefix={intlPrefix}
             control={control}
             errors={errors}
             margin="normal"
@@ -108,17 +113,17 @@ export const RegistrationModal: FC<Props> = observer(function RegistrationModal 
             color="primary"
             className={classes.submit}
           >
-            Зарегистрироваться
+            {t('RegistrationModal:button.submit')}
           </Button>
           <Grid container>
             <Grid item xs>
               <RouteLink to={'forgotPassword'} component={Link} variant="body2">
-                Забыли пароль?
+                {t('RegistrationModal:link.forgot-password')}
               </RouteLink>
             </Grid>
             <Grid item>
               <RouteLink to={'login'} component={Link} variant="body2">
-                Войти
+                {t('RegistrationModal:link.login')}
               </RouteLink>
             </Grid>
           </Grid>

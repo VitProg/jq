@@ -1,29 +1,93 @@
-import { inject } from '../../../ioc/ioc.decoratos'
+import { inject, resolve } from '../../../ioc/ioc.utils'
 import { BoardService } from './board.service'
-import { BoardServiceSymbol, UserPrepareServiceSymbol } from '../../ioc.symbols'
+import { BoardServiceSymbol, CategoryPrepareServiceSymbol, UserPrepareServiceSymbol } from '../../ioc.symbols'
 import { store } from '../../../store'
-import { StoredRoute } from '../../../store/types'
+import { RouteDataItem, StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
 import { mute } from '../../../../common/utils/promise'
 import { UserPrepareService } from '../user/user-prepare.service'
+import { action, makeAutoObservable, makeObservable, reaction, runInAction, untracked, when } from 'mobx'
+import { GetRoute } from '../../../routing/types'
+import { Route } from 'type-route'
+import { DataStoreSetManyData, RequestStatus } from '../../../store/forum/types'
+import { IBoardEx, IBoardExMin } from '../../../../common/forum/forum.ex.interfaces'
+import { IForumBoardManyResponse } from '../../../../common/responses/forum.responses'
+import { routes } from '../../../routing'
+import { omit } from '../../../../common/utils/object'
+import { ICategory } from '../../../../common/forum/forum.base.interfaces'
+import { CategoryPrepareService } from '../category/category-prepare.service'
 
+const BOARD_LIST_EXPIRED = 30
 
 export class BoardPrepareService {
-  @inject(BoardServiceSymbol) boardService!: BoardService
-  @inject(UserPrepareServiceSymbol) userPrepareService!: UserPrepareService
+  private readonly boardService = resolve<BoardService>(BoardServiceSymbol)
+  private readonly categoryPrepareService = resolve<CategoryPrepareService>(CategoryPrepareServiceSymbol)
 
+  constructor () {
+    makeObservable(this)
+    setTimeout(() => this.prepareAll())
+  }
+
+  @action.bound
   processRoute (route?: StoredRoute): boolean {
-      if (isRoute(route, 'index')) {
+    if (isRoute(route, 'boardList')) {
+      mute(this.boardList(route))
+      return true
+    }
 
-        mute(this.prepareAll())
-
-        return true
-      }
-
-      return false
+    return false
   }
 
 
+  @action.bound
+  async boardList (route: GetRoute<'boardList'>) {
+    const status = this.getStatus(route)
+    if (status) {
+      return
+    }
+
+    try {
+      this.setStatus(route, 'pending')
+      await this.categoryPrepareService().prepareAll()
+      const boards = await this.boardService().getAll()
+      this.setStatus(route, 'loaded', boards)
+    } catch (e) {
+      console.warn(e)
+      this.setStatus(route, 'error')
+    }
+  }
+
+  private getStatus (route: GetRoute<'boardList'>) {
+    const pageProps: RouteDataItem | undefined = store.routeDataStore.props.get(route.href)
+    return pageProps?.data?.status
+  }
+
+  private setStatus = (route: GetRoute<'boardList'>, status: RequestStatus, boards?: IForumBoardManyResponse) => runInAction(() => {
+    if (boards) {
+      store.routeDataStore.setPageProps(route, { status: status, data: { boards } }, BOARD_LIST_EXPIRED)
+    } else {
+      store.routeDataStore.setPageProps(route, { status: status})
+    }
+  })
+
+  @action
+  async prepareAndGet (boardId: number): Promise<IBoardExMin | undefined> {
+    const status = store.forumStore.boardStore.getStatus('getAll', false)
+
+    if (!status || status === 'error') {
+      await this.prepareAll()
+    }
+    if (status !== 'loaded') {
+      await when(() => store.forumStore.boardStore.getStatus('getAll', false) === 'loaded')
+    }
+
+    return runInAction(() => {
+      return store.forumStore.boardStore.get(boardId)
+    })
+  }
+
+
+  @action
   async prepareAll() {
     const status = store.forumStore.boardStore.getStatus('getAll', false)
     if (status) {
@@ -33,88 +97,18 @@ export class BoardPrepareService {
     try {
       store.forumStore.boardStore.setStatus('getAll', false, 'pending')
 
-      const boardList = await this.boardService.getAll()
+      const boardList = await this.boardService().getAll()
 
-      store.forumStore.boardStore.setMany({
-        items: boardList
+      runInAction(() => {
+        store.forumStore.boardStore.setMany({
+          items: boardList.map(board => omit(board, 'counters', 'last'))
+        })
+
+        store.forumStore.boardStore.setStatus('getAll', false, 'loaded')
       })
-
-      store.forumStore.boardStore.setStatus('getAll', false, 'loaded')
     } catch {
       store.forumStore.boardStore.setStatus('getAll', false, 'error')
     }
   }
-
-  // async prepareStat() {
-  //   await this.prepareAll()
-  //   try {
-  //     //todo
-  //     const boardIds = store.forumStore.boardStore.getAll(false).map(board => board.id)
-  //     const boards = store.forumStore.boardStore.getAll(true)
-  //
-  //     const stat = await this.boardService.getStat(boardIds)
-  //
-  //     const userIds = new Set<number>()
-  //
-  //     for (const statItem of stat) {
-  //       const board = boards[statItem.id]
-  //       if (board) {
-  //         if (statItem.lastMessage) {
-  //           userIds.add(statItem.lastMessage.linksId.user)
-  //         }
-  //         store.forumStore.boardStore.set({
-  //           item: {
-  //             ...board,
-  //             settings: {
-  //               ...board.settings,
-  //             },
-  //             linksId: {
-  //               ...board.linksId,
-  //               lastMessage: statItem.lastMessage?.id,
-  //               lastTopic: statItem.lastTopic?.id,
-  //               lastUser: statItem?.lastUser?.id
-  //             },
-  //             counters: {
-  //               ...board.counters,
-  //               topics: statItem.topics,
-  //               messages: statItem.messages,
-  //             },
-  //           }
-  //         })
-  //
-  //         if (statItem.lastTopic) {
-  //           store.forumStore.topicStore.set({
-  //             item: {...statItem.lastTopic}
-  //           })
-  //         }
-  //
-  //         if (statItem.lastMessage) {
-  //           store.forumStore.messageStore.set({
-  //             item: {...statItem.lastMessage}
-  //           })
-  //         }
-  //
-  //         if (statItem.lastUser) {
-  //           store.forumStore.userStore.set({
-  //             item: {...statItem.lastUser}
-  //           })
-  //           userIds.delete(statItem.lastUser.id)
-  //         }
-  //
-  //       }
-  //     }
-  //
-  //     if (userIds.size > 0) {
-  //       let ids = [...userIds.values()]
-  //       const usersInStore = store.forumStore.userStore.getMany(ids, true) ?? {}
-  //       ids = ids.filter(id => !(id in usersInStore))
-  //       console.log('NEED LOAD USERS BY IDS', ids)
-  //       mute(this.userPrepareService.prepareAndGet(ids))
-  //     }
-  //
-  //   } catch {
-  //
-  //   }
-  // }
 
 }

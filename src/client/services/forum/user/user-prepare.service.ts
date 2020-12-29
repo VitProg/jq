@@ -1,19 +1,18 @@
 import { StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
 import { mute } from '../../../../common/utils/promise'
-import { inject } from '../../../ioc/ioc.decoratos'
+import { resolve } from '../../../ioc/ioc.utils'
 import { UserServiceSymbol } from '../../ioc.symbols'
 import { UserService } from './user.service'
 import { UserDataPageProps } from '../../../store/forum/types'
 import { store } from '../../../store'
-import { reaction, runInAction, when } from 'mobx'
-import { IUser } from '../../../../common/forum/forum.base.interfaces'
+import { reaction, runInAction } from 'mobx'
 import { isArray } from '../../../../common/type-guards'
 import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
 
 
 export class UserPrepareService {
-  @inject(UserServiceSymbol) userService!: UserService
+  private readonly userService = resolve<UserService>(UserServiceSymbol)
 
 
   processRoute (route?: StoredRoute): boolean {
@@ -102,7 +101,7 @@ export class UserPrepareService {
       return
     }
 
-    const items = await this.userService.byNames(namesToRequest)
+    const items = await this.userService().byNames(namesToRequest)
 
     store.forumStore.userStore.setMany({ items })
   }
@@ -120,7 +119,7 @@ export class UserPrepareService {
     try {
       store.forumStore.userStore.setStatus('getMany', ids, 'pending')
 
-      const items = await this.userService.byIds(ids)
+      const items = await this.userService().byIds(ids)
 
       if (!items) {
         store.forumStore.userStore.setStatus('getMany', ids, undefined)
@@ -141,7 +140,7 @@ export class UserPrepareService {
 
 
   private async load (pageProps: { page: number } & Omit<UserDataPageProps, 'meta'>) {
-    return this.userService.page({
+    return this.userService().page({
       page: pageProps.page,
       pageSize: store.configStore.forumMessagePageSize,
     })

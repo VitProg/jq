@@ -9,14 +9,14 @@ import { PageTitle } from '../components/page-title/PageTitle'
 import { useLayoutStyles } from './styles'
 
 
-export const Layout: FC = observer((props) => {
+export const Layout: FC = ((props) => {
 
   const classes = useLayoutStyles()
 
   return (
     <main className={classes.body}>
       <Header/>
-      <Container maxWidth="md" className={classes.container}>
+      <Container maxWidth="lg" className={classes.container}>
         <PageTitle/>
         <PageBreadcrumbs/>
         <RouterSwitch/>

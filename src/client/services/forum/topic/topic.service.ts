@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 import { ITopicService } from '../types'
-import { inject } from '../../../ioc/ioc.decoratos'
+import { inject, resolve } from '../../../ioc/ioc.utils'
 import { IApiService } from '../../types'
 import { IForumMessageManyResponse, IForumTopicManyResponse } from '../../../../common/responses/forum.responses'
 import { ApiServiceSymbol } from '../../ioc.symbols'
@@ -17,7 +17,7 @@ const DEFAULT_WITH_RELATIONS: TopicRelationsArray = [TopicRelations.board, Topic
 
 
 export class TopicService implements ITopicService {
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
 
   constructor () {
     makeAutoObservable(this)
@@ -30,7 +30,7 @@ export class TopicService implements ITopicService {
       ...request
     }
 
-    return this.api
+    return this.api()
       .get<IForumTopicManyResponse>(
         'topic/latest',
         {
@@ -52,7 +52,7 @@ export class TopicService implements ITopicService {
       ...forRequest
     }
 
-    return this.api
+    return this.api()
       .get<IForumTopicManyResponse>(
         `topic/board/${board}`,
         {
@@ -69,7 +69,7 @@ export class TopicService implements ITopicService {
       ...forRequest
     }
 
-    return this.api
+    return this.api()
       .get<IForumTopicManyResponse>(
         `topic/user/${user}`,
         {
@@ -80,7 +80,7 @@ export class TopicService implements ITopicService {
 
   async byId (id: number) {
     try {
-      return await this.api
+      return await this.api()
         .get<ITopicEx | undefined>(`topic/${id}`)
     } catch {
       return undefined
@@ -98,7 +98,7 @@ export class TopicService implements ITopicService {
     }
 
     try {
-      const items = await this.api
+      const items = await this.api()
         .get<ITopicEx[]>(`topic/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {

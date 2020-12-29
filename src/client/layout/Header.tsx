@@ -16,9 +16,9 @@ export const Header: FC = observer(function Header (props) {
     <header className={classes.container}>
       <HideOnScroll>
         <AppBar position="fixed">
-          <Container maxWidth="md" component={Toolbar} className={classes.toolbar}>
+          <Container maxWidth="lg" component={Toolbar} className={classes.toolbar}>
             <Typography variant="h6" className={classes.title}>
-              <RouteLink to={'index'} component={Link} color="inherit">JQ Forum React</RouteLink>
+              <RouteLink to={'boardList'} component={Link} color="inherit">JQ Forum React</RouteLink>
             </Typography>
             <nav className={`${classes.menu} ${classes.grow}`}>
               <RouteLink to={'lastMessages'} component={Button} color="inherit">Сообщения</RouteLink>

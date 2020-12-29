@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "module": "esnext",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "useDefineForClassFields": true
   },
   "extends": "./tsconfig.json",
   "exclude": ["node_modules", "src/server", "src/server/test", "dist", "**/*spec.ts"],

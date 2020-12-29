@@ -35,10 +35,18 @@ type Item = ExtractItem<StoreType>
 export class TopicStore implements ITopicStore {
   constructor (public forumStore: IForumStore) {
     makeObservable(this)
+
+    // this.flushInterval = setInterval(() => {
+    //   console.log('!!!', this.name, 'auto flush')
+    //   this.flush()
+    // }, (this.defaultExpireIn / 2 * 1000) >>> 0)
+
   }
 
+  readonly flushInterval: number | undefined
+
   readonly name = 'topic' as const
-  readonly defaultExpireIn: number = 60 // 60 sec //5 * 60 // 5 minutes
+  readonly defaultExpireIn: number = 10 // 60 sec //5 * 60 // 5 minutes
   readonly maxStoredItems: number = 100
 
   @observable.deep readonly items: Map<number, DataItem> = new Map()
@@ -56,12 +64,12 @@ export class TopicStore implements ITopicStore {
   }
 
   @action.bound
-  set (data: DataStorePagesSetData<PageProps, Item>): void {
-    dataStorePagesSet(this, data)
+  set (data: DataStorePagesSetData<PageProps, Item>): Item | undefined {
+    return dataStorePagesSet(this, data)
   }
 
-  setMany (data: DataStorePagesSetManyData<PageProps, Item>): void {
-    dataStorePagesSetMany(this, data)
+  setMany (data: DataStorePagesSetManyData<PageProps, Item>): Item[] {
+    return dataStorePagesSetMany(this, data)
   }
 
   get (id: number): Item | undefined {
@@ -71,7 +79,7 @@ export class TopicStore implements ITopicStore {
   getMany<AsRecord extends true | false = false> (
     idList: number[],
     asRecord: AsRecord,
-  ): undefined | (AsRecord extends true ? Record<number, Item> : Item[]) {
+  ): AsRecord extends true ? Record<number, Item> : Item[] {
     return dataStoreGetMany(this, idList, asRecord)
   }
 
@@ -89,8 +97,8 @@ export class TopicStore implements ITopicStore {
     return dataStorePagerGetPageMeta(this, data)
   }
 
-  setPage (data: DataStorePagesSetPageData<PageProps, Item>): void {
-    this.setMany(data)
+  setPage (data: DataStorePagesSetPageData<PageProps, Item>): Item[] {
+    return this.setMany(data)
   }
 
   removePage (data: DataStorePagesRemovePageData<PageProps>): void {
@@ -101,7 +109,7 @@ export class TopicStore implements ITopicStore {
     return dataStoreGetStatus(this, type, props)
   }
 
-  setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): void {
-    dataStoreSetStatus(this, type, props, status)
+  setStatus <M extends DataStorePagesGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): RequestStatus | undefined {
+    return dataStoreSetStatus(this, type, props, status)
   }
 }

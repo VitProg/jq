@@ -1,7 +1,7 @@
 import { IAuthService, IProfileService } from './types'
-import { inject } from '../../ioc/ioc.decoratos'
+import { inject, resolve } from '../../ioc/ioc.utils'
 import { IApiService} from '../types'
-import { makeAutoObservable } from 'mobx'
+import { action, makeAutoObservable, makeObservable, runInAction } from 'mobx'
 import { User } from '../../../common/forum/models/user'
 import { ILoginResponse, IRefreshTokenResponse } from '../../../common/responses/auth.responses'
 import { store } from '../../store'
@@ -12,16 +12,17 @@ import { LoginRequest } from '../api.requests'
 
 
 export class AuthService implements IAuthService {
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
 
   constructor () {
-    makeAutoObservable(this)
+    makeObservable(this)
   }
 
+  @action
   async login (params: LoginRequest): Promise<undefined | User> {
     const base64 = btoa(params.username + ':' + params.password);
 
-    const response = await this.api
+    const response = await this.api()
       .post<ILoginResponse>(
         'auth/login',
         {
@@ -40,9 +41,10 @@ export class AuthService implements IAuthService {
     return store.myStore.user
   }
 
+  @action
   async refreshToken (updateProfile = false): Promise<boolean> {
     try {
-      const response = await this.api
+      const response = await this.api()
         .post<IRefreshTokenResponse>(
           'auth/refresh-token',
           {
@@ -64,8 +66,9 @@ export class AuthService implements IAuthService {
     }
   }
 
+  @action
   async logout () {
-    await this.api
+    await this.api()
       .post<ILoginResponse>(
         'auth/logout',
         {
@@ -77,8 +80,9 @@ export class AuthService implements IAuthService {
     this.clearSession()
   }
 
+  @action
   async logoutAll () {
-    await this.api
+    await this.api()
       .post<ILoginResponse>(
         'auth/logoutAll',
         {
@@ -91,11 +95,12 @@ export class AuthService implements IAuthService {
   }
 
 
-  // noinspection JSMethodCanBeStatic
+  @action
   private clearSession () {
     store.myStore.clearUser()
   }
 
+  @action
   private async saveSession (accessToken: string | undefined) {
     if (!accessToken) {
       return this.clearSession()
@@ -103,16 +108,18 @@ export class AuthService implements IAuthService {
     store.myStore.setToken(accessToken)
   }
 
-  // noinspection JSMethodCanBeStatic
+  @action
   private async updateProfile () {
     const profileService = container.get<IProfileService>(ProfileServiceSymbol)
 
     const user = createUserModel(await profileService.profile())
-    if (user) {
-      store.myStore.setUser(user, store.myStore.token)
-    } else {
-      store.myStore.clearUser()
-    }
+    runInAction(() => {
+      if (user) {
+        store.myStore.setUser(user, store.myStore.token)
+      } else {
+        store.myStore.clearUser()
+      }
+    })
   }
 
 }

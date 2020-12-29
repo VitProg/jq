@@ -1,11 +1,15 @@
 import { defineRoute, param } from 'type-route'
 import { slugWithIdSerializer } from './routing/serializers/slug-with-id.serializer'
+import { IBoardEx, IBoardExMin, ITopicEx } from '../common/forum/forum.ex.interfaces'
+import { IPaginationMeta } from 'nestjs-typeorm-paginate/dist/interfaces'
+import { ICategory } from '../common/forum/forum.base.interfaces'
+
 
 const resolve = (...route: string[]) => route.length > 0 ? `/${route.join('/')}`.replace('//', '/') : ''
 
 
 export const definedRoutes = {
-  index: defineRoute('/'),
+  boardList: defineRoute('/'),
   login: defineRoute('/login'),
   registration: defineRoute('/registration'),
   forgotPassword: defineRoute('/forgot-password'),
@@ -51,8 +55,16 @@ export const modalRoutes: Array<keyof typeof definedRoutes> = [
   'forgotPassword',
 ]
 
-
-
-
+export type RouteDataTypes = {
+  boardList: {
+    boards: IBoardEx[]
+  }
+  boardTopicList: {
+    page: number
+    board: IBoardExMin
+    pageData: { items: ITopicEx[]; meta: IPaginationMeta }
+    pageMeta: Omit<IPaginationMeta, 'currentPage'>
+  }
+}
 
 

@@ -1,11 +1,15 @@
 import { User } from '../../common/forum/models/user'
-import { AppRoute, AppRouteKeys, ExtractRouteProps } from '../routing/types'
+import {
+  AppRoute,
+  AppRouteKeys,
+  ExtractRouteProps,
+  RoutePagePropsByName,
+  RoutePagePropsByRoute
+} from '../routing/types'
 import { Theme } from '@material-ui/core'
 import { IForumStore } from './forum/types'
-import { IUser } from '../../common/forum/forum.base.interfaces'
 import { ReactNode } from 'react'
-import { uesRoutePagination } from '../hooks/use-route-pagination'
-import { IUserEx } from '../../common/forum/forum.ex.interfaces'
+import { useRoutePagination } from '../hooks/use-route-pagination'
 
 
 export interface IRootStore {
@@ -13,11 +17,12 @@ export interface IRootStore {
   readonly seoStore: ISeoStore
   readonly myStore: IMyStore
   readonly routeStore: IRouteStore
+  readonly routeDataStore: IRouteDataStore
   readonly forumStore: IForumStore
   readonly configStore: IConfigStore
   readonly breadcrumbsStore: IBreadcrumbsStore
 
-  setupPageMetadata <R extends AppRouteKeys = AppRouteKeys>(config: SetupPageMetadataConfig<R>): void
+  setupPageMetadata<R extends AppRouteKeys = AppRouteKeys> (config: SetupPageMetadataConfig<R>): void
 }
 
 export interface SetupPageMetadataConfig<R extends AppRouteKeys = AppRouteKeys> {
@@ -26,7 +31,7 @@ export interface SetupPageMetadataConfig<R extends AppRouteKeys = AppRouteKeys> 
   setPageTitle?: boolean,
   setBreadcrumbs?: boolean,
   setSeoTitle?: boolean,
-  pagination?: ReturnType<typeof uesRoutePagination>,
+  pagination?: ReturnType<typeof useRoutePagination>,
   routes?: Array<[label: string, route: AppRoute] | false>
 }
 
@@ -54,9 +59,12 @@ export interface IUIStore {
   readonly pageTitle?: string | ReactNode
 
   setDarkMode (value: boolean): void
+
   setLoading (value: boolean): void
+
   setPageTitle (title: string | ReactNode | undefined): void
-  clearPageTitle(): void
+
+  clearPageTitle (): void
 }
 
 export interface IMyStore {
@@ -98,6 +106,32 @@ export interface IRouteStore {
   // replaceSaved(): void
 }
 
+export type RouteDataItem<R extends AppRouteKeys = any> =
+  {
+    data: RoutePagePropsByName<R>
+    expired?: number
+    expireAt?: number
+  }
+
+export interface IRouteDataStore {
+  readonly routeStore: IRouteStore
+
+  readonly props: Map<string, RouteDataItem>
+
+  clearAll (): void
+
+  setPageProps<R extends AppRoute> (route: R, props?: RoutePagePropsByRoute<R>, expired?: number): void
+  remove(route: AppRoute): void
+
+  flush(): void
+
+  // prepare<R extends AppRoute> (route?: R): void
+  getPageProps<R extends AppRoute> (route: R): RoutePagePropsByRoute<R>
+
+  get <R extends AppRoute> (route: R): RoutePagePropsByRoute<R> | undefined
+  // process<R extends AppRoute> (route: R): RoutePageProps<R>
+}
+
 export interface ISeoStore {
   readonly configStore: IConfigStore
 
@@ -121,9 +155,13 @@ export interface ISeoStore {
 export interface IBreadcrumbsStore {
   readonly items: BreadcrumbsItem[]
   readonly has: boolean
+
   set (...items: BreadcrumbsItem[]): void
+
   add (...items: BreadcrumbsItem[]): void
-  removeLast(): void
+
+  removeLast (): void
+
   clear (): void
 }
 

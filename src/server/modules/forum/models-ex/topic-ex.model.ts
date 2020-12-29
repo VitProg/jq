@@ -21,6 +21,8 @@ export class TopicExModel implements ITopicEx {
   @ApiProperty()
   flags!: {
     isApproved: boolean
+    isPinned: boolean
+    isPinnedFirstMessage: boolean
   }
 
   @ApiProperty()

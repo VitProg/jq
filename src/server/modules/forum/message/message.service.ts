@@ -14,7 +14,8 @@ import { RedisMessageHash } from '../../../common/utils/redis'
 import { IMessage } from '../../../../common/forum/forum.base.interfaces'
 import { TopicService } from '../topic/topic.service'
 import { recordToMap, uniqueArray } from '../../../../common/utils/array'
-import { isArray } from '../../../../common/type-guards'
+import { isArray, isNumber } from '../../../../common/type-guards'
+import { ConfigService } from '@nestjs/config'
 
 
 type WithProps = {
@@ -49,9 +50,12 @@ type FindAllProps =
 
 @Injectable()
 export class MessageService {
+  readonly pageSize = parseInt(this.configService.get('FORUM_MESSAGE_PAGE_SIZE', '10'), 10)
+
   constructor (
     private readonly db: MessageDbService,
     private readonly redis: MessageRedisService,
+    private readonly configService: ConfigService,
     @Inject(forwardRef(() => BoardService)) private readonly boardService: BoardService,
     @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
     @Inject(forwardRef(() => UserService)) private readonly userService: UserService,
@@ -77,7 +81,7 @@ export class MessageService {
     const sorting: Sorting = isLatest ?
       'desc' :
       ('sorting' in props && (props as any).sorting === 'desc' ? 'desc' : 'asc')
-    const pagination: IPaginationOptions = 'pagination' in props ? (props as any).pagination : { page: 0, limit: 0 }
+    const pagination: IPaginationOptions = 'pagination' in props ? (props as any).pagination : { page: 0, limit: this.pageSize }
 
 
     const resultList: IMessageEx[] = []
@@ -162,7 +166,7 @@ export class MessageService {
         ex.user = (relDataAll.shift() as Map<number, IUserEx> | undefined) ?? new Map()
       }
       if (withFullInfo) {
-        ex.fullMessage = (relDataAll.shift() as Record<number, IMessage> | undefined) ?? { }
+        ex.fullMessage = (relDataAll.shift() as Record<number, IMessage> | undefined) ?? {}
       }
     }
 
@@ -193,7 +197,8 @@ export class MessageService {
   }
 
 
-  async findByIdsToMap (ids: number[] | Set<number>, userLevel?: UserLevel, withRelations?: WithProps): Promise<Map<number, IMessageEx>> {
+  async findByIdsToMap (ids: number[] | Set<number>, userLevel?: UserLevel,
+    withRelations?: WithProps): Promise<Map<number, IMessageEx>> {
     const data = await this.findAll({
       ids: [...ids],
       userLevel,
@@ -202,12 +207,31 @@ export class MessageService {
     return recordToMap(data)
   }
 
-  async findByIds (ids: number[] | Set<number>, userLevel?: UserLevel, withRelations?: WithProps): Promise<IMessageEx[]> {
+  async findByIds (ids: number[] | Set<number>, userLevel?: UserLevel,
+    withRelations?: WithProps): Promise<IMessageEx[]> {
     const data = await this.findAll({
       ids: [...ids],
       userLevel,
       ...withRelations,
     })
     return Object.values(data)
+  }
+
+  async getPageNumberInTopic (config: {
+    messageId: number,
+    pageSize?: number,
+    userLevel: UserLevel,
+    topicId?: number,
+  }): Promise<number> {
+    const pageSize = config.pageSize ?? this.pageSize
+    const { messageId, userLevel } = config
+
+    const topicId = isNumber(config.topicId) ? config.topicId : (await this.redis.getHashById(config.messageId))?.topic
+
+    if (!topicId || topicId <= 0) {
+      return 1
+    }
+    const ordNumber = await this.redis.getOrdinalNumberInTopic(messageId, topicId, userLevel)
+    return Math.ceil(ordNumber / pageSize) + 1
   }
 }

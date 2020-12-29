@@ -6,7 +6,7 @@ import { Request } from 'express'
 import { UserDbService } from '../../user/user-db.service'
 import { JwtRefreshTokenStrategyValidatePayload, JwtStrategyValidatePayload } from '../types'
 import { SecureService } from '../../secure/secure.service'
-import { TokenService } from '../token/token.service'
+import { RefreshTokenService } from '../token/refresh-token.service'
 
 
 @Injectable()
@@ -18,11 +18,13 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
     private readonly configService: ConfigService,
     private readonly userService: UserDbService,
     private readonly secureService: SecureService,
-    private readonly tokenService: TokenService,
+    private readonly tokenService: RefreshTokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([(request: Request) => {
-        return request?.cookies?.[configService.get('JWT_REFRESH_TOKEN_COOKIE')]
+        const key = configService.get('JWT_REFRESH_TOKEN_COOKIE')
+        const fromCookie = request?.cookies?.[key]
+        return fromCookie
       }]),
       secretOrKey: configService.get('JWT_REFRESH_TOKEN_SECRET'),
       passReqToCallback: true,
@@ -33,9 +35,9 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
     const tokenInCookie = request?.cookies?.[this.configService.get('JWT_REFRESH_TOKEN_COOKIE')];
 
     const userId = payload.sub
-
+    // console.log(payload)
     const tokenExist = await this.tokenService.has(userId, tokenInCookie)
-
+// console.log(tokenExist)
     if (!tokenExist) {
       throw new UnauthorizedException('refresh - token not exist')
     }

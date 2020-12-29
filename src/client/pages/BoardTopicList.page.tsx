@@ -1,48 +1,53 @@
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { observer } from 'mobx-react-lite'
-import { Container, List, ListItem, ListItemText, Typography } from '@material-ui/core'
+import { Box, Container, List, ListItem, ListItemText, Typography } from '@material-ui/core'
 import { RouteLink } from '../components/route/RouteLink'
 import { routes } from '../routing'
-import { uesRoutePagination } from '../hooks/use-route-pagination'
-import { ITopic } from '../../common/forum/forum.base.interfaces'
-import { usePage } from '../hooks/use-page'
+import { useRoutePagination } from '../hooks/use-route-pagination'
 import { store } from '../store'
 import { usePageMetadata } from '../hooks/use-page-metadata'
 import { ITopicEx } from '../../common/forum/forum.ex.interfaces'
-import { specifyCurrentRoute } from '../routing/utils'
+import { GetRoute } from '../routing/types'
+import { toJS } from 'mobx'
+import { TopicList } from '../components/topic/topic-list/TopicList'
 
 
-interface Props {
-  board: { id: number, url: string }
-  page?: number
-}
+type Props = { route: GetRoute<'boardTopicList'> }//RoutePageProps<'boardTopicList'>
 
-export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props: Props) {
-  const [page] = usePage(props.page)
+export const BoardTopicList: FC<Props> = observer(function BoardTopicList ({ route }) {
+  console.log('BoardTopicList render', route.href, toJS(route))
+  const pageProps = store.routeDataStore.getPageProps(route)
 
-  const board = store.forumStore.boardStore.get(props.board.id)
 
-  specifyCurrentRoute(!!board, 'boardTopicList', { board, page })
 
-  // ToDo: automate this
-  const canonicRoute = board ? routes.boardTopicList({ board, page }) : undefined
-  if (canonicRoute && store.routeStore.noModalRoute?.href !== canonicRoute.href) {
-    canonicRoute.replace()
-  }
+  // const [page] = usePage(props.page ?? 1)
+  console.log('!!! BoardTopicList render', pageProps)
+  const isLoading = pageProps.status === 'pending'
+  const isError = pageProps.status === 'error'
 
-  const pageData = store.forumStore.topicStore.getPage({
-    page,
-    type: 'board',
-    board: props.board.id,
-  })
+  // const board = store.forumStore.boardStore.get(props.board.id)
+  const board = pageProps.data?.board
+  const page = pageProps.data?.page ?? pageProps.data?.page ?? 1
 
-  const pageMeta = store.forumStore.topicStore.getPageMeta({
-    type: 'board',
-    board: props.board.id,
-  })
+  // specifyCurrentRoute(!!board, 'boardTopicList', { board, page })
 
-  const pagination = uesRoutePagination(
-    p => routes.boardTopicList({ board: props.board, page: p.page }),
+  // const pageData = store.forumStore.topicStore.getPage({
+  //   page,
+  //   type: 'board',
+  //   board: props.board.id,
+  // })
+  //
+  // const pageMeta = store.forumStore.topicStore.getPageMeta({
+  //   type: 'board',
+  //   board: props.board.id,
+  // })
+
+  const pageData = pageProps.data?.pageData
+  const pageMeta = pageProps.data?.pageMeta
+  const routeProps = ({ board: toJS(pageProps.board) })
+
+  const pagination = useRoutePagination(
+    p => routes.boardTopicList({ ...routeProps, page: p.page }),
     page,
     pageData?.meta,
     pageMeta,
@@ -57,7 +62,7 @@ export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props
   const has = !!pageData?.items?.length
 
   return (
-    <Container>
+    <Box>
       {board && <>
         {/*<Typography variant="h5" component="h1">{board.name}</Typography>*/}
         {board.description && <Typography variant="subtitle1" component="div">{board.description}</Typography>}
@@ -66,19 +71,10 @@ export const BoardTopicList: FC<Props> = observer(function BoardTopicList (props
       {has && (
         <>
           {pagination.component}
-          <List>
-            {pageData!.items.map((topic: ITopicEx) => (
-              <ListItem key={topic.id}>
-                <ListItemText
-                  primary={<RouteLink to={'topicMessageList'} route={{ topic }}>{topic.subject}</RouteLink>}
-                  secondary={topic.counters?.message ? `messages: ${topic.counters?.message}` : ''}
-                />
-              </ListItem>
-            ))}
-          </List>
+          <TopicList topics={pageData!.items}/>
           {pagination.component}
         </>
       )}
-    </Container>
+    </Box>
   )
 })

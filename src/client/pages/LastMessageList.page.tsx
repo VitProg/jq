@@ -5,7 +5,7 @@ import { Container } from '@material-ui/core'
 import { routes } from '../routing'
 import { store } from '../store'
 import { usePage } from '../hooks/use-page'
-import { uesRoutePagination } from '../hooks/use-route-pagination'
+import { useRoutePagination } from '../hooks/use-route-pagination'
 
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const LastMessageListPage: FC<Props> = observer(function LastMessageListPage (props: Props) {
-  const [page] = usePage(props.page)
+  const [page] = usePage(props.page ?? 1)
 
   store.seoStore.setTitle('Последние сообщения')
   store.uiStore.setPageTitle('Последние сообщения')
@@ -28,7 +28,7 @@ export const LastMessageListPage: FC<Props> = observer(function LastMessageListP
     type: 'latest',
   })
 
-  const pagination = uesRoutePagination(
+  const pagination = useRoutePagination(
     p => routes.lastMessages({ page: p.page }),
     page,
     pageData?.meta,

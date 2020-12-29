@@ -5,3 +5,4 @@ declare module 'call-log' {
   declare function callLog(cls: AnyObject): void
   export default callLog
 }
+

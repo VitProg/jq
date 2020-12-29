@@ -3,9 +3,8 @@ import { Avatar, createStyles, makeStyles, Theme } from '@material-ui/core'
 import { RouteLink } from '../route/RouteLink'
 import { observer } from 'mobx-react-lite'
 import { store } from '../../store'
-import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { getUserName } from '../../../common/forum/utils'
-import { IUserEx } from '../../../common/forum/forum.ex.interfaces'
+import { IUserExMin } from '../../../common/forum/forum.ex.interfaces'
 
 type Sizes = 'small' | 'normal' | 'large' | 'full'
 type SizeProps = {
@@ -14,7 +13,7 @@ type SizeProps = {
 }
 
 interface Props {
-  user?: IUser | IUserEx
+  user?: IUserExMin
   withLink?: boolean
   onCLick?: (event: MouseEvent<HTMLElement>) => void
   size?: Sizes

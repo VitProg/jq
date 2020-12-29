@@ -7,11 +7,12 @@ import { IUser } from '../../../common/forum/forum.base.interfaces'
 import { SecureService } from '../secure/secure.service'
 import { userToJwtPayload, userToJwtRefreshPayload } from './utils'
 import { ConfigService } from '@nestjs/config'
-import { TokenService } from './token/token.service'
+import { RefreshTokenService } from './token/refresh-token.service'
 import { convertSimpleExpiresToSeconds } from '../../common/date'
 import { REDIS_CLIENT } from '../../di.symbols'
 import { RedisClient } from '../../types'
 import { CookieOptions } from 'express-serve-static-core'
+import { JwtTokenService } from './token/jwt-token.service'
 
 
 @Injectable()
@@ -21,7 +22,8 @@ export class AuthService {
     private readonly userService: UserDbService,
     private readonly jwtService: JwtService,
     private readonly secureService: SecureService,
-    private readonly tokenService: TokenService,
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly jwtTokenService: JwtTokenService,
     @Inject(REDIS_CLIENT) private readonly redis: RedisClient,
   ) {
     //
@@ -32,7 +34,7 @@ export class AuthService {
     const email = username.includes('@') ? username : undefined
 
     const user = await this.userService.findByLoginOrEmail({ login, email })
-    console.log({login, email, password, user})
+    // console.log({login, email, password, user})
     if (!user || !user.auth?.passwordHash) {
       return undefined
     }
@@ -55,11 +57,8 @@ export class AuthService {
 
     const lastTime = (Date.now() / 1000) >>> 0
     const fingerprintLight = await this.secureService.generateFingerprintLight(request)
-    await this.tokenService.setLastJwtByFingerprint(user.id, fingerprintLight, lastTime)
+    await this.jwtTokenService.setLastTime(user.id, fingerprintLight, lastTime)
 
-    // todo добавить бы фингер принт из браузера, надежнее будет
-
-    // todo add last login with increment
     const accessToken = this.jwtService.sign({
       ...userToJwtPayload(user, lastTime, fingerprintLight),
     }, {
@@ -76,13 +75,12 @@ export class AuthService {
       algorithm: 'HS256'
     })
 
-    const ex = convertSimpleExpiresToSeconds(this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN', ''))
-    const saveTokenResult = !!ex && await this.tokenService.add(user.id, fingerprintLight, refreshToken, ex)
+    const ex = await this.refreshTokenService.add(user.id, fingerprintLight, refreshToken)
 
     return {
       accessToken,
       refreshToken,
-      ...(ex && saveTokenResult ? {
+      ...(ex ? {
         cookie: this.getCookieOptions(ex),
       }: {}),
     }
@@ -100,8 +98,6 @@ export class AuthService {
   }
 
   async login (request: Request & { user: IUser }) {
-    // todo     лучше общую логику вынести в приватный метод и переисползвать в login() и refreshToken()
-
     await this.logout(request)
 
     const tokens = await this.generateTokens(request)
@@ -128,9 +124,8 @@ export class AuthService {
 
     const lastTime = (Date.now() / 1000) >>> 0
     const fingerprintLight = await this.secureService.generateFingerprintLight(request)
-    await this.tokenService.setLastJwtByFingerprint(user.id, fingerprintLight, lastTime)
-
-    await this.tokenService.removeByFingerprint(user.id, fingerprintLight)
+    await this.jwtTokenService.setLastTime(user.id, fingerprintLight, lastTime)
+    await this.refreshTokenService.removeByFingerprint(user.id, fingerprintLight)
 
     return {
       cookie: this.getCookieOptions(-1)
@@ -146,8 +141,8 @@ export class AuthService {
 
     // const lastTime = (Date.now() / 1000) >>> 0
     // const fingerprintLight = await this.secureService.generateFingerprintLight(request)
-    await this.tokenService.removeAllLastJwt(user.id)
-    await this.tokenService.removeByUser(user.id)
+    await this.jwtTokenService.removeByUser(user.id)
+    await this.refreshTokenService.removeByUser(user.id)
 
     return {
       cookie: this.getCookieOptions(-1)

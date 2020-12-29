@@ -23,7 +23,6 @@ import { MessageService } from '../services/forum/message/message.service'
 import { ForumService } from '../services/forum/forum.service'
 import { MessagePrepareService } from '../services/forum/message/message-prepare.service'
 import { CategoryPrepareService } from '../services/forum/category/category-prepare.service'
-import { CategoryService } from '../services/forum/category/category.service'
 import { BoardPrepareService } from '../services/forum/board/board-prepare.service'
 import { BoardService } from '../services/forum/board/board.service'
 import { TopicPrepareService } from '../services/forum/topic/topic-prepare.service'
@@ -46,7 +45,6 @@ container.bind<ITopicPrepareService>(TopicPrepareServiceSymbol).to(TopicPrepareS
 container.bind<BoardService>(BoardServiceSymbol).to(BoardService)
 container.bind<BoardPrepareService>(BoardPrepareServiceSymbol).to(BoardPrepareService)
 
-container.bind<CategoryService>(CategoryServiceSymbol).to(CategoryService)
 container.bind<CategoryPrepareService>(CategoryPrepareServiceSymbol).to(CategoryPrepareService)
 
 container.bind<UserService>(UserServiceSymbol).to(UserService)

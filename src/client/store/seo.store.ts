@@ -1,5 +1,5 @@
 import { IConfigStore, IRootStore, ISeoStore } from './types'
-import { action, autorun, makeAutoObservable, makeObservable, runInAction } from 'mobx'
+import { action, autorun, makeAutoObservable, makeObservable, observable, runInAction } from 'mobx'
 import { store } from './index'
 
 
@@ -8,16 +8,7 @@ const joinKeywords = (...keyword: (string | undefined | null)[]) => keyword.filt
 
 export class SeoStore implements ISeoStore {
   constructor (readonly configStore: IConfigStore) {
-    makeAutoObservable(this, {
-      setBase: action.bound,
-      setTitle: action.bound,
-      addTitle: action.bound,
-      setKeywords: action.bound,
-      addKeyword: action.bound,
-      setDescription: action.bound,
-      setPageSeo: action.bound,
-      clear: action.bound,
-    })
+    makeObservable(this)
 
     autorun(() => {
       if (!this.initialized) {
@@ -32,20 +23,20 @@ export class SeoStore implements ISeoStore {
       delay: 200
     })
 
-    setTimeout(() => {
-      this.setBase({
-        title: store.configStore.seoBaseTitle,
-        description: store.configStore.seoBaseDescription,
-        keywords: store.configStore.seoBaseKeywords,
-      })
-    })
+    setTimeout(() => runInAction(() => this.setBase({
+      title: store.configStore.seoBaseTitle,
+      description: store.configStore.seoBaseDescription,
+      keywords: store.configStore.seoBaseKeywords,
+    })))
   }
 
   private elTitle: HTMLTitleElement | undefined
   private elMetaKeywords: HTMLMetaElement | undefined
   private elMetaDescription: HTMLMetaElement | undefined
 
-  private initialized = false
+  @observable private initialized = false
+
+  @action.bound
   private init() {
     this.initialized = true
 
@@ -78,32 +69,37 @@ export class SeoStore implements ISeoStore {
     }
   }
 
-  baseTitle: string | undefined
-  baseKeywords: string[] | undefined = undefined
-  baseDescription: string | undefined = undefined
+  @observable baseTitle: string | undefined
+  @observable baseKeywords: string[] | undefined = undefined
+  @observable baseDescription: string | undefined = undefined
 
-  title: string[] = []
-  keywords: string[] = []
-  description: string = ''
+  @observable title: string[] = []
+  @observable keywords: string[] = []
+  @observable description: string = ''
 
+  @action.bound
   setBase (data: { title?: string; keywords?: string[]; description?: string }): void {
     this.baseTitle = data.title
     this.baseKeywords = data.keywords
     this.baseDescription = data.description ?? ''
   }
 
+  @action.bound
   setTitle(...titles: (string | undefined | null)[]): void {
     this.title = [...titles].filter(Boolean) as string[]
   }
 
+  @action.bound
   setKeywords(...keywords: (string | undefined | null)[]): void {
     this.keywords = [...keywords].filter(Boolean) as string[]
   }
 
+  @action.bound
   setDescription(description: string | undefined | null): void {
     this.description = description ?? ''
   }
 
+  @action.bound
   setPageSeo (data: { title?: string[]; keywords?: string[]; description?: string }): void {
     if (data.title) {
       this.setTitle(...data.title)
@@ -118,14 +114,17 @@ export class SeoStore implements ISeoStore {
     }
   }
 
+  @action.bound
   addKeyword(...keywords: (string | undefined | null)[]): void {
     this.keywords = [...this.keywords, ...keywords].filter(Boolean) as string[]
   }
 
+  @action.bound
   addTitle(...titles: (string | undefined | null)[]): void {
     this.title = [...this.title, ...titles].filter(Boolean) as string[]
   }
 
+  @action.bound
   clear(): void {
     this.title = []
     this.description = ''

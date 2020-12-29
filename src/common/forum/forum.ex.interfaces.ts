@@ -33,6 +33,13 @@ export type IUserEx = {
   }
 }
 
+export type IUserExMin = {
+  id: number
+  name: string
+  url: string
+  avatar?: string
+}
+
 export type IMessageEx = {
   id: number
   date: Date
@@ -69,9 +76,11 @@ export type IBoardEx = {
     message?: IMessagePartEx
     user?: IUserPartEx
     topic?: ITopicPartEx
+    messagePage?: number
   }
 }
 
+export type IBoardExMin = Omit<IBoardEx, 'last' | 'counters'>
 
 export type ITopicEx = {
   id: number
@@ -80,6 +89,8 @@ export type ITopicEx = {
   boardId: number
   flags: {
     isApproved: boolean
+    isPinned: boolean
+    isPinnedFirstMessage: boolean
   }
   first: {
     message?: IMessagePartEx
@@ -88,6 +99,7 @@ export type ITopicEx = {
   last: {
     message?: IMessagePartEx
     user?: IUserPartEx
+    messagePage?: number
   }
   counters?: {
     message: number

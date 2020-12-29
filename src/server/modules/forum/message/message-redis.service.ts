@@ -104,4 +104,14 @@ export class MessageRedisService {
     return result === 'OK'
   }
 
+  /// OTHER
+
+  async getOrdinalNumberInTopic (messageId: number, topicId: number, userLevel: UserLevel): Promise<number> {
+    // zcount jq_s:message:topic:404:admin -Inf 227290
+    const keyMessageTopicLevel = getKeyMessageTopicLevel(topicId, userLevel)
+    // const ordinalNumber = await this.redis.zcount(keyMessageTopicLevel, '-Inf', messageId)
+    const ordinalNumber = await this.redis.zrank(keyMessageTopicLevel, messageId + '')
+    return ordinalNumber ?? 0
+  }
+
 }

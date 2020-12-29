@@ -6,7 +6,7 @@ import { isFunction } from '../../../common/type-guards'
 import { OverridableComponent } from '@material-ui/core/OverridableComponent'
 import { AppRouteKeys, ExtractRouteProps} from '../../routing/types'
 import { routes } from '../../routing'
-import { IfDefined } from '../../../common/utils/types'
+import { AnyObject, IfDefined } from '../../../common/utils/types'
 
 
 const a = document.createElement('a')
@@ -20,6 +20,7 @@ type GenerateProps<R extends AppRouteKeys,
     // children?: ReactNode | ((props: ExtractRouteProps<R>) => ReactNode)
     // pagination?: PaginationRenderItemParams
     to: R
+    hash?: string
   } &
   IfDefined<ExtractRouteProps<R>,
     {
@@ -40,11 +41,11 @@ type GenerateProps<R extends AppRouteKeys,
 export const RouteLink = <R extends AppRouteKeys, T extends Types = 'a', > (
   props: GenerateProps<R, T>
 ): ReactElement<GenerateProps<R, T>> => {
-
   if (!props) {
     return null as any
   }
-  const { to, component = Link, route: toProps, ...componentProps } = props as typeof props & { route: any }
+
+  const { to, component = Link, route: toProps, hash, ...componentProps } = props as typeof props & { route: any }
 
   const route = routes[to](toProps)
 
@@ -64,7 +65,7 @@ export const RouteLink = <R extends AppRouteKeys, T extends Types = 'a', > (
       return (
         <Link
           {...componentProps as any}
-          href={route.href}
+          href={route.href + (hash ? `#${hash}` : '')}
           onClick={onClick}
         >{children}</Link>
       )

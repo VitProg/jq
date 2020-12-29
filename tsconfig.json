@@ -19,9 +19,13 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "strict": true,
+    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "baseUrl": "./src"
   },
+  "include": [
+    "./global.d.ts",
+  ],
   "exclude": [
     "node_modules",
     "src/client",

@@ -11,9 +11,9 @@ export const PageTitle = observer(function PageTitle () {
   return (
     <>
       {store.uiStore.pageTitle &&
-      <Container className={classes.container}>
-        <Typography variant='h6' component='h1'>{store.uiStore.pageTitle}</Typography>
-      </Container>}
+      <Box className={classes.container}>
+        <Typography variant='h4' component='h1' color='primary'>{store.uiStore.pageTitle}</Typography>
+      </Box>}
     </>
   )
 })

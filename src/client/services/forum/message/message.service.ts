@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 import { IMessageService } from '../types'
-import { inject } from '../../../ioc/ioc.decoratos'
+import { inject, resolve } from '../../../ioc/ioc.utils'
 import { IApiService } from '../../types'
 import { IForumMessageManyResponse } from '../../../../common/responses/forum.responses'
 import { ApiServiceSymbol } from '../../ioc.symbols'
@@ -16,7 +16,7 @@ const DEFAULT_WITH_RELATIONS: MessageRelationsArray = [MessageRelations.user, Me
 
 
 export class MessageService implements IMessageService {
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
 
   constructor () {
     makeAutoObservable(this)
@@ -29,7 +29,7 @@ export class MessageService implements IMessageService {
       ...request
     }
 
-    return this.api
+    return this.api()
       .get<IForumMessageManyResponse>(
         'message/latest',
         {
@@ -51,7 +51,7 @@ export class MessageService implements IMessageService {
       ...forRequest
     }
 
-    return this.api
+    return this.api()
       .get<IForumMessageManyResponse>(
         `message/topic/${topic}`,
         {
@@ -68,7 +68,7 @@ export class MessageService implements IMessageService {
       ...forRequest
     }
 
-    return this.api
+    return this.api()
       .get<IForumMessageManyResponse>(
         `message/user/${user}`,
         {
@@ -78,7 +78,7 @@ export class MessageService implements IMessageService {
 
   async byId (id: number) {
     try {
-      return await this.api
+      return await this.api()
         .get<IMessageEx | undefined>(`message/${id}`)
     } catch {
       return undefined
@@ -96,7 +96,7 @@ export class MessageService implements IMessageService {
     }
 
     try {
-      const items = await this.api
+      const items = await this.api()
         .get<IMessageEx[]>(`message/many/${uniqueArray(ids).join('|')}`)
       return items ?? []
     } catch {

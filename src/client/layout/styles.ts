@@ -9,17 +9,31 @@ export const useLayoutStyles = makeStyles((theme: Theme) => (
       backgroundColor: theme.palette.accent.light,
       [theme.breakpoints.down('sm')]: {
         backgroundColor: theme.palette.background.paper,
+        paddingTop: theme.spacing(9),
       }
     },
     container: {
       backgroundColor: theme.palette.background.paper,
       boxShadow: theme.shadows[2],
       borderRadius: theme.shape.borderRadius,
-      padding: theme.spacing(2, 1),
+      // padding: theme.spacing(2, 3),
+      // ...theme.mixins.gutters({
+        padding: theme.spacing(2, 3),
+      // }),
+
+      '& > *:first-child': {
+        marginTop: 0,
+      },
+
+      '& > *:last-child': {
+        marginBottom: 0,
+      },
 
       [theme.breakpoints.down('sm')]: {
         boxShadow: 'none',
         borderRadius: 0,
+        // paddingLeft: 0,
+        // paddingRight: 0,
       }
     }
   }

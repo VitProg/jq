@@ -5,9 +5,10 @@ import { getUserName } from '../../../common/forum/utils'
 import { UserLink } from './UserLink'
 import { isString } from '../../../common/type-guards'
 import { store } from '../../store'
+import { IUserExMin } from '../../../common/forum/forum.ex.interfaces'
 
 interface Props {
-  user: string | IUser
+  user: string | IUserExMin
 }
 
 export const UserMention: FC<Props> = observer(function UserMention(props) {

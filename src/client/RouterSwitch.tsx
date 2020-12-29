@@ -8,7 +8,7 @@ import { toJS } from 'mobx'
 import { store } from './store'
 import { IRouteStore } from './store/types'
 import { routerSession, routes } from './routing'
-import { ifRoute } from './routing/utils'
+import { routeSwitch } from './routing/utils'
 import { RegistrationModal } from './pages/auth/registration-modal/RegistrationModal'
 import { ForgotPasswordModal } from './pages/auth/forgot-password-modal/ForgotPasswordModal'
 import { BoardListPage } from './pages/BoardList.page'
@@ -24,7 +24,7 @@ export const RouterSwitch: FC = observer(function RouterSwitch () {
       if (rs.last) {
         rs.last.push()
       } else {
-        routes.index().push()
+        routes.boardList().push()
       }
     }
   }
@@ -35,61 +35,66 @@ export const RouterSwitch: FC = observer(function RouterSwitch () {
     <>
       {/* MODALS */}
 
-      {store.routeStore.isModal && ifRoute({
+      {store.routeStore.isModal && routeSwitch({
         name: 'login',
-        route: store.routeStore.current,
+        currentRoute: store.routeStore.current,
         guard: r => !store.myStore.isAuth,
         render: route => <LoginModal  isOpen={true} onClose={() => onModalClose(store.routeStore)}/>,
       })}
 
-      {store.routeStore.isModal && ifRoute({
+      {store.routeStore.isModal && routeSwitch({
         name: 'registration',
-        route: store.routeStore.current,
+        currentRoute: store.routeStore.current,
         guard: r => !store.myStore.isAuth,
         render: route => <RegistrationModal  isOpen={true} onClose={() => onModalClose(store.routeStore)}/>,
       })}
 
-      {store.routeStore.isModal && ifRoute({
+      {store.routeStore.isModal && routeSwitch({
         name: 'forgotPassword',
-        route: store.routeStore.current,
+        currentRoute: store.routeStore.current,
         guard: r => !store.myStore.isAuth,
         render: route => <ForgotPasswordModal isOpen={true} onClose={() => onModalClose(store.routeStore)}/>,
       })}
 
       {/* PAGES */}
 
-      {ifRoute({
-        name: 'index',
-        route: store.routeStore.noModalRoute,
-        render: route => <BoardListPage />,
+      {routeSwitch({
+        name: 'boardList',
+        currentRoute: store.routeStore.noModalRoute,
+        // prepareData: route => store.routeDataStore.get(route),
+        render: route => BoardListPage,
       })}
 
-      {ifRoute({
-        name: 'lastMessages',
-        route: store.routeStore.noModalRoute,
-        render: route => <LastMessageListPage page={route.params.page ?? 1}/>,
-      })}
+      {/*{routeSwitch({*/}
+      {/*  name: 'lastMessages',*/}
+      {/*  route: store.routeStore.noModalRoute,*/}
+      {/*  render: route => LastMessageListPage,*/}
+      {/*})}*/}
 
-      {ifRoute({
+      {routeSwitch({
         name: 'boardTopicList',
-        route: store.routeStore.noModalRoute,
-        render: route => <BoardTopicList page={route.params.page ?? 1} board={route.params.board}/>,
+        currentRoute: store.routeStore.noModalRoute,
+        // prepareData: (route) => store.routeDataStore.get(route),
+        // render: route => <BoardTopicList page={route.params.page ?? 1} board={route.params.board}/>,
+        render: route => BoardTopicList,
       })}
 
-      {ifRoute({
+      {routeSwitch({
         name: 'topicMessageList',
-        route: store.routeStore.noModalRoute,
-        render: route => <TopicMessageListPage page={route.params.page ?? 1} topic={route.params.topic}/>,
+        currentRoute: store.routeStore.noModalRoute,
+        render: route => TopicMessageListPage
       })}
 
-      {ifRoute({
+      {routeSwitch({
         name: 'profile',
-        route: store.routeStore.noModalRoute,
+        currentRoute: store.routeStore.noModalRoute,
         guard: r => store.myStore.isAuth ? true : routes.login(),
         saveRedirect: true,
-        render: route => <ProfilePage />,
+        render: route => ProfilePage,
       })}
 
     </>
   )
 })
+
+

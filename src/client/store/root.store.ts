@@ -1,9 +1,9 @@
-import { action, makeAutoObservable, reaction } from 'mobx'
+import { action, makeAutoObservable, makeObservable, reaction, runInAction } from 'mobx'
 import {
   IBreadcrumbsStore,
   IConfigStore,
   IMyStore,
-  IRootStore,
+  IRootStore, IRouteDataStore,
   IRouteStore,
   ISeoStore,
   IUIStore,
@@ -21,29 +21,34 @@ import { store } from './index'
 import { AppRoute, AppRouteKeys, ExtractRouteProps } from '../routing/types'
 import { omit } from '../../common/utils/object'
 import { NonUndefined } from 'react-hook-form'
+import { RouteDataStore } from './route-data.store'
 
 
 export class RootStore implements IRootStore {
-  readonly configStore: IConfigStore
-  readonly uiStore: IUIStore
-  readonly seoStore: ISeoStore
-  readonly myStore: IMyStore
-  readonly routeStore: IRouteStore
-  readonly forumStore: IForumStore
-  readonly breadcrumbsStore: IBreadcrumbsStore
+  configStore!: IConfigStore
+  uiStore!: IUIStore
+  seoStore!: ISeoStore
+  myStore!: IMyStore
+  routeStore!: IRouteStore
+  routeDataStore!: IRouteDataStore
+  forumStore!: IForumStore
+  breadcrumbsStore!: IBreadcrumbsStore
 
   constructor () {
-    this.configStore = new ConfigStore()
-    this.uiStore = new UIStore()
-    this.seoStore = new SeoStore(this.configStore)
-    this.myStore = new MyStore()
-    this.breadcrumbsStore = new BreadcrumbsStore()
-    this.routeStore = new RouteStore()
-    this.forumStore = new ForumStore(this.routeStore, this.uiStore)
-
-    makeAutoObservable(this, {
-      // todo
+    runInAction(() => {
+      this.configStore = new ConfigStore()
+      this.uiStore = new UIStore()
+      this.seoStore = new SeoStore(this.configStore)
+      this.myStore = new MyStore()
+      this.breadcrumbsStore = new BreadcrumbsStore()
+      this.routeStore = new RouteStore()
+      this.routeDataStore = new RouteDataStore(this.routeStore, this.myStore)
+      this.forumStore = new ForumStore(this.routeStore, this.uiStore)
     })
+
+    makeObservable(this)
+
+    let lastIsAuth: boolean | undefined
 
     reaction(
       () => [

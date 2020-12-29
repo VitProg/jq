@@ -1,5 +1,5 @@
 import { IForumService, IMessagePrepareService, IMessageService, ITopicPrepareService } from './types'
-import { inject } from '../../ioc/ioc.decoratos'
+import { inject, resolve } from '../../ioc/ioc.utils'
 import {
   BoardPrepareServiceSymbol,
   CategoryPrepareServiceSymbol,
@@ -7,45 +7,37 @@ import {
   MessageServiceSymbol, TopicPrepareServiceSymbol, UserPrepareServiceSymbol
 } from '../ioc.symbols'
 import { store } from '../../store'
-import { makeAutoObservable, reaction } from 'mobx'
+import { action, makeAutoObservable, makeObservable, reaction } from 'mobx'
 import { BoardPrepareService } from './board/board-prepare.service'
 import { CategoryPrepareService } from './category/category-prepare.service'
 import { UserPrepareService } from './user/user-prepare.service'
 
 
 export class ForumService implements IForumService {
-  @inject(MessageServiceSymbol) messageService!: IMessageService
-  @inject(MessagePrepareServiceSymbol) messagePrepareService!: IMessagePrepareService
-  @inject(TopicPrepareServiceSymbol) topicPrepareService!: ITopicPrepareService
-  @inject(BoardPrepareServiceSymbol) boardPrepareService!: BoardPrepareService
-  @inject(CategoryPrepareServiceSymbol) categoryPrepareService!: CategoryPrepareService
-  @inject(UserPrepareServiceSymbol) userPrepareService!: UserPrepareService
+  private readonly messageService = resolve<IMessageService>(MessageServiceSymbol)
+  private readonly messagePrepareService = resolve<IMessagePrepareService>(MessagePrepareServiceSymbol)
+  private readonly topicPrepareService = resolve<ITopicPrepareService>(TopicPrepareServiceSymbol)
+  private readonly boardPrepareService = resolve<BoardPrepareService>(BoardPrepareServiceSymbol)
+  private readonly categoryPrepareService = resolve<CategoryPrepareService>(CategoryPrepareServiceSymbol)
+  private readonly userPrepareService = resolve<UserPrepareService>(UserPrepareServiceSymbol)
 
   private preparing = false
 
-  prepare (): Promise<void> {
+  @action.bound
+  async prepare (): Promise<void> {
     if (!this.preparing) {
       this.preparing = true
-      return Promise.all([
-        this.categoryPrepareService.prepareAll(),
-        this.boardPrepareService.prepareAll(),
-      ]).then(() => {
-        return
-      }).finally(() => {
-        this.preparing = false
-      })
+      await this.boardPrepareService().prepareAll()
+      await this.categoryPrepareService().prepareAll()
+      this.preparing = false
     }
-    return Promise.resolve()
   }
 
   //todo add other services
 
 
   constructor () {
-    makeAutoObservable(this, {
-      messageService: false,
-      //todo
-    })
+    makeObservable(this)
 
     let lastIsAuth: boolean | undefined
 
@@ -55,7 +47,7 @@ export class ForumService implements IForumService {
         store.myStore.isAuth,
       ],
       async (current: any[], last: any[]) => {
-        if (current?.[0]?.href === last?.[0]?.href && current[1] === last[1]) {
+        if (current?.[0]?.href === last?.[0]?.href && current?.[1] === last?.[1]) {
           return
         }
 
@@ -70,10 +62,10 @@ export class ForumService implements IForumService {
 
         const route = store.routeStore.noModalRoute ?? store.routeStore.current
 
-        this.messagePrepareService.processRoute(route)
-        this.topicPrepareService.processRoute(route)
-        this.boardPrepareService.processRoute(route)
-        this.userPrepareService.processRoute(route)
+        this.boardPrepareService().processRoute(route)
+        this.topicPrepareService().processRoute(route)
+        this.messagePrepareService().processRoute(route)
+        this.userPrepareService().processRoute(route)
 
       }, {
         fireImmediately: true

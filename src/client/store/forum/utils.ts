@@ -159,12 +159,8 @@ export const dataStoreSet = <Item extends Model,
   store: DS,
   data: DataStoreSetData<Item>,
   needFlush = true,
-) => {
-  runInAction(() => {
-    if (needFlush) {
-      store.flush()
-    }
-
+): Item | undefined => {
+  return runInAction(() => {
     const exist = store.items.get(data.item.id)
 
     if (exist) {
@@ -185,6 +181,7 @@ export const dataStoreSet = <Item extends Model,
         expireIn: (data.expireIn ?? store.defaultExpireIn ?? 0) >>> 0,
       })
     }
+    return store.get(data.item.id)
   })
 }
 
@@ -192,8 +189,8 @@ export const dataStoreSetMany = <Item extends Model,
   DS extends DataStore<Item>> (
   store: DS,
   data: DataStoreSetManyData<Item>,
-) => {
-  runInAction(() => {
+): Item[] => {
+  return runInAction(() => {
     const items = isArray(data.items) ? data.items : Object.values(data.items)
     for (const item of items) {
       dataStoreSet(
@@ -205,6 +202,7 @@ export const dataStoreSetMany = <Item extends Model,
         false,
       )
     }
+    return store.getMany(items.map(item => item.id), false) ?? []
   })
 }
 
@@ -215,11 +213,8 @@ export const dataStorePagesSet = <DS extends DataStorePages<Item, PageProps>,
   data: DataStorePagesSetData<PageProps, Item>,
   needFlush = true,
   _pageHash?: string,
-) => {
-  runInAction(() => {
-    if (needFlush) {
-      store.flush()
-    }
+): Item | undefined => {
+  return runInAction(() => {
     const exist = store.items.get(data.item.id)
 
     const savePages = !_pageHash
@@ -268,6 +263,8 @@ export const dataStorePagesSet = <DS extends DataStorePages<Item, PageProps>,
         }
       }
     }
+
+    return store.get(data.item.id)
   })
 }
 
@@ -277,13 +274,9 @@ export const dataStorePagesSetMany = <DS extends DataStorePages<Item, PageProps>
   store: DS,
   data: DataStorePagesSetManyData<PageProps, Item>,
   needFlush = true,
-) => {
+): Item[] => {
   //todo
-  runInAction(() => {
-    if (needFlush) {
-      store.flush()
-    }
-
+  return runInAction(() => {
     const pageHash = data.pageProps ? dataStoreGetPageHash(data.pageProps.meta.currentPage, data.pageProps) : undefined
     const pageHashMulti = data.pageProps ? dataStoreGetPageHash('*', data.pageProps) : undefined
 
@@ -319,6 +312,8 @@ export const dataStorePagesSetMany = <DS extends DataStorePages<Item, PageProps>
         },
       }
     }
+
+    return store.getMany(items.map(item => item.id), false)
   })
 }
 
@@ -331,7 +326,7 @@ export const dataStoreGetMany = <DS extends DataStore<Item>, Item extends Model,
   store: DS,
   idList: number[],
   asRecord?: AsRecord,
-): undefined | (AsRecord extends true ? Record<number, Item> : Item[]) => {
+): (AsRecord extends true ? Record<number, Item> : Item[]) => {
   if (asRecord) {
     const map: any = {}
     for (const id of idList) {
@@ -423,8 +418,8 @@ export const dataStoreSetStatus = <Item extends Model,
   type: M,
   props: any,
   status: RequestStatus | undefined,
-): void => {
-  runInAction(() => {
+): RequestStatus | undefined => {
+  return runInAction(() => {
     const hash = dataStoreGetStatusHash(type, props)
     console.log('DataStore', store.name, 'change status', type, props, status)
     if (status) {
@@ -433,10 +428,13 @@ export const dataStoreSetStatus = <Item extends Model,
       store.statuses.delete(hash)
     }
 
+
     if (type === 'getMany' && isArray(props)) {
       const setStatus = status === 'error' ? undefined : status
       props.forEach(id => isNumber(id) && dataStoreSetStatus(store, 'get', id, setStatus))
     }
+
+    return store.statuses.get(hash)
   })
 }
 

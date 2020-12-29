@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { TopicDbService } from './topic-db.service'
 import { TopicRedisService } from './topic-redis.service'
 import { IPaginationOptions } from 'nestjs-typeorm-paginate'
@@ -8,6 +8,7 @@ import { Sorting } from '../../../types'
 import { IBoardEx, ITopicEx } from '../../../../common/forum/forum.ex.interfaces'
 import { toBoardEx, toTopicEx } from '../../../common/utils/mapper-ex'
 import { getPaginationResponse } from '../../../common/utils/pagination'
+import { MessageService } from '../message/message.service'
 
 type FindAllProps =
   {
@@ -29,6 +30,7 @@ export class TopicService {
   constructor (
     private readonly db: TopicDbService,
     private readonly redis: TopicRedisService,
+    @Inject(forwardRef(() => MessageService)) private readonly messageService: MessageService,
   ) {
   }
 
@@ -92,7 +94,14 @@ export class TopicService {
     const hashMap = await this.redis.getFullHashListByIds(ids, userLevel)
 
     for (const [id, hash] of hashMap) {
-      resultList.push(toTopicEx(hash))
+      const page = hash.lm_id ?
+        (await this.messageService.getPageNumberInTopic({
+          messageId: hash.lm_id,
+          topicId: hash.id,
+          userLevel,
+        })) :
+        undefined
+      resultList.push(toTopicEx(hash, page))
     }
 
     return getPaginationResponse(

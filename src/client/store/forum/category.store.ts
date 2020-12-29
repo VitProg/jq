@@ -1,5 +1,5 @@
 import {
-  DataStoreGetMethods,
+  DataStoreGetMethods, DataStoreSetData, DataStoreSetManyData,
   ExtractDataItem,
   ExtractItem,
   ExtractPageProps,
@@ -33,21 +33,21 @@ export class CategoryStore implements ICategoryStore {
   constructor (public forumStore: IForumStore) {
     makeObservable(this)
 
-    when(
-      () => this.items.size > 0,
-      () => {
-        localStorage.setItem(LOCAL_STORAGE_KEY, dataStoreSerializeItems(this))
-      },
-    )
-
-    const items = dataStoreDeserializeItems(this, localStorage.getItem(LOCAL_STORAGE_KEY))
-    localStorage.removeItem(LOCAL_STORAGE_KEY)
-    if (items) {
-      runInAction(() => {
-        this.items = items
-        this.setStatus('getAll', false, 'loaded')
-      })
-    }
+    // when(
+    //   () => this.items.size > 0,
+    //   () => {
+    //     localStorage.setItem(LOCAL_STORAGE_KEY, dataStoreSerializeItems(this))
+    //   },
+    // )
+    //
+    // const items = dataStoreDeserializeItems(this, localStorage.getItem(LOCAL_STORAGE_KEY))
+    // localStorage.removeItem(LOCAL_STORAGE_KEY)
+    // if (items) {
+    //   runInAction(() => {
+    //     this.items = items
+    //     this.setStatus('getAll', false, 'loaded')
+    //   })
+    // }
   }
 
 
@@ -70,13 +70,13 @@ export class CategoryStore implements ICategoryStore {
   }
 
   @action.bound
-  set (data: { id: number; item: Item; expireIn?: number }): void {
-    dataStoreSet(this, data)
+  set (data: DataStoreSetData<Item>): Item | undefined {
+    return dataStoreSet(this, data)
   }
 
   @action.bound
-  setMany (data: { items: Item[] | Record<number, Item>; expireIn?: number }): void {
-    dataStoreSetMany(this, data)
+  setMany (data: DataStoreSetManyData<Item>): Item[] {
+    return dataStoreSetMany(this, data)
   }
 
   get (id: number): Item | undefined {
@@ -87,7 +87,7 @@ export class CategoryStore implements ICategoryStore {
     this: Store,
     idList: number[],
     asRecord?: AsRecord,
-  ): undefined | (AsRecord extends true ? Record<number, Item> : Item[]) {
+  ): AsRecord extends true ? Record<number, Item> : Item[] {
     return dataStoreGetMany(this, idList, asRecord)
   }
 
@@ -101,7 +101,7 @@ export class CategoryStore implements ICategoryStore {
     return dataStoreGetStatus(this, type, props)
   }
 
-  setStatus <M extends DataStoreGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): void {
-    dataStoreSetStatus(this, type, props, status)
+  setStatus <M extends DataStoreGetMethods>(type: M, props: GetFirstArgumentType<Store[M]>, status: RequestStatus | undefined): RequestStatus | undefined {
+    return dataStoreSetStatus(this, type, props, status)
   }
 }

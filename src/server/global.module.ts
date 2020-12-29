@@ -32,27 +32,27 @@ import { isPromise } from '../common/type-guards'
       provide: REDIS_CLIENT,
       inject: [ConfigService, RedisService],
       useFactory: (configService: ConfigService<IConfiguration>, redisService: RedisService) => {
-        if (configService.get('loggingRedis')) {
+        if (!!configService.get('loggingRedis')) {
           const redis: any = redisService.getClient()
 
           for (const key in redis) {
             if (typeof redis[key] === 'function' && ['sendCommand'].includes(key)) {
               const orig = redis[key] as (...args: any[]) => any
               redis[key] = function (this: any, ...args: any[]) {
+                console.log('REDIS Client Call:', key,  args[0].name, args[0].args.join('; '), /*result*/)
                 const result = orig.apply(this, args)
                 if (isPromise(result)) {
                   result
                     .then(data => {
-                      console.log('REDIS Client Call async:', key, args, data)
+                      // console.log('REDIS Client Call async:', key, args[0].name, args[0].args.join('; '), /*data*/)
                       return data
                     })
-                    .catch(data => {
-                      console.warn('REDIS Client Call async CATCH:', key, args, data)
-                      return data
+                    .catch(err => {
+                      console.warn('REDIS Client Call async CATCH:', key,  args[0].name, args[0].args.join('; '), err)
+                      return err
                     })
                   return result
                 }
-                console.log('REDIS Client Call:', key, args, result)
                 return result
               }
             }

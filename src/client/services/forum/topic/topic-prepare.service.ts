@@ -1,27 +1,35 @@
 import { ITopicPrepareService, ITopicService } from '../types'
-import { inject } from '../../../ioc/ioc.decoratos'
+import { resolve } from '../../../ioc/ioc.utils'
 import { IApiService } from '../../types'
-import { ApiServiceSymbol, TopicServiceSymbol } from '../../ioc.symbols'
+import { ApiServiceSymbol, BoardPrepareServiceSymbol, TopicServiceSymbol } from '../../ioc.symbols'
 import { store } from '../../../store'
-import { TopicDataPageProps } from '../../../store/forum/types'
-import { runInAction } from 'mobx'
+import { DataStorePagesGetPageData, RequestStatus, TopicDataPageProps } from '../../../store/forum/types'
+import { action, makeObservable, runInAction } from 'mobx'
 import { StoredRoute } from '../../../store/types'
 import { isRoute } from '../../../routing/utils'
 import { mute } from '../../../../common/utils/promise'
 import { ITopic } from '../../../../common/forum/forum.base.interfaces'
 import { isArray } from '../../../../common/type-guards'
+import { GetRoute } from '../../../routing/types'
+import { omit } from '../../../../common/utils/object'
+import { ITopicEx } from '../../../../common/forum/forum.ex.interfaces'
+import { Pagination } from 'nestjs-typeorm-paginate/dist/pagination'
+import { BoardPrepareService } from '../board/board-prepare.service'
+import { RouteDataTypes } from '../../../routes'
 
 
 export class TopicPrepareService implements ITopicPrepareService {
-  @inject(TopicServiceSymbol) topicService!: ITopicService
-  @inject(ApiServiceSymbol) api!: IApiService
+  private readonly topicService = resolve<ITopicService>(TopicServiceSymbol)
+  private readonly boardPrepareService = resolve<BoardPrepareService>(BoardPrepareServiceSymbol)
+  private readonly api = resolve<IApiService>(ApiServiceSymbol)
+
+  constructor () {
+    makeObservable(this)
+  }
 
   processRoute (route: StoredRoute): boolean {
     if (isRoute(route, 'boardTopicList')) {
-      const page = route.params.page ?? 1
-      const board = route.params.board.id
-
-      mute(this.preparePage({ type: 'board', board, page }))
+      mute(this.boardTopicList(route))
 
       return true
     }
@@ -29,60 +37,107 @@ export class TopicPrepareService implements ITopicPrepareService {
     return false
   }
 
-  async preparePage (pageProps: { page: number } & Omit<TopicDataPageProps, 'meta'>): Promise<void> {
-    if (pageProps.type === 'search') {
-      // todo
-      return
+  @action
+  async boardTopicList (route: GetRoute<'boardTopicList'>) {
+    const pageProps: DataStorePagesGetPageData<TopicDataPageProps> = {
+      type: 'board' as const,
+      board: route.params.board.id,
+      page: route.params.page ?? 1,
     }
 
-    const { page, ...props } = pageProps
-
-    const status = store.forumStore.topicStore.getStatus('getPage', pageProps)
+    const status = this.getStatus(route, pageProps)
     if (status) {
       return
     }
 
+    const boardId = route.params.board.id
+    const pageSize = store.configStore.forumTopicPageSize
+
     try {
-      store.forumStore.topicStore.setStatus('getPage', pageProps, 'pending')
+      const status = this.getStatus(route, pageProps)
+      this.setStatus(route, pageProps, 'pending')
 
       console.log('Prepare data for', pageProps)
 
-      const data = await this.load(pageProps)
+      await this.boardPrepareService().prepareAll()
+      const data = await this.load(pageProps, pageSize)
 
-      if (!data) {
-        store.forumStore.topicStore.setStatus('getPage', pageProps, undefined)
-        return
-      }
+      const board = await this.boardPrepareService().prepareAndGet(boardId)
 
-      runInAction(() => {
-        store.forumStore.topicStore.setPage({
-          items: data.items,
-          pageProps: {
-            ...props,
-            meta: data.meta,
-          }
+      if (data && board) {
+        this.setStatus(route, pageProps, 'loaded', {
+          loadResult: data,
+          routeDataEx: { board },
         })
-
-        // if (data?.relations) {
-        //   for (const [type, items] of Object.entries(data.relations)) {
-        //     const storeForType = store.forumStore.getStore(type as ForumStoreType)
-        //     if (storeForType) {
-        //       storeForType.setMany({
-        //         items: items as any
-        //       })
-        //     }
-        //   }
-        // }
-
-        store.forumStore.topicStore.setStatus('getPage', pageProps, 'loaded')
-      })
+      } else {
+        this.setStatus(route, pageProps, 'error')
+      }
     } catch {
-      runInAction(() => {
-        store.forumStore.topicStore.setStatus('getPage', pageProps, 'error')
-      })
+      this.setStatus(route, pageProps, 'error')
     }
   }
 
+  private getStatus = (route: GetRoute<'boardTopicList'>,
+    pageProps: { page: number } & Omit<TopicDataPageProps, 'meta'>) => runInAction(() => {
+    const status = store.forumStore.topicStore.getStatus('getPage', pageProps,)
+    const storedPageProps = store.routeDataStore.get(route)
+
+    if ((storedPageProps && status !== storedPageProps.status) ||
+      (status === 'loaded' && (!storedPageProps?.data?.pageData.items?.length || !storedPageProps?.data?.pageData.items[0]))
+    ) {
+      store.forumStore.topicStore.setStatus('getPage', pageProps, undefined)
+      store.routeDataStore.remove(route)
+      return undefined
+    }
+
+    return status
+  })
+
+  private setStatus = (
+    route: GetRoute<'boardTopicList'>,
+    pageProps: DataStorePagesGetPageData<TopicDataPageProps>,
+    status: RequestStatus,
+    data?: {
+      loadResult: Pagination<ITopicEx> | undefined,
+      routeDataEx: Omit<RouteDataTypes['boardTopicList'], 'page' | 'pageData' | 'pageMeta'>,
+    },
+  ) => runInAction(() => {
+    store.forumStore.topicStore.setStatus('getPage', pageProps, status)
+
+    if (data && data.loadResult) {
+      const pageMeta = store.forumStore.topicStore.getPageMeta({
+        ...omit(pageProps, 'page'),
+      })
+
+      store.forumStore.topicStore.setPage({
+        items: data.loadResult.items,
+        pageProps: {
+          ...omit(pageProps, 'page'),
+          meta: data.loadResult.meta,
+        }
+      })
+
+      store.routeDataStore.setPageProps(route, {
+        status,
+        ...route.params,
+        data: {
+          page: data.loadResult.meta.currentPage,
+          pageData: data.loadResult,
+          pageMeta: pageMeta ?? {
+            ...omit(data.loadResult.meta, 'currentPage'),
+          },
+          ...data.routeDataEx,
+        },
+      })
+    } else {
+      store.routeDataStore.setPageProps(route, {
+        status: status === 'loaded' ? 'error' : status,
+        ...route.params,
+      })
+    }
+  })
+
+  @action
   async prepareAndGet<N extends number | number[]> (id: N): Promise<(N extends number ? ITopic : ITopic[]) | undefined> {
     const isSingle = !isArray(id)
     const ids = (isArray(id) ? id : [id]).sort() as number[]
@@ -97,18 +152,20 @@ export class TopicPrepareService implements ITopicPrepareService {
     try {
       store.forumStore.topicStore.setStatus('getMany', ids, 'pending')
 
-      const items = await this.topicService.byIds(ids)
+      const items = await this.topicService().byIds(ids)
 
-      if (!items) {
-        store.forumStore.topicStore.setStatus('getMany', ids, undefined)
-        return
-      }
+      return runInAction(() => {
+        if (!items) {
+          store.forumStore.topicStore.setStatus('getMany', ids, undefined)
+          return
+        }
 
-      store.forumStore.topicStore.setMany({ items })
+        store.forumStore.topicStore.setMany({ items })
 
-      store.forumStore.topicStore.setStatus('getMany', ids, 'loaded')
+        store.forumStore.topicStore.setStatus('getMany', ids, 'loaded')
 
-      return (isSingle ? items[0] : items) as any
+        return (isSingle ? items[0] : items) as any
+      })
     } catch {
       runInAction(() => {
         store.forumStore.topicStore.setStatus('getMany', ids, 'error')
@@ -117,17 +174,16 @@ export class TopicPrepareService implements ITopicPrepareService {
   }
 
 
-  private async load (pageProps: { page: number } & Omit<TopicDataPageProps, 'meta'>) {
+  private async load (pageProps: { page: number } & Omit<TopicDataPageProps, 'meta'>, pageSize: number) {
     switch (pageProps.type) {
       case 'board':
         if (!pageProps.board) {
           throw new Error('TopicPrepareService: board is empty')
         }
 
-        return this.topicService.byBoard({
+        return this.topicService().byBoard({
           page: pageProps.page,
           board: pageProps.board,
-          pageSize: store.configStore.forumTopicPageSize,
         })
       case 'user':
       // todo

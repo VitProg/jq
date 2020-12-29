@@ -25,9 +25,13 @@
     "test:e2e": "jest --config src/server/test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "console:dev": "cross-env RUN_MODE=ts-node TYPEORM_HIDE_LOG=1 ts-node -r tsconfig-paths/register src/server/console.ts",
-    "console": "cross-env TYPEORM_HIDE_LOG=1 node dist/server/console.js"
+    "console": "cross-env TYPEORM_HIDE_LOG=1 node dist/server/console.js",
+    "extract": "formatjs extract",
+    "compile": "formatjs compile"
   },
   "dependencies": {
+    "@formatjs/intl": "^1.4.13",
+    "@formatjs/intl-pluralrules": "^4.0.1",
     "@hookform/resolvers": "^1.1.2",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
@@ -75,6 +79,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "react-hook-form": "^6.12.2",
+    "react-intl": "^5.10.9",
     "react-transition-group": "^4.4.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
@@ -88,6 +93,8 @@
     "zod": "^2.0.0-beta.29"
   },
   "devDependencies": {
+    "@formatjs/cli": "^2.13.16",
+    "@formatjs/ts-transformer": "^2.12.11",
     "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.5",
     "@nestjs/testing": "^7.6.1",
@@ -104,6 +111,7 @@
     "@types/passport-local": "^1.0.33",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "@types/react-intl": "^3.0.0",
     "@types/styled-components": "^5.1.5",
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^4.9.1",
@@ -112,6 +120,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^7.15.0",
     "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-formatjs": "^2.9.11",
     "eslint-plugin-prettier": "^3.2.0",
     "express-react-views": "^0.11.0",
     "fork-ts-checker-webpack-plugin": "^6.0.5",

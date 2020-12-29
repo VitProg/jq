@@ -7,9 +7,10 @@ import { Request } from 'express'
 import { JwtStrategyValidatePayload } from '../types'
 import { SecureService } from '../../secure/secure.service'
 import { AuthService } from '../auth.service'
-import { TokenService } from '../token/token.service'
+import { RefreshTokenService } from '../token/refresh-token.service'
 import { UserService } from '../../user/user.service'
 import { IUserEx } from '../../../../common/forum/forum.ex.interfaces'
+import { JwtTokenService } from '../token/jwt-token.service'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly secureService: SecureService,
-    private readonly tokenService: TokenService,
+    private readonly jwtTokenService: JwtTokenService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -31,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     const user: IUserEx | undefined = await this.userService.findById(payload.sub)
 
-    if (await this.tokenService.verifyJwtToken(payload, fingerprintLight, user)) {
+    if (await this.jwtTokenService.verify(payload, fingerprintLight, user)) {
       return user
     }
 

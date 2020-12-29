@@ -11,9 +11,10 @@ import { splitPipedNumbers } from '../../../common/utils/string'
 import { timestampToDate, toGender } from './transform'
 import { getUserLevelByGroups } from '../../../common/forum/utils'
 import { IMessage } from '../../../common/forum/forum.base.interfaces'
+import { has } from 'mobx'
 
 
-export const toBoardEx = (hash: RedisBoardHash | RedisBoardFullHash, withGroups = true): IBoardEx => ({
+export const toBoardEx = (hash: RedisBoardHash | RedisBoardFullHash, withGroups = true, messagePage?: number): IBoardEx => ({
   id: hash.id,
   name: hash.name,
   url: hash.url,
@@ -40,6 +41,7 @@ export const toBoardEx = (hash: RedisBoardHash | RedisBoardFullHash, withGroups 
       name: hash.lu_name,
       url: hash.lu_url,
     } : undefined,
+    messagePage,
   },
   ...('nt' in hash && 'nm' in hash ?
       {
@@ -51,13 +53,15 @@ export const toBoardEx = (hash: RedisBoardHash | RedisBoardFullHash, withGroups 
   )
 })
 
-export const toTopicEx = (hash: RedisTopicHash | RedisTopicFullHash): ITopicEx => ({
+export const toTopicEx = (hash: RedisTopicHash | RedisTopicFullHash, messagePage?: number): ITopicEx => ({
   id: hash.id,
   url: hash.url,
   subject: hash.subject,
   boardId: hash.board,
   flags: {
     isApproved: !!hash.approved,
+    isPinned: !!hash.pinned,
+    isPinnedFirstMessage: !!hash.pinned_fm,
   },
   first: {
     message: hash.fm_id > 0 ? {
@@ -80,6 +84,7 @@ export const toTopicEx = (hash: RedisTopicHash | RedisTopicFullHash): ITopicEx =
       name: hash.lu_name,
       url: hash.lu_url,
     } : undefined,
+    messagePage,
   },
   ...('nm' in hash ?
       {

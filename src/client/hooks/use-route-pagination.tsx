@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { RoutePagination } from '../components/route/RoutePagination'
 
 
-export const uesRoutePagination = (
+export const useRoutePagination = (
   route: (params: PaginationRenderItemParams) => AppRoute,
   propsPage?: number,
   currentMeta?: IPaginationMeta,

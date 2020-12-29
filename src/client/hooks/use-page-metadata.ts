@@ -7,9 +7,11 @@ import { store } from '../store'
 export const usePageMetadata = <R extends AppRouteKeys = AppRouteKeys> (config: SetupPageMetadataConfig<R>): void => {
   useMemo(
     () => {
-      console.log('setupPageMetadata', config)
-      store.setupPageMetadata({
-        ...config
+      setTimeout(() => {
+        console.log('setupPageMetadata', config)
+        store.setupPageMetadata({
+          ...config
+        })
       })
     },
     [

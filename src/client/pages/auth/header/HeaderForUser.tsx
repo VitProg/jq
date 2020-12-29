@@ -1,4 +1,4 @@
-import { FC, useCallback, useState, MouseEvent } from 'react'
+import { FC, useCallback, useState, MouseEvent, useRef } from 'react'
 import { observer } from 'mobx-react-lite'
 import { UserAvatar } from '../../../components/user/UserAvatar'
 import { Menu, MenuItem } from '@material-ui/core'
@@ -7,17 +7,22 @@ import { RouteLink } from '../../../components/route/RouteLink'
 import { useInjection } from '../../../ioc/ioc.react'
 import { AuthServiceSymbol } from '../../../services/ioc.symbols'
 import { IAuthService } from '../../../services/my/types'
+import { useIntl } from 'react-intl'
+import { useFormatMessage } from '../../../hooks/use-format-message.hook'
 
 
 interface Props {
   user?: User
 }
 
-export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) {
+export const HeaderForUser: FC<Props> = (function HeaderForUser (props) {
   if (!props.user) {
     return null
   }
 
+  const t = useFormatMessage()
+
+  const ref = useRef<HTMLDivElement>(null)
   const [menuOpened, setMenuOpened] = useState<null | HTMLElement>(null)
   const authService = useInjection<IAuthService>(AuthServiceSymbol)
 
@@ -26,7 +31,7 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
       if (menuOpened) {
         setMenuOpened(null)
       } else {
-        setMenuOpened(event.currentTarget)
+        setMenuOpened(ref.current)
       }
     },
     [menuOpened],
@@ -42,7 +47,7 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
   }
 
   return (
-    <div>
+    <div ref={ref}>
       <UserAvatar user={props.user} onCLick={handleAvatarClick}/>
 
       <Menu
@@ -60,9 +65,9 @@ export const HeaderForUser: FC<Props> = observer(function HeaderForUser (props) 
         open={!!menuOpened}
         onClose={handleMenuClose}
       >
-        <RouteLink to={'profile'} component={MenuItem} onClick={handleMenuClose}>Профиль</RouteLink>
-        <RouteLink to={'settings'} component={MenuItem} onClick={handleMenuClose}>Настройки</RouteLink>
-        <MenuItem onClick={handleLogoutClick}>Выход</MenuItem>
+        <RouteLink to={'profile'} component={MenuItem} onClick={handleMenuClose}>{t('MyMenu:profile')}</RouteLink>
+        <RouteLink to={'settings'} component={MenuItem} onClick={handleMenuClose}>{t('MyMenu:settings')}</RouteLink>
+        <MenuItem onClick={handleLogoutClick}>{t('Common:logout')}</MenuItem>
       </Menu>
     </div>
   )

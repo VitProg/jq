@@ -10,7 +10,7 @@ import { getUserLevel, getUserLevelsByGroups, getUserName } from '../../../../co
 import { toBoardMap, toCategoryMap } from '../../../common/utils/mapper'
 import * as KEY from '../../../common/utils/redis'
 import {
-  boardKeyPrefixes, boardNumsKeyPrefixes, getKeyBoardStatHash, messageKeyPrefixes,
+  boardKeyPrefixes, boardNumsKeyPrefixes, getKeyBoardStatHash, messageKeyPrefixes, PINNED_POST_FACTOR,
   RedisBoardHash,
   RedisBoardStatHash,
   RedisMessageHash,
@@ -313,8 +313,8 @@ export class ToRedisService {
     const boardsArray = [...boardsMap.values()]
     const categoryMap = await this.getCategoryMap()
 
-    const messageIds: Set<number> = new Set()
-    const userIds: Set<number> = new Set()
+    // const messageIds: Set<number> = new Set()
+    // const userIds: Set<number> = new Set()
 
     const boardStatHashMap: Map<string, RedisBoardStatHash> = new Map()
     const toBoardStatHashMapKey = (boardId: number, level: UserLevel) => `${boardId}:${level}`
@@ -324,9 +324,9 @@ export class ToRedisService {
         const key = toBoardStatHashMapKey(board.id, level)
         const hash = toRedisBoardStatHash(await this.redis.hgetall(KEY.getKeyBoardStatHash(board.id, level)))
         boardStatHashMap.set(key, hash)
-        if (hash.lm_id) {
-          messageIds.add(hash.lm_id)
-        }
+        // if (hash.lm_id) {
+        //   messageIds.add(hash.lm_id)
+        // }
       }
     }
 
@@ -438,6 +438,8 @@ export class ToRedisService {
 
     for (const [id, topic] of topicMap) {
       const isApproved = topic.flags.isApproved
+      const isPinned = topic.flags.isSticky
+      const isPinnedFirstMessage = topic.flags.isStickyFirstPost
 
       const boardModel = boardsMap.get(topic.linksId.board)
       if (!boardModel) {
@@ -457,6 +459,8 @@ export class ToRedisService {
         subject: topic.subject,
         url: topic.url,
         approved: isApproved ? 1 : 0,
+        pinned: isPinned ? 1 : 0,
+        pinned_fm: isPinnedFirstMessage ? 1 : 0,
         board: boardModel.id,
       }
       await pipeline.hset(keyHash, hash)
@@ -474,7 +478,8 @@ export class ToRedisService {
 
           pipeline.hset(keyStatHash, hash)
 
-          const sort = numberToScore(lastMessageHash?.id ?? 0)
+          const sortPart = lastMessageHash?.id ?? 0
+          const sort = numberToScore(isPinned ? PINNED_POST_FACTOR + sortPart : sortPart)
 
           pipeline.zadd(keyBoard, sort, id + '')
 
