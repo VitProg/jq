@@ -45,7 +45,7 @@
     "@nestjs/swagger": "^4.7.6",
     "@nestjs/typeorm": "^7.1.5",
     "@owja/ioc": "^1.0.1",
-    "@types/geoip-lite": "^1.4.0",
+    "@types/geoip-lite": "^1.4.1",
     "@types/passport-http": "^0.3.8",
     "@types/react-transition-group": "^4.4.0",
     "@types/slug": "^0.9.1",
