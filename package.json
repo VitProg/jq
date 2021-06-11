@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "@formatjs/cli": "^2.13.16",
-    "@formatjs/ts-transformer": "^2.12.11",
+    "@formatjs/ts-transformer": "^3.4.2",
     "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.5",
     "@nestjs/testing": "^7.6.1",
