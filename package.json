@@ -97,7 +97,7 @@
     "@formatjs/ts-transformer": "^2.12.11",
     "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.5",
-    "@nestjs/testing": "^7.6.1",
+    "@nestjs/testing": "^7.6.18",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@types/bbcode-to-react": "^0.2.0",
     "@types/cache-manager": "^2.10.3",
