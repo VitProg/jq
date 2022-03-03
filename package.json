@@ -90,7 +90,7 @@
     "type-route": "^0.6.0",
     "typeorm": "^0.2.29",
     "useragent": "^2.3.0",
-    "zod": "^2.0.0-beta.29"
+    "zod": "^3.13.4"
   },
   "devDependencies": {
     "@formatjs/cli": "^2.13.16",
