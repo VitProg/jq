@@ -106,7 +106,7 @@
     "@types/express": "^4.17.9",
     "@types/html-escaper": "^3.0.0",
     "@types/jest": "^26.0.19",
-    "@types/node": "12.19.8",
+    "@types/node": "17.0.29",
     "@types/passport-jwt": "^3.0.3",
     "@types/passport-local": "^1.0.33",
     "@types/react": "^17.0.0",
