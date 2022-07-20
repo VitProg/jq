@@ -60,7 +60,7 @@
     "commander": "^6.2.1",
     "cookie-parser": "^1.4.5",
     "date-fns": "^2.16.1",
-    "dayjs": "^1.9.7",
+    "dayjs": "^1.11.4",
     "dotenv": "^8.2.0",
     "geoip-lite": "^1.4.2",
     "html-escaper": "^3.0.0",
