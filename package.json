@@ -93,7 +93,7 @@
     "zod": "^2.0.0-beta.29"
   },
   "devDependencies": {
-    "@formatjs/cli": "^2.13.16",
+    "@formatjs/cli": "^5.1.1",
     "@formatjs/ts-transformer": "^2.12.11",
     "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.5",
